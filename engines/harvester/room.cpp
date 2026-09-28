@@ -687,6 +687,11 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return;
 
             const Common::String spritePath = resolveSceneObjectSpritePathLocal(object);
+			
+			warning("HARVESTER SCENE OBJECT: %s -> %s",
+                object.objectName.c_str(),
+                spritePath.c_str());
+
             const Common::Rect hotspotBounds = getSceneObjectBounds(object);
             Entity *entity = nullptr;
 
