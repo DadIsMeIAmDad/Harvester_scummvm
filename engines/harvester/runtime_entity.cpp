@@ -620,6 +620,38 @@ void Entity::draw(Graphics::Screen &screen) const {
 	blitAnimationFrame(screen, _frames, _currentFrame, drawOrigin.x, drawOrigin.y);
 }
 
+Common::Rect Entity::getFrameRect() const {
+	const Common::Point drawOrigin = getDrawOrigin();
+
+	if (_pngSurface) {
+		return Common::Rect(
+			drawOrigin.x,
+			drawOrigin.y,
+			drawOrigin.x + _pngSurface->w,
+			drawOrigin.y + _pngSurface->h
+		);
+	}
+
+	if (!_frames.empty() && _currentFrame >= 0 &&
+			(uint)_currentFrame < _frames.size()) {
+		const AbmFrame &frame = _frames[(uint)_currentFrame];
+
+		return Common::Rect(
+			drawOrigin.x,
+			drawOrigin.y,
+			drawOrigin.x + frame.width,
+			drawOrigin.y + frame.height
+		);
+	}
+
+	return Common::Rect(
+		drawOrigin.x,
+		drawOrigin.y,
+		drawOrigin.x + _boundsWidth,
+		drawOrigin.y + _boundsHeight
+	);
+}
+
 bool Entity::hasOpaqueFrame() const {
 	return !_frames.empty() && _currentFrame >= 0 && (uint)_currentFrame < _frames.size();
 }
