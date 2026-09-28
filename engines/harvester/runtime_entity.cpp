@@ -610,7 +610,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 	const Common::Point drawOrigin = getDrawOrigin();
 
 	if (_pngSurface) {
-		screen.blitFrom(*_pngSurface, drawOrigin.x, drawOrigin.y);
+		screen.simpleBlitFrom(*_pngSurface, Common::Point(drawOrigin.x, drawOrigin.y));
 		return;
 	}
 
