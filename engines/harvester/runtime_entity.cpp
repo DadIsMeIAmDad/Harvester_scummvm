@@ -932,7 +932,7 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 	Entity *entity = new Entity();
 
 	bool loaded = false;
-
+    warning("HARVESTER BITMAP RESOURCE: %s", resourcePath.c_str());
 	if (resourcePath.hasSuffixIgnoreCase(".PNG")) {
 		loaded = entity->loadPngResource(_resources, resourcePath);
 	} else {
