@@ -897,7 +897,16 @@ Entity *EntityManager::spawnAbmEntityFromResource(const Common::String &name,
 Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 		const Common::String &resourcePath, int classId, const Common::Point &position, float z) {
 	Entity *entity = new Entity();
-	if (!entity->loadBitmapResource(_resources, resourcePath)) {
+
+	bool loaded = false;
+
+	if (resourcePath.hasSuffixIgnoreCase(".PNG")) {
+		loaded = entity->loadPngResource(_resources, resourcePath);
+	} else {
+		loaded = entity->loadBitmapResource(_resources, resourcePath);
+	}
+
+	if (!loaded) {
 		delete entity;
 		return nullptr;
 	}
