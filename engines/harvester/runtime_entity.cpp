@@ -22,7 +22,7 @@
 #include <math.h>
 
 #include "harvester/runtime_entity.h"
-
+#include "common/stream.h"
 #include "common/algorithm.h"
 #include "common/debug.h"
 #include "common/endian.h"
