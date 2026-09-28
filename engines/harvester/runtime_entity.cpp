@@ -604,22 +604,20 @@ void Entity::resumeTimerCountdown(uint32 now) {
 }
 
 void Entity::draw(Graphics::Screen &screen) const {
-	if (!_visible || !_drawEnabled || _currentFrame < 0)
+	if (!_visible || !_drawEnabled)
 		return;
 
 	const Common::Point drawOrigin = getDrawOrigin();
-	blitAnimationFrame(screen, _frames, _currentFrame, drawOrigin.x, drawOrigin.y);
-}
 
-Common::Rect Entity::getFrameRect() const {
-	const Common::Point drawOrigin = getDrawOrigin();
-	if (!_frames.empty() && _currentFrame >= 0 && (uint)_currentFrame < _frames.size()) {
-		const AbmFrame &frame = _frames[(uint)_currentFrame];
-		return Common::Rect(drawOrigin.x, drawOrigin.y,
-			drawOrigin.x + frame.width, drawOrigin.y + frame.height);
+	if (_pngSurface) {
+		screen.blitFrom(*_pngSurface, drawOrigin.x, drawOrigin.y);
+		return;
 	}
 
-	return Common::Rect(drawOrigin.x, drawOrigin.y, drawOrigin.x + _boundsWidth, drawOrigin.y + _boundsHeight);
+	if (_currentFrame < 0)
+		return;
+
+	blitAnimationFrame(screen, _frames, _currentFrame, drawOrigin.x, drawOrigin.y);
 }
 
 bool Entity::hasOpaqueFrame() const {
