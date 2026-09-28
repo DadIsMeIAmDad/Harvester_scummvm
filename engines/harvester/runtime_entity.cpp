@@ -219,6 +219,9 @@ bool Entity::loadPngResource(ResourceManager &resources, const Common::String &p
 		return false;
 	}
 
+	warning("HARVESTER PNG LOADED: %s (%d x %d)",
+			path.c_str(), surface->w, surface->h);
+
 	_pngSurface = new Graphics::Surface();
 	_pngSurface->copyFrom(*surface);
 
