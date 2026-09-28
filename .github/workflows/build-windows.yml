@@ -1,4 +1,4 @@
-name: Build ScummVM Windows
+name: Build Harvester Windows
 
 on:
   workflow_dispatch:
@@ -25,18 +25,29 @@ jobs:
             mingw-w64-ucrt-x86_64-toolchain
             mingw-w64-ucrt-x86_64-SDL2
 
-      - name: Configure
+      - name: Configure Harvester only
         shell: msys2 {0}
         run: |
-          ./configure --backend=sdl
+          ./configure --backend=sdl --disable-all-engines --enable-engine=harvester
 
       - name: Build
         shell: msys2 {0}
         run: |
           make -j2
 
-      - name: Upload EXE
+      - name: Prepare release
+        shell: msys2 {0}
+        run: |
+          mkdir -p release
+          cp scummvm.exe release/
+
+          cp /ucrt64/bin/SDL2.dll release/ || true
+          cp /ucrt64/bin/libgcc_s_seh-1.dll release/ || true
+          cp /ucrt64/bin/libstdc++-6.dll release/ || true
+          cp /ucrt64/bin/libwinpthread-1.dll release/ || true
+
+      - name: Upload Harvester build
         uses: actions/upload-artifact@v4
         with:
-          name: scummvm-windows
-          path: scummvm.exe
+          name: harvester-windows
+          path: release/
