@@ -195,7 +195,7 @@ bool Entity::loadBitmapResource(ResourceManager &resources, const Common::String
 
 
 bool Entity::loadPngResource(ResourceManager &resources, const Common::String &path) {
-	Common::SeekableReadStream *stream = resources.openResource(path);
+	Common::SeekableReadStream *stream = resources.openFile(path);
 
 	if (!stream) {
 		warning("Could not open PNG resource: %s", path.c_str());

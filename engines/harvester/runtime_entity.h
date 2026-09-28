@@ -29,7 +29,7 @@
 
 namespace Graphics {
 class Screen;
-class Surface;
+struct Surface;
 }
 
 namespace Harvester {
