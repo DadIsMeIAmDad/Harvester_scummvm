@@ -1,0 +1,42 @@
+name: Build ScummVM Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            make
+            git
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-SDL2
+
+      - name: Configure
+        shell: msys2 {0}
+        run: |
+          ./configure --backend=sdl
+
+      - name: Build
+        shell: msys2 {0}
+        run: |
+          make -j2
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: scummvm-windows
+          path: scummvm.exe
