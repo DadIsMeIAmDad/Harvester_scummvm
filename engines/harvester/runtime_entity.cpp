@@ -29,6 +29,7 @@
 #include "common/system.h"
 #include "graphics/blit.h"
 #include "graphics/screen.h"
+#include "image/png.h"
 #include "harvester/detection.h"
 #include "harvester/resources.h"
 
@@ -189,6 +190,38 @@ bool Entity::loadBitmapResource(ResourceManager &resources, const Common::String
 	_depthScale = 1.0f;
 	updateBoundsFromCurrentFrame();
 	_hitTestMode = kRuntimeEntityHitTestOpaquePixels;
+	return true;
+}
+
+
+bool Entity::loadPngResource(ResourceManager &resources, const Common::String &path) {
+	Common::SeekableReadStream *stream = resources.openResource(path);
+
+	if (!stream) {
+		warning("Could not open PNG resource: %s", path.c_str());
+		return false;
+	}
+
+	Image::PNGDecoder decoder;
+
+	if (!decoder.loadStream(*stream)) {
+		delete stream;
+		warning("Could not decode PNG resource: %s", path.c_str());
+		return false;
+	}
+
+	delete stream;
+
+	const Graphics::Surface *surface = decoder.getSurface();
+
+	if (!surface) {
+		warning("PNG decoder returned no surface: %s", path.c_str());
+		return false;
+	}
+
+	_pngSurface = new Graphics::Surface();
+	_pngSurface->copyFrom(*surface);
+
 	return true;
 }
 

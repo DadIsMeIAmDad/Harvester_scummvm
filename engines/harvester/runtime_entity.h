@@ -29,6 +29,7 @@
 
 namespace Graphics {
 class Screen;
+class Surface;
 }
 
 namespace Harvester {
@@ -65,6 +66,7 @@ class Entity {
 public:
 	bool loadBitmapResource(ResourceManager &resources, const Common::String &path);
 	bool loadAbmResource(ResourceManager &resources, const Common::String &path);
+	bool loadPngResource(ResourceManager &resources, const Common::String &path);
 
 	void setName(const Common::String &name) { _name = name; }
 	const Common::String &getName() const { return _name; }
@@ -140,6 +142,7 @@ private:
 	Common::String _resourcePath;
 	Common::Array<AbmFrame> _frames;
 	Common::Array<AbmFrame> _baseFrames;
+	Graphics::Surface *_pngSurface = nullptr;
 	int _classId = 0;
 	int _x = 0;
 	int _y = 0;

@@ -686,16 +686,27 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (!entityManager)
 				return;
 
-			const Common::String spritePath = resolveSceneObjectSpritePathLocal(object);
-			const Common::Rect hotspotBounds = getSceneObjectBounds(object);
-			Entity *entity = nullptr;
-			if (!spritePath.empty() && spritePath.hasSuffixIgnoreCase(".BM")) {
-				entity = entityManager->spawnSceneBitmapEntity(object.objectName, spritePath,
-					Common::Point(object.currentX, object.currentY), (float)object.currentZ);
-			} else if (!hotspotBounds.isEmpty()) {
-				entity = entityManager->spawnSceneHotspotEntity(object.objectName, hotspotBounds,
-					(float)object.currentZ);
-			}
+            const Common::String spritePath = resolveSceneObjectSpritePathLocal(object);
+            const Common::Rect hotspotBounds = getSceneObjectBounds(object);
+            Entity *entity = nullptr;
+
+            if (!spritePath.empty() &&
+                (spritePath.hasSuffixIgnoreCase(".BM") ||
+                spritePath.hasSuffixIgnoreCase(".PNG"))) {
+
+                entity = entityManager->spawnSceneBitmapEntity(
+                    object.objectName,
+                    spritePath,
+                    Common::Point(object.currentX, object.currentY),
+                    (float)object.currentZ);
+
+            } else if (!hotspotBounds.isEmpty()) {
+
+                entity = entityManager->spawnSceneHotspotEntity(
+                    object.objectName,
+                    hotspotBounds,
+                    (float)object.currentZ);
+            }
 			if (!entity)
 				return;
 
