@@ -2670,6 +2670,7 @@ bool Script::buildRuntimeRoomState(const RoomRecord &room, const EntranceRecord 
 	state.backgroundObjectName = background->objectName;
 	state.palettePath = room.palettePath;
 	state.backgroundPath = background->spritePath;
+	warning("HARVESTER BACKGROUND PATH: %s", state.backgroundPath.c_str());
 	state.discNumber = resources.getCurrentDisc();
 	state.roomMinZ = room.minZ;
 	state.roomMaxZ = room.maxZ;
