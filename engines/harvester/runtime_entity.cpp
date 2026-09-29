@@ -625,6 +625,14 @@ void Entity::draw(Graphics::Screen &screen) const {
 	const Common::Point drawOrigin = getDrawOrigin();
 
 	if (_pngSurface) {
+		warning("HARVESTER PNG DRAW: image=%d x %d screen=%d x %d origin=(%d,%d)",
+		_pngSurface->w,
+		_pngSurface->h,
+		screen.w,
+		screen.h,
+		drawOrigin.x,
+		drawOrigin.y);
+	
 		screen.blitFrom(*_pngSurface,
 			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
 			Common::Point(drawOrigin.x, drawOrigin.y));
