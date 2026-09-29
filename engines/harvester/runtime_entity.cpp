@@ -210,6 +210,11 @@ bool Entity::loadPngResource(ResourceManager &resources, const Common::String &p
 	delete stream;
 
 	const Graphics::Surface *surface = decoder.getSurface();
+	warning("HARVESTER PNG FORMAT: bpp=%d bytes=%d pitch=%d format=%s",
+	surface->format.bytesPerPixel * 8,
+	surface->format.bytesPerPixel,
+	surface->pitch,
+	surface->format.toString().c_str());
 	if (!surface) {
 		warning("PNG decoder returned no surface: %s", path.c_str());
 		return false;
