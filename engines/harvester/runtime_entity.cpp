@@ -625,14 +625,17 @@ void Entity::draw(Graphics::Screen &screen) const {
 	const Common::Point drawOrigin = getDrawOrigin();
 
 	if (_pngSurface) {
-		screen.simpleBlitFrom(*_pngSurface, Common::Point(drawOrigin.x, drawOrigin.y));
+		screen.blitFrom(*_pngSurface,
+			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
+			Common::Point(drawOrigin.x, drawOrigin.y));
 		return;
 	}
 
 	if (_currentFrame < 0)
 		return;
 
-	blitAnimationFrame(screen, _frames, _currentFrame, drawOrigin.x, drawOrigin.y);
+	blitAnimationFrame(screen, _frames, _currentFrame,
+		drawOrigin.x, drawOrigin.y);
 }
 
 Common::Rect Entity::getFrameRect() const {
