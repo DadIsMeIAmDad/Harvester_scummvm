@@ -363,7 +363,7 @@ void splashScreen() {
 	}
 	g_system->hideOverlay();
 
-	splash = flase;
+	splash = false;
 }
 
 void initGraphicsModes(const Graphics::ModeList &modes) {
