@@ -303,7 +303,7 @@ void HarvesterEngine::setDisplayMode(int width, int height) {
 	Graphics::PixelFormat format;
 
 	if (width == 640 && height == 480) {
-		format = Graphics::PixelFormat::createFormatABGR32();
+		format = Graphics::PixelFormat::createFormatRGBA32();
 	} else {
 		format = Graphics::PixelFormat::createFormatCLUT8();
 	}
