@@ -2205,42 +2205,43 @@ bool Flow::populateRoomSceneEntities(RoomSetupState &state,
 			state.roomName.c_str(), timer.timerName.c_str(), timer.currentValue, timer.initialValue,
 			timer.enabled, timer.looping, timer.global);
 	}
-	for (const ObjectRecord &object : drawableObjects) {
+		for (const ObjectRecord &object : drawableObjects) {
 		Entity *entity = nullptr;
 		const Common::String spritePath = resolveSceneObjectSpritePath(object);
 		const Common::Rect hotspotBounds = getRoomObjectHotspotBounds(object);
-		if (!spritePath.empty() &&
-		    (spritePath.hasSuffixIgnoreCase(".BM") ||
-		    spritePath.hasSuffixIgnoreCase(".PNG"))) {
-	    entity = entityManager->spawnSceneBitmapEntity(object.objectName, spritePath,
-		    Common::Point(object.currentX, object.currentY), (float)object.currentZ);
-    } else {
-	    if (!hotspotBounds.isEmpty())
-		    entity = entityManager->spawnSceneHotspotEntity(object.objectName, hotspotBounds, (float)object.currentZ);
-    }
+		const bool isBitmapPath = !spritePath.empty() &&
+			(spritePath.hasSuffixIgnoreCase(".BM") ||
+			 spritePath.hasSuffixIgnoreCase(".PNG"));
+
+		if (isBitmapPath) {
+			entity = entityManager->spawnSceneBitmapEntity(object.objectName, spritePath,
+				Common::Point(object.currentX, object.currentY), (float)object.currentZ);
+		} else if (!hotspotBounds.isEmpty()) {
+			entity = entityManager->spawnSceneHotspotEntity(object.objectName, hotspotBounds,
+				(float)object.currentZ);
+		}
 
 		if (!entity) {
 			debugC(1, kDebugRoom,
 				"Harvester: scene entity skipped room='%s' object='%s' resolved='%s' bounds=(%d,%d)-(%d,%d) reason='%s'",
 				state.roomName.c_str(), object.objectName.c_str(), spritePath.c_str(),
 				hotspotBounds.left, hotspotBounds.top, hotspotBounds.right, hotspotBounds.bottom,
-				spritePath.empty() || !spritePath.hasSuffixIgnoreCase(".BM") && !spritePath.hasSuffixIgnoreCase(".PNG"))
-					? "no_bitmap_and_no_hotspot_bounds"
-					: "spawn_failed");
+				!isBitmapPath ? "no_bitmap_and_no_hotspot_bounds" : "spawn_failed");
 			debug(1, "Harvester: unable to spawn room object entity '%s' from '%s'",
 				object.objectName.c_str(), spritePath.c_str());
 			continue;
 		}
-        const bool hasVisual = entity->hasFrames() || entity->hasPngSurface();
+
+		const bool hasVisual = entity->hasFrames() || entity->hasPngSurface();
 		entity->setClassId(resolveSceneObjectClass(
-			state, object, entity->hasFrames() ? entity : nullptr, _engine.getScript()));
+			state, object, hasVisual ? entity : nullptr, _engine.getScript()));
 		entity->setAnchorMode(kRuntimeEntityAnchorTopLeft);
 		entity->setZExtent((float)object.zExtent);
 		const Common::Rect entityRect = entity->getScreenRect();
 		debugC(1, kDebugRoom,
 			"Harvester: scene entity spawned room='%s' object='%s' type='%s' class=0x%x pos=(%d,%d,z=%.2f) rect=(%d,%d)-(%d,%d) sprite='%s' action='%s' operatable=%d ident='%s'",
 			state.roomName.c_str(), object.objectName.c_str(),
-			entity->hasFrames() ? "bitmap" : "hotspot", entity->getClassId(),
+			hasVisual ? "bitmap" : "hotspot", entity->getClassId(),
 			entity->getX(), entity->getY(), (double)entity->getZ(),
 			entityRect.left, entityRect.top, entityRect.right, entityRect.bottom,
 			spritePath.c_str(), object.actionTag.c_str(), object.operatable, object.identTextKey.c_str());

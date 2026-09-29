@@ -121,6 +121,7 @@ public:
 	int getTimerCurrentValue() const { return _timerCurrentValue; }
 
 	bool hasFrames() const { return !_frames.empty(); }
+	bool hasPngSurface() const { return _pngSurface != nullptr; }
 	bool tickVisualState(uint32 now);
 	void draw(Graphics::Screen &screen) const;
 	bool hitTest(const Common::Point &point) const;

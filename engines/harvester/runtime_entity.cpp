@@ -940,12 +940,11 @@ Entity *EntityManager::spawnAbmEntityFromResource(const Common::String &name,
 }
 
 Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
-		const Common::String &backgroundPath, int classId, const Common::Point &position, float z) {
+		const Common::String &resourcePath, int classId, const Common::Point &position, float z) {
 
-	warning("HARVESTER SPAWN BITMAP: %s", backgroundPath.c_str());
+	warning("HARVESTER SPAWN BITMAP: %s", resourcePath.c_str());
 
 	Entity *entity = new Entity();
-
 	bool loaded = false;
 
 	if (resourcePath.hasSuffixIgnoreCase(".PNG")) {
