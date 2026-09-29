@@ -232,8 +232,7 @@ float MediaManager::mapGammaLevelToBrightnessScale(int level) {
 
 void MediaManager::resetScreen(int width, int height) {
 	delete _screen;
-	_screen = new Graphics::Screen(width, height,
-		Graphics::PixelFormat::createFormatRGBA32());
+	_screen = new Graphics::Screen();
 	_displayWidth = width;
 	_displayHeight = height;
 }
