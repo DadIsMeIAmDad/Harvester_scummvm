@@ -949,6 +949,8 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 
 	if (resourcePath.hasSuffixIgnoreCase(".PNG")) {
 		loaded = entity->loadPngResource(_resources, resourcePath);
+	    warning("HARVESTER PNG DETECTED LOADED: %s", resourcePath.c_str());
+
 	} else {
 		loaded = entity->loadBitmapResource(_resources, resourcePath);
 	}
@@ -956,6 +958,8 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 	if (!loaded) {
 		delete entity;
 		return nullptr;
+	    warning("DELETED THE LOAD: %s", resourcePath.c_str());
+
 	}
 
 	entity->setName(name);
