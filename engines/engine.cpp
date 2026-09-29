@@ -312,7 +312,7 @@ void splashScreen() {
 	// Fill with orange
 	Graphics::Surface screen;
 	screen.create(scaledW, scaledH, g_system->getOverlayFormat());
-	screen.fillRect(Common::Rect(screen.w, screen.h), screen.format.ARGBToColor(0xff, 0xcc, 0x66, 0x00));
+	screen.fillRect(Common::Rect(screen.w, screen.h), screen.format.ARGBToColor(0xff, 0x00, 0x00, 0x00));
 
 	// Print version information
 	const Graphics::Font *font = FontMan.getFontByUsage(Graphics::FontManager::kConsoleFont);
@@ -363,7 +363,7 @@ void splashScreen() {
 	}
 	g_system->hideOverlay();
 
-	splash = true;
+	splash = flase;
 }
 
 void initGraphicsModes(const Graphics::ModeList &modes) {
