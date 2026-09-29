@@ -196,35 +196,47 @@ bool Entity::loadBitmapResource(ResourceManager &resources, const Common::String
 
 bool Entity::loadPngResource(ResourceManager &resources, const Common::String &path) {
 	Common::SeekableReadStream *stream = resources.openFile(path);
-
 	if (!stream) {
 		warning("Could not open PNG resource: %s", path.c_str());
 		return false;
 	}
 
 	Image::PNGDecoder decoder;
-
 	if (!decoder.loadStream(*stream)) {
 		delete stream;
 		warning("Could not decode PNG resource: %s", path.c_str());
 		return false;
 	}
-
 	delete stream;
 
 	const Graphics::Surface *surface = decoder.getSurface();
-
 	if (!surface) {
 		warning("PNG decoder returned no surface: %s", path.c_str());
 		return false;
 	}
 
-	warning("HARVESTER PNG LOADED: %s (%d x %d)",
-			path.c_str(), surface->w, surface->h);
+	warning("HARVESTER PNG LOADED: %s (%d x %d)", path.c_str(), surface->w, surface->h);
 
+	if (_pngSurface) {
+		_pngSurface->free();
+		delete _pngSurface;
+	}
 	_pngSurface = new Graphics::Surface();
 	_pngSurface->copyFrom(*surface);
 
+	_frames.clear();
+	_baseFrames.clear();
+	_resourcePath = path;
+	_currentFrame = -1;   // no ABM frames
+	_firstFrame = -1;
+	_lastFrame = -1;
+	_animationEnabled = false;
+	_drawEnabled = true;
+	_depthScale = 1.0f;
+	_boundsWidth = surface->w;
+	_boundsHeight = surface->h;
+	_hitTestMode = kRuntimeEntityHitTestOpaquePixels; // or Bounds if you prefer
+	// optional: updateScreenBaseFromCurrentFrame() if you care about anchor
 	return true;
 }
 
@@ -928,9 +940,9 @@ Entity *EntityManager::spawnAbmEntityFromResource(const Common::String &name,
 }
 
 Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
-		const Common::String &resourcePath, int classId, const Common::Point &position, float z) {
+		const Common::String &backgroundPath, int classId, const Common::Point &position, float z) {
 
-	warning("HARVESTER SPAWN BITMAP: %s", resourcePath.c_str());
+	warning("HARVESTER SPAWN BITMAP: %s", backgroundPath.c_str());
 
 	Entity *entity = new Entity();
 
