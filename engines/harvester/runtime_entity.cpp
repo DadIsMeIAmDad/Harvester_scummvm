@@ -229,7 +229,7 @@ bool Entity::loadPngResource(ResourceManager &resources, const Common::String &p
     surface->h,
     surface->pitch,
     surface->format.bytesPerPixel);
-
+	
 	_frames.clear();
 	_baseFrames.clear();
 	_resourcePath = path;
@@ -638,6 +638,11 @@ void Entity::draw(Graphics::Screen &screen) const {
 		screen.h,
 		drawOrigin.x,
 		drawOrigin.y);
+	
+	    warning("SCREEN:");
+        warning("pitch=%d bpp=%d",
+        screen.pitch,
+        screen.format.bytesPerPixel);
 	
 		screen.blitFrom(*_pngSurface,
 			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
