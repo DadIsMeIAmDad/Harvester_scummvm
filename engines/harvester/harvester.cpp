@@ -300,10 +300,22 @@ bool HarvesterEngine::requestDebugRoomChange(const Common::String &roomName) {
 }
 
 void HarvesterEngine::setDisplayMode(int width, int height) {
-	initGraphics(width, height);
+	Graphics::PixelFormat format;
+
+	if (width == 640 && height == 480) {
+		format = Graphics::PixelFormat::createFormatABGR32();
+	} else {
+		format = Graphics::PixelFormat::createFormatCLUT8();
+	}
+
+	initGraphics(width, height, &format);
+
 	if (_media)
 		_media->resetScreen(width, height);
-	debugC(1, kDebugGeneral, "Harvester: switched display mode to %dx%d", width, height);
+
+	debugC(1, kDebugGeneral,
+		"Harvester: switched display mode to %dx%d",
+		width, height);
 }
 
 Common::Error HarvesterEngine::run() {
