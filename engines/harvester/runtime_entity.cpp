@@ -223,6 +223,12 @@ bool Entity::loadPngResource(ResourceManager &resources, const Common::String &p
 	}
 	_pngSurface = new Graphics::Surface();
 	_pngSurface->copyFrom(*surface);
+	warning("PNG:");
+    warning("w=%d h=%d pitch=%d bpp=%d",
+    surface->w,
+    surface->h,
+    surface->pitch,
+    surface->format.bytesPerPixel);
 
 	_frames.clear();
 	_baseFrames.clear();
