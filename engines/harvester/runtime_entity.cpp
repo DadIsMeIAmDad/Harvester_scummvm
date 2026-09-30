@@ -82,12 +82,18 @@ static uint32 getAnimationClockTicks() {
 	return (uint32)((pitTicks * kDosPitTimerDivisor * 100U) / kDosPitInputFrequency);
 }
 
-static void blitAnimationFrame(Graphics::Screen &screen, const Common::Array<AbmFrame> &frames, uint frameIndex,
-		int x, int y) {
+static void blitAnimationFrame(Graphics::Screen &screen,
+                               const Common::Array<AbmFrame> &frames,
+                               uint frameIndex,
+                               int x, int y) {
 	if (frameIndex >= frames.size() || !frames[frameIndex].isValid())
 		return;
 
+	if (screen.format.bytesPerPixel != 1)
+		return;
+
 	const AbmFrame &frame = frames[frameIndex];
+
 	int destX = x;
 	int destY = y;
 	int srcX = 0;
@@ -115,8 +121,13 @@ static void blitAnimationFrame(Graphics::Screen &screen, const Common::Array<Abm
 
 	const byte *src = frame.pixels.data() + srcY * frame.width + srcX;
 	byte *dst = (byte *)screen.getBasePtr(destX, destY);
+	warning("BM BLIT: BEFORE keyBlit frame=%u size=%dx%d screenBpp=%d",
+        frameIndex,
+        width,
+        height,
 	Graphics::keyBlit(dst, src, screen.pitch, frame.width, width, height,
 		screen.format.bytesPerPixel, kTransparentPaletteIndex);
+		warning("BM BLIT: AFTER keyBlit");
 }
 
 static bool decodeAnimationFrame(const byte *source, uint32 sourceSize, bool compressed, Common::Array<byte> &dest) {
