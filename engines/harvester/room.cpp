@@ -2015,10 +2015,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			return transitionError;
 
 		logScenePaletteSummary("room setup stub palette", scene, 0.0f);
+		warning("ROOM.CPP - Start Draw Scene");
 		drawRoomScene(_engine, *screen, scene, 0.0f);
+		warning("ROOM.CPP - END Draw Scene");		
 		screen->makeAllDirty();
+	    warning("ROOM.CPP - Scene Make Dirty");
 		screen->update();
-
+        warning("ROOM.CPP - Scene Updated");
 		logScenePaletteSummary("room setup fade target", scene, scene.targetPaletteBrightness);
 		transitionError = flow.fadeInRoomScene(scene.palette, scene.targetPaletteBrightness);
 		if (transitionError.getCode() != Common::kNoError)

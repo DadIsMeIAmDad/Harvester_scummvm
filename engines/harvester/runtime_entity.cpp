@@ -635,14 +635,15 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 	const Common::Point drawOrigin = getDrawOrigin();
 
-	if (_pngSurface) {
-		warning("HARVESTER PNG DRAW: image=%d x %d screen=%d x %d origin=(%d,%d) pitch=%d bpp=%d",
-		_pngSurface->w,
-		_pngSurface->h,
-		screen.w,
-		screen.h,
-		drawOrigin.x,
-		drawOrigin.y);
+        warning("HARVESTER PNG DRAW: image=%d x %d screen=%d x %d origin=(%d,%d) pitch=%d bpp=%d",
+            _pngSurface->w,
+            _pngSurface->h,
+            screen.w,
+            screen.h,
+            drawOrigin.x,
+            drawOrigin.y,
+            screen.pitch,
+            screen.format.bytesPerPixel);
 	
 	    warning("SCREEN:");
         warning("pitch=%d bpp=%d",
@@ -1179,8 +1180,13 @@ void EntityManager::drawCursor(Graphics::Screen &screen) const {
 }
 
 void EntityManager::drawSceneEntities(Graphics::Screen &screen) const {
-	for (Entity *entity : _sceneEntities)
+	for (Entity *entity : _sceneEntities) {
+		warning("SCENE ENTITY: BEFORE DRAW");
+
 		entity->draw(screen);
+
+		warning("SCENE ENTITY: AFTER DRAW");
+	}
 }
 
 const Entity *EntityManager::findTopSceneEntityAt(const Common::Point &point, int classIdFilter) const {
