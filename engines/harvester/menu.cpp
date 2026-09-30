@@ -448,7 +448,9 @@ static void applyMenuPalette(Graphics::Screen &screen, const HarvesterEngine &en
 
 	byte displayPalette[256 * 3];
 	buildHarvesterDisplayPalette(palette, brightness * engine.getGammaBrightnessScale(), displayPalette);
-	screen.setPalette(displayPalette);
+	if (screen.format.bytesPerPixel == 1) {
+	    screen.setPalette(displayPalette);
+	}
 }
 
 static void renderHelpScreen(HarvesterEngine &engine, const IndexedBitmap &bitmap, const byte *palette) {
@@ -1736,7 +1738,9 @@ Common::Error MenuSystem::restoreRoomBackdropAfterSave(const IndexedBitmap &back
 				brightness > kPaletteBrightnessBlack; brightness -= kPaletteFadeStep) {
 			byte fadedPalette[256 * 3];
 			buildHarvesterDisplayPalette(displayPalette, brightness, fadedPalette);
-			screen->setPalette(fadedPalette);
+			if (screen.format.bytesPerPixel == 1) {
+			    screen->setPalette(fadedPalette);
+			}
 			screen->makeAllDirty();
 			screen->update();
 
@@ -1753,7 +1757,9 @@ Common::Error MenuSystem::restoreRoomBackdropAfterSave(const IndexedBitmap &back
 		}
 
 		byte blackPalette[256 * 3] = { 0 };
-		screen->setPalette(blackPalette);
+		if (screen.format.bytesPerPixel == 1) {
+		    screen->setPalette(blackPalette);
+		}
 		screen->makeAllDirty();
 		screen->update();
 	}
@@ -2414,7 +2420,9 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 
 	byte displayPalette[256 * 3];
 	buildHarvesterDisplayPalette(art->getWaitPalette(), 1.0f, displayPalette);
-	screen->setPalette(displayPalette);
+	if (screen.format.bytesPerPixel == 1) {
+	    screen->setPalette(displayPalette);
+	}
 	screen->fillRect(screen->getBounds(), 0);
 	blitBitmap(*screen, art->getInventoryBitmap(), kInventoryX, kInventoryY);
 	blitBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
