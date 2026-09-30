@@ -119,10 +119,10 @@ static void blitAnimationFrame(Graphics::Screen &screen, const Common::Array<Abm
 
 	const byte *src = frame.pixels.data() + srcY * frame.width + srcX;
 	byte *dst = (byte *)screen.getBasePtr(destX, destY);
-	warning("BM BLIT: BEFORE keyBlit frame=%u size=%dx%d screenBpp=%d",
+	warning("BM BLIT: BEFORE keyBlit frame=%u size=%dx%d",
         frameIndex,
         width,
-        height,
+        height);
 	Graphics::keyBlit(dst, src, screen.pitch, frame.width, width, height,
 		screen.format.bytesPerPixel, kTransparentPaletteIndex);
 		warning("BM BLIT: AFTER keyBlit");
