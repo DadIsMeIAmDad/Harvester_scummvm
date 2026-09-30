@@ -82,10 +82,7 @@ static uint32 getAnimationClockTicks() {
 	return (uint32)((pitTicks * kDosPitTimerDivisor * 100U) / kDosPitInputFrequency);
 }
 
-static void blitAnimationFrame(Graphics::Screen &screen,
-                               const Common::Array<AbmFrame> &frames,
-                               uint frameIndex,
-                               int x, int y) {
+static void blitAnimationFrame(Graphics::Screen &screen, const Common::Array<AbmFrame> &frames, uint frameIndex, int x, int y) {
 	if (frameIndex >= frames.size() || !frames[frameIndex].isValid())
 		return;
 
@@ -94,6 +91,7 @@ static void blitAnimationFrame(Graphics::Screen &screen,
 
 	const AbmFrame &frame = frames[frameIndex];
 
+	// rest of existing code...
 	int destX = x;
 	int destY = y;
 	int srcX = 0;
