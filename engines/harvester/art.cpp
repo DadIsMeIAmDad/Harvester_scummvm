@@ -76,14 +76,14 @@ static const byte kTransparentPaletteIndex = 0;
 static const uint kQuickTipsTextboxIndex = 5;
 
 static const char *const kTextboxPaths[] = {
-	"HD/GRAPHIC/OTHER/TEXTBOX1.png",
-	"HD/GRAPHIC/OTHER/TEXTBOX2.png",
-	"HD/GRAPHIC/OTHER/TEXTBOX3.png",
-	"HD/GRAPHIC/OTHER/TEXTBOX4.png",
-	"HD/GRAPHIC/OTHER/TEXTBOX5.png",
-	"HD/GRAPHIC/OTHER/TEXTBOX6.png",
-	"HD/GRAPHIC/OTHER/TEXTBOX7.png",
-	"HD/GRAPHIC/OTHER/TEXTBOX8.png"
+	"/HD/GRAPHIC/OTHER/TEXTBOX1.png",
+	"/HD/GRAPHIC/OTHER/TEXTBOX2.png",
+	"/HD/GRAPHIC/OTHER/TEXTBOX3.png",
+	"/HD/GRAPHIC/OTHER/TEXTBOX4.png",
+	"/HD/GRAPHIC/OTHER/TEXTBOX5.png",
+	"/HD/GRAPHIC/OTHER/TEXTBOX6.png",
+	"/HD/GRAPHIC/OTHER/TEXTBOX7.png",
+	"/HD/GRAPHIC/OTHER/TEXTBOX8.png"
 };
 
 static const char *const kAmmoIconPaths[] = {
@@ -105,7 +105,7 @@ bool Art::load(ResourceManager &resources) {
 
 	return loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette) &&
 	       loadAnimation(resources, "1:/GRAPHIC/OTHER/WAIT.ABM", _waitFrames) &&
-	       loadBitmap(resources, "HD/GRAPHIC/OTHER/INVENTRY.png", _inventoryBitmap) &&
+	       loadBitmap(resources, "/HD/GRAPHIC/OTHER/INVENTRY.png", _inventoryBitmap) &&
 	       loadBitmap(resources, "1:/GRAPHIC/OTHER/HARVLOGO.BM", _logoBitmap);
 }
 
@@ -129,8 +129,8 @@ bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPane
 		return textbox && textbox->isValid();
 	}
 
-	debugC(2, kDebugResources, "Harvester: quick tips panel 'HD/GRAPHIC/OTHER/TIPS.png'");
-	return loadBitmap(resources, "HD/GRAPHIC/OTHER/TIPS.png", _tipsBitmap);
+	debugC(2, kDebugResources, "Harvester: quick tips panel '/HD/GRAPHIC/OTHER/TIPS.png'");
+	return loadBitmap(resources, "/HD/GRAPHIC/OTHER/TIPS.png", _tipsBitmap);
 }
 
 const IndexedBitmap *Art::getQuickTipsTextboxBitmap() const {
