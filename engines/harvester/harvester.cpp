@@ -300,7 +300,7 @@ bool HarvesterEngine::requestDebugRoomChange(const Common::String &roomName) {
 }
 
 void HarvesterEngine::setDisplayMode(int width, int height) {
-	initGraphics(width, height);
+	initGraphics(width, height, true);
 	if (_media)
 		_media->resetScreen(width, height);
 	debugC(1, kDebugGeneral, "Harvester: switched display mode to %dx%d", width, height);
