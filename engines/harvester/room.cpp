@@ -194,17 +194,15 @@ static bool loadPaletteResource(ResourceManager &resources, const Common::String
 }
 
 static void applyRoomPalette(Graphics::Screen &screen, const HarvesterEngine &engine,
-    if (screen.format.bytesPerPixel != 1)
-        return;
 		const byte *palette, float brightness) {
+	if (screen.format.bytesPerPixel != 1)
+        return;
 	byte scaledPalette[256 * 3];
 	buildHarvesterDisplayPalette(palette, brightness * engine.getGammaBrightnessScale(), scaledPalette);
 	screen.setPalette(scaledPalette);
 }
 
 static void renderCdChangePromptScreen(HarvesterEngine &engine, const IndexedBitmap &bitmap,
-    if (screen.format.bytesPerPixel != 1)
-        return;
 		const byte *palette) {
 	Graphics::Screen *screen = engine.getScreen();
 	if (!screen)
