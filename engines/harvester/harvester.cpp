@@ -300,9 +300,27 @@ bool HarvesterEngine::requestDebugRoomChange(const Common::String &roomName) {
 }
 
 void HarvesterEngine::setDisplayMode(int width, int height) {
+#ifdef USE_RGB_COLOR
+	// Prefer any true-color format the backend supports
 	initGraphics(width, height, true);
+
+	// Safety check – if we still ended up in 8 bpp, true-color PNG will look wrong
+	if (g_system->getScreenFormat().bytesPerPixel == 1) {
+		warning("Harvester: could not obtain true-color mode, falling back to 8 bpp");
+	} else {
+		debugC(1, kDebugGeneral,
+			"Harvester: true-color mode %dx%d bpp=%d format=%s",
+			width, height,
+			g_system->getScreenFormat().bytesPerPixel,
+			g_system->getScreenFormat().toString().c_str());
+	}
+#else
+	initGraphics(width, height);
+#endif
+
 	if (_media)
 		_media->resetScreen(width, height);
+
 	debugC(1, kDebugGeneral, "Harvester: switched display mode to %dx%d", width, height);
 }
 
