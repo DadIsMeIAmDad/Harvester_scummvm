@@ -62,6 +62,8 @@ void Screen::updateScreen() {
 }
 
 void Screen::addDirtyRect(const Common::Rect &r) {
+    if (format.bytesPerPixel != 1)
+		return;
 	Common::Rect bounds = r;
 	bounds.clip(getBounds());
 	bounds.translate(getOffsetFromOwner().x, getOffsetFromOwner().y);
@@ -71,32 +73,44 @@ void Screen::addDirtyRect(const Common::Rect &r) {
 }
 
 void Screen::makeAllDirty() {
+    if (format.bytesPerPixel != 1)
+		return;
 	_dirtyRects.clear();
 	addDirtyRect(Common::Rect(0, 0, this->w, this->h));
 }
 
 void Screen::getPalette(byte palette[PALETTE_SIZE]) {
+    if (format.bytesPerPixel != 1)
+		return;
 	assert(format.bytesPerPixel == 1);
 	g_system->getPaletteManager()->grabPalette(palette, 0, PALETTE_COUNT);
 }
 
 void Screen::getPalette(byte *palette, uint start, uint num) {
+    if (format.bytesPerPixel != 1)
+		return;
 	assert(format.bytesPerPixel == 1);
 	g_system->getPaletteManager()->grabPalette(palette, start, num);
 }
 
 void Screen::setPalette(const byte palette[PALETTE_SIZE]) {
+    if (format.bytesPerPixel != 1)
+		return;
 	assert(format.bytesPerPixel == 1);
 	g_system->getPaletteManager()->setPalette(palette, 0, PALETTE_COUNT);
 }
 
 void Screen::setPalette(const byte *palette, uint start, uint num) {
+    if (format.bytesPerPixel != 1)
+		return;
 	assert(format.bytesPerPixel == 1);
 	g_system->getPaletteManager()->setPalette(palette, start, num);
 	ManagedSurface::setPalette(palette, start, num);
 }
 
 void Screen::clearPalette() {
+    if (format.bytesPerPixel != 1)
+		return;
 	byte palette[PALETTE_SIZE];
 	Common::fill(&palette[0], &palette[PALETTE_SIZE], 0);
 	setPalette(palette);
