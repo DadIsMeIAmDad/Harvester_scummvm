@@ -448,7 +448,7 @@ static void applyMenuPalette(Graphics::Screen &screen, const HarvesterEngine &en
 
 	byte displayPalette[256 * 3];
 	buildHarvesterDisplayPalette(palette, brightness * engine.getGammaBrightnessScale(), displayPalette);
-	screen.setPalette(displayPalette);
+	/*screen.setPalette(displayPalette); */
 }
 
 static void renderHelpScreen(HarvesterEngine &engine, const IndexedBitmap &bitmap, const byte *palette) {
