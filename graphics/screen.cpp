@@ -47,7 +47,19 @@ void Screen::update() {
 	for (i = _dirtyRects.begin(); i != _dirtyRects.end(); ++i) {
 		const Common::Rect &r = *i;
 		const byte *srcP = (const byte *)getBasePtr(r.left, r.top);
+
+        warning("HARVESTER SCREEN UPDATE: surface=%dx%d bpp=%d pitch=%d",
+        w, h, format.bytesPerPixel, pitch);
+
+        warning("HARVESTER SYSTEM FORMAT: %dx%d bpp=%d",
+        g_system->getWidth(),
+        g_system->getHeight(),
+        g_system->getScreenFormat().bytesPerPixel);
+
 		g_system->copyRectToScreen(srcP, pitch, r.left, r.top,
+
+
+
 			r.width(), r.height());
 	}
 
@@ -62,8 +74,6 @@ void Screen::updateScreen() {
 }
 
 void Screen::addDirtyRect(const Common::Rect &r) {
-    if (format.bytesPerPixel != 1)
-		return;
 	Common::Rect bounds = r;
 	bounds.clip(getBounds());
 	bounds.translate(getOffsetFromOwner().x, getOffsetFromOwner().y);
@@ -73,8 +83,6 @@ void Screen::addDirtyRect(const Common::Rect &r) {
 }
 
 void Screen::makeAllDirty() {
-    if (format.bytesPerPixel != 1)
-		return;
 	_dirtyRects.clear();
 	addDirtyRect(Common::Rect(0, 0, this->w, this->h));
 }
