@@ -183,6 +183,8 @@ static bool loadBitmapResource(ResourceManager &resources, const Common::String 
 }
 
 static bool loadPaletteResource(ResourceManager &resources, const Common::String &path, byte *palette) {
+    if (screen.format.bytesPerPixel != 1)
+        return;
 	Common::Array<byte> data;
 	if (!resources.loadFile(path, data) || data.size() < 256 * 3)
 		return false;
@@ -192,6 +194,8 @@ static bool loadPaletteResource(ResourceManager &resources, const Common::String
 }
 
 static void applyRoomPalette(Graphics::Screen &screen, const HarvesterEngine &engine,
+    if (screen.format.bytesPerPixel != 1)
+        return;
 		const byte *palette, float brightness) {
 	byte scaledPalette[256 * 3];
 	buildHarvesterDisplayPalette(palette, brightness * engine.getGammaBrightnessScale(), scaledPalette);
@@ -199,6 +203,8 @@ static void applyRoomPalette(Graphics::Screen &screen, const HarvesterEngine &en
 }
 
 static void renderCdChangePromptScreen(HarvesterEngine &engine, const IndexedBitmap &bitmap,
+    if (screen.format.bytesPerPixel != 1)
+        return;
 		const byte *palette) {
 	Graphics::Screen *screen = engine.getScreen();
 	if (!screen)
@@ -316,6 +322,8 @@ static void drawShadowedRoomText(Graphics::Screen &screen, const Graphics::Font 
 }
 
 static void setScaledRoomPalette(Graphics::Screen &screen, const byte *palette, float brightness) {
+    if (screen.format.bytesPerPixel != 1)
+        return;
 	byte scaledPalette[256 * 3];
 	const float gammaBrightness = g_engine ? g_engine->getGammaBrightnessScale() : 1.0f;
 	buildHarvesterDisplayPalette(palette, brightness * gammaBrightness, scaledPalette);
