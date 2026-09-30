@@ -42,7 +42,6 @@ void Screen::update() {
 	// Merge the dirty rects
 	_dirtyRects.merge();
 
-	warning("SCREEN UPDATE: dirty rect count=%d", (int)_dirtyRects.size());
 
 	// Loop through copying dirty areas to the physical screen
 	DirtyRectList::const_iterator i;
