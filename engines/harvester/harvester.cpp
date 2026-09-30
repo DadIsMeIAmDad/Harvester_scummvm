@@ -300,42 +300,59 @@ bool HarvesterEngine::requestDebugRoomChange(const Common::String &roomName) {
 }
 
 void HarvesterEngine::setDisplayMode(int width, int height) {
+    if (width == 320 && height == 200) {
+        // FST movies use the original 8-bit indexed/paletted display.
+        initGraphics(width, height);
+
+        debugC(1, kDebugGeneral,
+            "Harvester: FST display mode %dx%d bpp=%d format=%s",
+            width,
+            height,
+            g_system->getScreenFormat().bytesPerPixel,
+            g_system->getScreenFormat().toString().c_str());
+    } else {
 #ifdef USE_RGB_COLOR
-	// Ask the backend for any true-color format it supports
-	Common::List<Graphics::PixelFormat> formats = g_system->getSupportedFormats();
 
-	// Remove pure 8-bit entries so we never fall back to palette mode
-	for (Common::List<Graphics::PixelFormat>::iterator it = formats.begin(); it != formats.end(); ) {
-		if (it->bytesPerPixel == 1)
-			it = formats.erase(it);
-		else
-			++it;
-	}
+        // Gameplay uses a true-color screen for PNG/HD graphics.
+        Common::List<Graphics::PixelFormat> formats =
+            g_system->getSupportedFormats();
 
-	if (!formats.empty()) {
-		initGraphics(width, height, formats);
-	} else {
-		warning("Harvester: no true-color formats available, using 8 bpp");
-		initGraphics(width, height);
-	}
+        for (Common::List<Graphics::PixelFormat>::iterator it = formats.begin();
+             it != formats.end();) {
 
-	if (g_system->getScreenFormat().bytesPerPixel == 1) {
-		warning("Harvester: still in 8 bpp after initGraphics");
-	} else {
-		debugC(1, kDebugGeneral,
-			"Harvester: true-color mode %dx%d bpp=%d format=%s",
-			width, height,
-			g_system->getScreenFormat().bytesPerPixel,
-			g_system->getScreenFormat().toString().c_str());
-	}
+            if (it->bytesPerPixel == 1)
+                it = formats.erase(it);
+            else
+                ++it;
+        }
+
+        if (!formats.empty()) {
+            initGraphics(width, height, formats);
+        } else {
+            warning("Harvester: no true-color formats available, using 8 bpp");
+            initGraphics(width, height);
+        }
+
+        debugC(1, kDebugGeneral,
+            "Harvester: gameplay display mode %dx%d bpp=%d format=%s",
+            width,
+            height,
+            g_system->getScreenFormat().bytesPerPixel,
+            g_system->getScreenFormat().toString().c_str());
+
 #else
-	initGraphics(width, height);
+
+        initGraphics(width, height);
+
 #endif
+    }
 
-	if (_media)
-		_media->resetScreen(width, height);
+    if (_media)
+        _media->resetScreen(width, height);
 
-	debugC(1, kDebugGeneral, "Harvester: switched display mode to %dx%d", width, height);
+    debugC(1, kDebugGeneral,
+        "Harvester: switched display mode to %dx%d",
+        width, height);
 }
 
 Common::Error HarvesterEngine::run() {
