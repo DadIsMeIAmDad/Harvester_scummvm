@@ -147,7 +147,7 @@ void Art::drawWaitFrame(Graphics::Screen &screen) const {
 	screen.fillRect(screen.getBounds(), kTransparentPaletteIndex);
 	logPaletteSummary("applying wait palette", "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette);
 	byte displayPalette[256 * 3];
-	buildHarvesterDisplayPalette(_waitPalette, 1.0f, displayPalette);z
+	buildHarvesterDisplayPalette(_waitPalette, 1.0f, displayPalette);
 	screen.setPalette(displayPalette);
 	blitTransparentAnimationFrame(screen, _waitFrames, 0, kWaitX, kWaitY);
 	screen.makeAllDirty();
