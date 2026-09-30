@@ -275,9 +275,7 @@ static void setScaledPalette(Graphics::Screen &screen, const byte *palette, floa
 	byte scaledPalette[256 * 3];
 	const float gammaBrightness = g_engine ? g_engine->getGammaBrightnessScale() : 1.0f;
 	buildHarvesterDisplayPalette(palette, brightness * gammaBrightness, scaledPalette);
-	if (screen.format.bytesPerPixel == 1) {
-	    screen.setPalette(scaledPalette);
-	}
+	screen.setPalette(scaledPalette);
 }
 
 static bool loadBitmapResource(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) {

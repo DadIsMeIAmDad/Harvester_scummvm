@@ -141,43 +141,15 @@ void Art::drawWaitFrame(Graphics::Screen &screen) const {
 	if (_waitFrames.empty() || !_waitFrames[0].isValid())
 		return;
 
-	if (screen.format.bytesPerPixel != 1) {
-		// True-color mode: temporarily skip the old indexed wait screen.
-		screen.fillRect(
-			screen.getBounds(),
-			screen.format.RGBToColor(0, 0, 0)
-		);
-		screen.makeAllDirty();
-		screen.update();
-		return;
-	}
-
-	// Original 8-bit path.
+	// Native room_setup redraws the wait screen through flush_dirty_rects_to_screen(),
+	// which fills uncovered areas with palette index 0 before WAIT.PAL is uploaded.
+	// Clear first so the transparent WAIT art sits on black instead of old room pixels.
 	screen.fillRect(screen.getBounds(), kTransparentPaletteIndex);
-
-	logPaletteSummary(
-		"applying wait palette",
-		"1:/GRAPHIC/PAL/WAIT.PAL",
-		_waitPalette
-	);
-
+	logPaletteSummary("applying wait palette", "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette);
 	byte displayPalette[256 * 3];
-	buildHarvesterDisplayPalette(
-		_waitPalette,
-		1.0f,
-		displayPalette
-	);
-
+	buildHarvesterDisplayPalette(_waitPalette, 1.0f, displayPalette);z
 	screen.setPalette(displayPalette);
-
-	blitTransparentAnimationFrame(
-		screen,
-		_waitFrames,
-		0,
-		kWaitX,
-		kWaitY
-	);
-
+	blitTransparentAnimationFrame(screen, _waitFrames, 0, kWaitX, kWaitY);
 	screen.makeAllDirty();
 	screen.update();
 }
