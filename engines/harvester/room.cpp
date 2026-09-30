@@ -195,7 +195,9 @@ static void applyRoomPalette(Graphics::Screen &screen, const HarvesterEngine &en
 		const byte *palette, float brightness) {
 	byte scaledPalette[256 * 3];
 	buildHarvesterDisplayPalette(palette, brightness * engine.getGammaBrightnessScale(), scaledPalette);
-	screen.setPalette(scaledPalette);
+    if (screen.format.bytesPerPixel == 1) {
+	    screen.setPalette(scaledPalette);
+    }
 }
 
 static void renderCdChangePromptScreen(HarvesterEngine &engine, const IndexedBitmap &bitmap,
@@ -319,7 +321,9 @@ static void setScaledRoomPalette(Graphics::Screen &screen, const byte *palette, 
 	byte scaledPalette[256 * 3];
 	const float gammaBrightness = g_engine ? g_engine->getGammaBrightnessScale() : 1.0f;
 	buildHarvesterDisplayPalette(palette, brightness * gammaBrightness, scaledPalette);
-	screen.setPalette(scaledPalette);
+    if (screen.format.bytesPerPixel == 1) {
+	    screen.setPalette(scaledPalette);
+    }
 }
 
 RoomSystem::RoomSystem(HarvesterEngine &engine, Common::Point &mousePos,
