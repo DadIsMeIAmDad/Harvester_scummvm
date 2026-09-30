@@ -636,7 +636,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 	const Common::Point drawOrigin = getDrawOrigin();
 
 	if (_pngSurface) {
-		warning("HARVESTER PNG DRAW: image=%d x %d screen=%d x %d origin=(%d,%d)",
+		warning("HARVESTER PNG DRAW: image=%d x %d screen=%d x %d origin=(%d,%d) pitch=%d bpp=%d",
 		_pngSurface->w,
 		_pngSurface->h,
 		screen.w,
@@ -648,10 +648,11 @@ void Entity::draw(Graphics::Screen &screen) const {
         warning("pitch=%d bpp=%d",
         screen.pitch,
         screen.format.bytesPerPixel);
-	
+	    warning("PNG DRAW: BEFORE BLIT");
 		screen.blitFrom(*_pngSurface,
 			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
 			Common::Point(drawOrigin.x, drawOrigin.y));
+			warning("PNG DRAW: AFTER BLIT");
 		return;
 	}
 
