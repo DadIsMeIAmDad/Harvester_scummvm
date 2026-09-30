@@ -646,9 +646,9 @@ void Entity::draw(Graphics::Screen &screen) const {
             screen.format.bytesPerPixel);
 	
 	    warning("SCREEN:");
-        warning("pitch=%d bpp=%d"),
-        screen.pitch,
-        screen.format.bytesPerPixel);
+        warning("pitch=%d bpp=%d",
+            screen.pitch,
+            screen.format.bytesPerPixel);
 	    warning("PNG DRAW: BEFORE BLIT");
 		screen.blitFrom(*_pngSurface,
 			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
