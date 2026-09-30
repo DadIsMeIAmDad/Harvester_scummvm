@@ -41,13 +41,15 @@ Screen::Screen(int width, int height, PixelFormat pixelFormat): ManagedSurface()
 void Screen::update() {
 	// Merge the dirty rects
 	_dirtyRects.merge();
-
+    warning("SCREEN UPDATE: dirty rect count=%d", (int)_dirtyRects.size());
 	// Loop through copying dirty areas to the physical screen
 	DirtyRectList::const_iterator i;
 	for (i = _dirtyRects.begin(); i != _dirtyRects.end(); ++i) {
 		const Common::Rect &r = *i;
+		warning("SCREEN RECT: %d,%d %dx%d",
+		        r.left, r.top, r.width(), r.height());
 		const byte *srcP = (const byte *)getBasePtr(r.left, r.top);
-
+        warning("SCREEN BEFORE COPY");
         warning("HARVESTER SCREEN UPDATE: surface=%dx%d bpp=%d pitch=%d",
         w, h, format.bytesPerPixel, pitch);
 
@@ -57,14 +59,15 @@ void Screen::update() {
         g_system->getScreenFormat().bytesPerPixel);
 
 		g_system->copyRectToScreen(srcP, pitch, r.left, r.top,
-
+        warning("SCREEN AFTER COPY");
 
 
 			r.width(), r.height());
 	}
-
+    warning("SCREEN BEFORE UPDATE");
 	// Signal the physical screen to update
 	updateScreen();
+	warning("SCREEN AFTER UPDATE");
 	_dirtyRects.clear();
 }
 
