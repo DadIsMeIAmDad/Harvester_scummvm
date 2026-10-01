@@ -515,8 +515,6 @@ void Entity::setAnimationSequence(int sequence) {
 			_currentFrame);
 	}
 }
-```
-
 
 void Entity::configureHotspotBounds(int width, int height) {
 	_frames.clear();
