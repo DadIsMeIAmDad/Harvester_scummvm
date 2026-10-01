@@ -962,15 +962,20 @@ bool Entity::measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transp
 }
 
 void Entity::advanceAnimationFrame(int directive) {
-    warning(
-	    "HARVESTER CURSOR ADVANCE: current=%d first=%d last=%d count=%d directive=%d",
-	    _currentFrame,
-	    _firstFrame,
-	    _lastFrame,
-	    (int)_frames.size(),
-	    directive
-    );
-	if (_frames.empty())
+	const int frameCount = !_pngFrames.empty()
+		? (int)_pngFrames.size()
+		: (int)_frames.size();
+
+	warning(
+		"HARVESTER CURSOR ADVANCE: current=%d first=%d last=%d count=%d directive=%d",
+		_currentFrame,
+		_firstFrame,
+		_lastFrame,
+		frameCount,
+		directive
+	);
+
+	if (frameCount == 0)
 		return;
 
 	if (directive == -1) {
@@ -1017,7 +1022,7 @@ void Entity::advanceAnimationFrame(int directive) {
 		goto done;
 	}
 
-	_currentFrame = CLIP<int>(directive, 0, (int)_frames.size() - 1);
+	_currentFrame = CLIP<int>(directive, 0, frameCount - 1);
 
 done:
 	warning(
@@ -1025,17 +1030,18 @@ done:
 		_currentFrame,
 		_firstFrame,
 		_lastFrame,
-		(int)_frames.size()
+		frameCount
 	);
 
-	if (_currentFrame < 0 || _currentFrame >= (int)_frames.size()) {
+	if (_currentFrame < 0 || _currentFrame >= frameCount) {
 		warning(
 			"HARVESTER CURSOR INVALID FRAME: current=%d count=%d",
 			_currentFrame,
-			(int)_frames.size()
+			frameCount
 		);
 		return;
 	}
+
 	updateBoundsFromCurrentFrame();
 }
 
