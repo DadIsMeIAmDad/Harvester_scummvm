@@ -120,13 +120,8 @@ static void blitAnimationFrame(Graphics::Screen &screen, const Common::Array<Abm
 
 	const byte *src = frame.pixels.data() + srcY * frame.width + srcX;
 	byte *dst = (byte *)screen.getBasePtr(destX, destY);
-	warning("BM BLIT: BEFORE keyBlit frame=%u size=%dx%d",
-        frameIndex,
-        width,
-        height);
 	Graphics::keyBlit(dst, src, screen.pitch, frame.width, width, height,
 		screen.format.bytesPerPixel, kTransparentPaletteIndex);
-		warning("BM BLIT: AFTER keyBlit");
 }
 
 static bool decodeAnimationFrame(const byte *source, uint32 sourceSize, bool compressed, Common::Array<byte> &dest) {
@@ -220,17 +215,13 @@ bool Entity::loadPngResource(ResourceManager &resources, const Common::String &p
 	delete stream;
 
 	const Graphics::Surface *surface = decoder.getSurface();
-	warning("HARVESTER PNG FORMAT: bpp=%d bytes=%d pitch=%d format=%s",
-	surface->format.bytesPerPixel * 8,
-	surface->format.bytesPerPixel,
-	surface->pitch,
-	surface->format.toString().c_str());
+
 	if (!surface) {
 		warning("PNG decoder returned no surface: %s", path.c_str());
 		return false;
 	}
 
-	warning("HARVESTER PNG LOADED: %s (%d x %d)", path.c_str(), surface->w, surface->h);
+
 
 	if (_pngSurface) {
 		_pngSurface->free();
@@ -238,12 +229,7 @@ bool Entity::loadPngResource(ResourceManager &resources, const Common::String &p
 	}
 	_pngSurface = new Graphics::Surface();
 	_pngSurface->copyFrom(*surface);
-	warning("PNG:");
-    warning("w=%d h=%d pitch=%d bpp=%d",
-    surface->w,
-    surface->h,
-    surface->pitch,
-    surface->format.bytesPerPixel);
+
 	
 	_frames.clear();
 	_baseFrames.clear();
@@ -266,7 +252,8 @@ bool Entity::loadPngAnimationResource(ResourceManager &resources, const Common::
 	for (int frameNumber = 1; ; ++frameNumber) {
 		Common::String framePath = Common::String::format(
 			"%s/%03d.png", path.c_str(), frameNumber);
-
+        warning("CURSOR FILE EXISTS: %d",
+            SearchMan.hasFile(Common::Path("CD1/HD/POINTERS/001.png", '/')));
 		Common::SeekableReadStream *stream = resources.openFile(framePath);
 		if (!stream) {
 			warning("HARVESTER PNG CURSOR: could not open %s", framePath.c_str());
