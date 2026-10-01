@@ -1210,6 +1210,7 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 bool Entity::loadPngAnimationZipResource(
         ResourceManager &resources,
         const Common::String &path) {
+	return false;
 }
 
 Entity *EntityManager::spawnCursorEntity(const Common::Point &position) {
