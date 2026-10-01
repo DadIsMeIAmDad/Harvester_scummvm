@@ -1114,7 +1114,7 @@ Entity *EntityManager::spawnCursorEntity(const Common::Point &position) {
 	// Try the HD PNG cursor animation first.
 	_cursorEntity = spawnPngAnimationEntityFromResource(
 		kCursorEntityName,
-		"HD/POINTERS",
+		"4:/POINTERS",
 		kRuntimeEntityClassCursor,
 		position,
 		kCursorEntityZ,
