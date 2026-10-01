@@ -259,7 +259,65 @@ bool Entity::loadPngResource(ResourceManager &resources, const Common::String &p
 	// optional: updateScreenBaseFromCurrentFrame() if you care about anchor
 	return true;
 }
+bool Entity::loadPngAnimationResource(ResourceManager &resources, const Common::String &path) {
+	_pngFrames.clear();
 
+	for (int frameNumber = 1; ; ++frameNumber) {
+		Common::String framePath = Common::String::format(
+			"%s/%03d.png", path.c_str(), frameNumber);
+
+		Common::SeekableReadStream *stream = resources.openFile(framePath);
+		if (!stream) {
+			// No more frames.
+			break;
+		}
+
+		Image::PNGDecoder decoder;
+		if (!decoder.loadStream(*stream)) {
+			delete stream;
+			warning("Could not decode PNG animation frame: %s", framePath.c_str());
+			return false;
+		}
+		delete stream;
+
+		const Graphics::Surface *surface = decoder.getSurface();
+		if (!surface) {
+			warning("PNG animation decoder returned no surface: %s", framePath.c_str());
+			return false;
+		}
+
+		Graphics::Surface *frame = new Graphics::Surface();
+		frame->copyFrom(*surface);
+
+		_pngFrames.push_back(frame);
+
+		warning("HARVESTER PNG ANIMATION FRAME: %s (%d x %d)",
+			framePath.c_str(), frame->w, frame->h);
+	}
+
+	if (_pngFrames.empty()) {
+		warning("Harvester: no PNG animation frames found in '%s'", path.c_str());
+		return false;
+	}
+
+	_frames.clear();
+	_baseFrames.clear();
+
+	_resourcePath = path;
+	_currentFrame = 0;
+	_firstFrame = 0;
+	_lastFrame = _pngFrames.size() - 1;
+	_animationEnabled = true;
+	_drawEnabled = true;
+	_depthScale = 1.0f;
+
+	_boundsWidth = _pngFrames[0]->w;
+	_boundsHeight = _pngFrames[0]->h;
+
+	_hitTestMode = kRuntimeEntityHitTestOpaquePixels;
+
+	return true;
+}
 bool Entity::loadAbmResource(ResourceManager &resources, const Common::String &path) {
 	Common::Array<byte> data;
 	if (!resources.loadFile(path, data) || data.size() < 8) {
