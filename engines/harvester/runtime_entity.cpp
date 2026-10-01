@@ -1273,43 +1273,7 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 	return entity;
 }
 
-bool Entity::loadPngAnimationZipResource(
-		ResourceManager &resources,
-		const Common::String &path) {
 
-	warning("HARVESTER PNG ZIP LOAD: %s", path.c_str());
-
-	Common::SeekableReadStream *stream = resources.openFile(path);
-	if (!stream) {
-		warning("HARVESTER PNG ZIP: could not open %s", path.c_str());
-		return false;
-	}
-
-	Common::Archive *archive = Common::makeZipArchive(stream);
-	if (!archive) {
-		warning("HARVESTER PNG ZIP: could not create archive %s", path.c_str());
-		return false;
-	}
-
-	Common::ArchiveMemberList members;
-	archive->listMembers(members);
-
-	warning(
-    "HARVESTER PNG ZIP: %d members found",
-    (int)members.size()
-    );
-
-for (Common::ArchiveMemberList::iterator it = members.begin(); it != members.end(); ++it) {
-    warning(
-        "HARVESTER PNG ZIP MEMBER: %s",
-        (*it)->getName().c_str()
-    );
-    }
-
-	delete archive;
-
-	return false;
-}
 
 Entity *EntityManager::spawnCursorEntity(const Common::Point &position) {
 	if (_cursorEntity)
