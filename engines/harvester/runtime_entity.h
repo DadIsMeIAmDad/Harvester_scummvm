@@ -68,6 +68,7 @@ public:
     bool loadAbmResource(ResourceManager &resources, const Common::String &path);
     bool loadPngResource(ResourceManager &resources, const Common::String &path);
     bool loadPngAnimationResource(ResourceManager &resources, const Common::String &path);
+	bool loadPngAnimationZipResource(ResourceManager &resources, const Common::String &path);
     
 
 	void setName(const Common::String &name) { _name = name; }
