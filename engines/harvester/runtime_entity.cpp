@@ -309,6 +309,10 @@ bool Entity::loadPngAnimationResource(ResourceManager &resources, const Common::
 	return true;
 }
 bool Entity::loadAbmResource(ResourceManager &resources, const Common::String &path) {
+	if (path.hasSuffixIgnoreCase(".ZIP")) {
+		warning("HARVESTER ABM LOADER: redirecting ZIP: %s", path.c_str());
+		return loadPngAnimationZipResource(resources, path);
+	}
 	Common::Array<byte> data;
 	if (!resources.loadFile(path, data) || data.size() < 8) {
 		warning("Harvester: unable to load runtime entity animation '%s'", path.c_str());
@@ -1190,6 +1194,7 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 	    warning("HARVESTER PNG DETECTED LOADED: %s", resourcePath.c_str());
 
 	} else if (resourcePath.hasSuffixIgnoreCase(".ZIP")) {
+	    warning("HARVESTER ZIP DETECTED: %s", resourcePath.c_str());
         loaded = entity->loadPngAnimationZipResource(_resources, resourcePath);
 
     } else {
