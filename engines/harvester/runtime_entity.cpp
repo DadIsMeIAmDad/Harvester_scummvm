@@ -417,22 +417,23 @@ void Entity::setAnimationRate(int rate) {
 }
 
 void Entity::setAnimationEnabled(bool enabled) {
-	const bool wasEnabled = _animationEnabled;
-	_animationEnabled = enabled && !_frames.empty() && _currentFrame >= 0;
-	if (wasEnabled != _animationEnabled && _classId == kRuntimeEntityClassNpc) {
-		debugC(2, kDebugPlayer,
-			"Harvester: npc animation enabled npc='%s' enabled=%d->%d frame=%d range=%d..%d",
-			_name.c_str(), wasEnabled, _animationEnabled,
-			_currentFrame, _firstFrame, _lastFrame);
-	}
-}
+    const bool wasEnabled = _animationEnabled;
 
-void Entity::setCurrentFrame(int frame) {
-	if (_frames.empty())
-		return;
+    _animationEnabled =
+        enabled &&
+        (!_frames.empty() || !_pngFrames.empty()) &&
+        _currentFrame >= 0;
 
-	advanceAnimationFrame(frame);
-	updateScreenBaseFromCurrentFrame();
+    if (wasEnabled != _animationEnabled && _classId == kRuntimeEntityClassNpc) {
+        debugC(2, kDebugPlayer,
+            "Harvester: npc animation enabled npc='%s' enabled=%d->%d frame=%d range=%d..%d",
+            _name.c_str(),
+            wasEnabled,
+            _animationEnabled,
+            _currentFrame,
+            _firstFrame,
+            _lastFrame);
+    }
 }
 
 void Entity::setAnimationFrameRange(int firstFrame, int lastFrame, bool looping) {
