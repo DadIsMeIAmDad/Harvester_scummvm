@@ -588,6 +588,17 @@ void Entity::setDepthScale(float scale) {
 }
 
 bool Entity::tickVisualState(uint32 now) {
+
+    warning(
+        "HARVESTER TICK: path=%s frames=%d pngFrames=%d enabled=%d current=%d rate=%d",
+        _resourcePath.c_str(),
+        (int)_frames.size(),
+        (int)_pngFrames.size(),
+        _animationEnabled,
+        _currentFrame,
+        _animationRate
+    );
+
 	_animationAdvancedLastTick = false;
 
 	if (!_animationEnabled || _currentFrame < 0)
