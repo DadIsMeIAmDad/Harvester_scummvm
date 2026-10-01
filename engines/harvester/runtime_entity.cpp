@@ -248,76 +248,31 @@ bool Entity::loadPngResource(ResourceManager &resources, const Common::String &p
 	// optional: updateScreenBaseFromCurrentFrame() if you care about anchor
 	return true;
 }
-bool Entity::loadPngAnimationZipResource(
-		ResourceManager &resources,
-		const Common::String &path) {
-
-	warning("HARVESTER PNG ZIP LOAD: %s", path.c_str());
-
-	Common::SeekableReadStream *stream = resources.openFile(path);
-	if (!stream) {
-		warning("HARVESTER PNG ZIP: could not open %s", path.c_str());
-		return false;
-	}
-
-	Common::Archive *archive = Common::makeZipArchive(stream);
-	if (!archive) {
-		warning("HARVESTER PNG ZIP: could not create archive %s", path.c_str());
-		return false;
-	}
-
-	Common::ArchiveMemberList members;
-	archive->listMembers(members);
-
-	warning(
-		"HARVESTER PNG ZIP: %d members found",
-		(int)members.size()
-	);
-
+bool Entity::loadPngAnimationResource(ResourceManager &resources, const Common::String &path) {
 	_pngFrames.clear();
 
-	// Load frames in numeric order: 001.png, 002.png, 003.png...
-	for (int frameNumber = 1; frameNumber <= (int)members.size(); ++frameNumber) {
-
-		Common::String frameName = Common::String::format(
-			"%03d.png", frameNumber);
-
-		Common::SeekableReadStream *frameStream =
-			archive->createReadStreamForMember(Common::Path(frameName, '/'));
-
-		if (!frameStream) {
-			warning(
-				"HARVESTER PNG ZIP: could not open member %s",
-				frameName.c_str()
-			);
-			continue;
+	for (int frameNumber = 1; ; ++frameNumber) {
+		Common::String framePath = Common::String::format(
+			"%s/%03d.png", path.c_str(), frameNumber);
+        warning("CURSOR FILE EXISTS: %d",
+            SearchMan.hasFile(Common::Path("CD1/HD/POINTERS/001.png", '/')));
+		Common::SeekableReadStream *stream = resources.openFile(framePath);
+		if (!stream) {
+			warning("HARVESTER PNG CURSOR: could not open %s", framePath.c_str());
+			break;
 		}
 
 		Image::PNGDecoder decoder;
-
-		if (!decoder.loadStream(*frameStream)) {
-			delete frameStream;
-
-			warning(
-				"HARVESTER PNG ZIP: could not decode %s",
-				frameName.c_str()
-			);
-
-			delete archive;
+		if (!decoder.loadStream(*stream)) {
+			delete stream;
+			warning("Could not decode PNG animation frame: %s", framePath.c_str());
 			return false;
 		}
-
-		delete frameStream;
+		delete stream;
 
 		const Graphics::Surface *surface = decoder.getSurface();
-
 		if (!surface) {
-			warning(
-				"HARVESTER PNG ZIP: decoder returned no surface for %s",
-				frameName.c_str()
-			);
-
-			delete archive;
+			warning("PNG animation decoder returned no surface: %s", framePath.c_str());
 			return false;
 		}
 
@@ -326,21 +281,12 @@ bool Entity::loadPngAnimationZipResource(
 
 		_pngFrames.push_back(frame);
 
-		warning(
-			"HARVESTER PNG ZIP FRAME: %s (%d x %d)",
-			frameName.c_str(),
-			frame->w,
-			frame->h
-		);
+		warning("HARVESTER PNG ANIMATION FRAME: %s (%d x %d)",
+			framePath.c_str(), frame->w, frame->h);
 	}
 
-	delete archive;
-
 	if (_pngFrames.empty()) {
-		warning(
-			"Harvester: no PNG animation frames found in ZIP '%s'",
-			path.c_str()
-		);
+		warning("Harvester: no PNG animation frames found in '%s'", path.c_str());
 		return false;
 	}
 
@@ -359,11 +305,6 @@ bool Entity::loadPngAnimationZipResource(
 	_boundsHeight = _pngFrames[0]->h;
 
 	_hitTestMode = kRuntimeEntityHitTestOpaquePixels;
-
-	warning(
-		"HARVESTER PNG ZIP COMPLETE: %d frames loaded",
-		(int)_pngFrames.size()
-	);
 
 	return true;
 }
@@ -1273,7 +1214,125 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 	return entity;
 }
 
+bool Entity::loadPngAnimationZipResource(
+		ResourceManager &resources,
+		const Common::String &path) {
 
+	warning("HARVESTER PNG ZIP LOAD: %s", path.c_str());
+
+	Common::SeekableReadStream *stream = resources.openFile(path);
+	if (!stream) {
+		warning("HARVESTER PNG ZIP: could not open %s", path.c_str());
+		return false;
+	}
+
+	Common::Archive *archive = Common::makeZipArchive(stream);
+	if (!archive) {
+		warning("HARVESTER PNG ZIP: could not create archive %s", path.c_str());
+		return false;
+	}
+
+	Common::ArchiveMemberList members;
+	archive->listMembers(members);
+
+	warning(
+		"HARVESTER PNG ZIP: %d members found",
+		(int)members.size()
+	);
+
+	_pngFrames.clear();
+
+	// Load frames in numeric order: 001.png, 002.png, 003.png...
+	for (int frameNumber = 1; frameNumber <= (int)members.size(); ++frameNumber) {
+
+		Common::String frameName = Common::String::format(
+			"%03d.png", frameNumber);
+
+		Common::SeekableReadStream *frameStream =
+			archive->createReadStreamForMember(Common::Path(frameName, '/'));
+
+		if (!frameStream) {
+			warning(
+				"HARVESTER PNG ZIP: could not open member %s",
+				frameName.c_str()
+			);
+			continue;
+		}
+
+		Image::PNGDecoder decoder;
+
+		if (!decoder.loadStream(*frameStream)) {
+			delete frameStream;
+
+			warning(
+				"HARVESTER PNG ZIP: could not decode %s",
+				frameName.c_str()
+			);
+
+			delete archive;
+			return false;
+		}
+
+		delete frameStream;
+
+		const Graphics::Surface *surface = decoder.getSurface();
+
+		if (!surface) {
+			warning(
+				"HARVESTER PNG ZIP: decoder returned no surface for %s",
+				frameName.c_str()
+			);
+
+			delete archive;
+			return false;
+		}
+
+		Graphics::Surface *frame = new Graphics::Surface();
+		frame->copyFrom(*surface);
+
+		_pngFrames.push_back(frame);
+
+		warning(
+			"HARVESTER PNG ZIP FRAME: %s (%d x %d)",
+			frameName.c_str(),
+			frame->w,
+			frame->h
+		);
+	}
+
+	delete archive;
+
+	if (_pngFrames.empty()) {
+		warning(
+			"Harvester: no PNG animation frames found in ZIP '%s'",
+			path.c_str()
+		);
+		return false;
+	}
+
+	_frames.clear();
+	_baseFrames.clear();
+
+	_resourcePath = path;
+	_currentFrame = 0;
+	_firstFrame = 0;
+	_lastFrame = _pngFrames.size() - 1;
+	_animationEnabled = true;
+	_drawEnabled = true;
+	_depthScale = 1.0f;
+
+	_boundsWidth = _pngFrames[0]->w;
+	_boundsHeight = _pngFrames[0]->h;
+
+	_hitTestMode = kRuntimeEntityHitTestOpaquePixels;
+
+	warning(
+		"HARVESTER PNG ZIP COMPLETE: %d frames loaded",
+		(int)_pngFrames.size()
+	);
+
+	return true;
+}
 
 Entity *EntityManager::spawnCursorEntity(const Common::Point &position) {
 	if (_cursorEntity)
