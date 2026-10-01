@@ -254,6 +254,8 @@ bool Entity::loadPngAnimationResource(ResourceManager &resources, const Common::
 	for (int frameNumber = 1; ; ++frameNumber) {
 		Common::String framePath = Common::String::format(
 			"%s/%03d.png", path.c_str(), frameNumber);
+        warning("CURSOR FILE EXISTS: %d",
+            SearchMan.hasFile(Common::Path("CD1/HD/POINTERS/001.png", '/')));
 		Common::SeekableReadStream *stream = resources.openFile(framePath);
 		if (!stream) {
 			warning("HARVESTER PNG CURSOR: could not open %s", framePath.c_str());
@@ -278,6 +280,8 @@ bool Entity::loadPngAnimationResource(ResourceManager &resources, const Common::
 		frame->copyFrom(*surface);
 
 		_pngFrames.push_back(frame);
+
+		warning("HARVESTER PNG ANIMATION FRAME: %s (%d x %d)",
 			framePath.c_str(), frame->w, frame->h);
 	}
 
@@ -306,6 +310,7 @@ bool Entity::loadPngAnimationResource(ResourceManager &resources, const Common::
 }
 bool Entity::loadAbmResource(ResourceManager &resources, const Common::String &path) {
 	if (path.hasSuffixIgnoreCase(".ZIP")) {
+		warning("HARVESTER ABM LOADER: redirecting ZIP: %s", path.c_str());
 		return loadPngAnimationZipResource(resources, path);
 	}
 	Common::Array<byte> data;
@@ -430,20 +435,7 @@ void Entity::setAnimationEnabled(bool enabled) {
             _lastFrame);
     }
 }
-void Entity::setCurrentFrame(int frame) {
-	if (_frames.empty() && _pngFrames.empty())
-		return;
 
-	const int frameCount = !_pngFrames.empty()
-		? (int)_pngFrames.size()
-		: (int)_frames.size();
-
-	if (frame < 0 || frame >= frameCount)
-		return;
-
-	_currentFrame = frame;
-	updateBoundsFromCurrentFrame();
-}
 void Entity::setAnimationFrameRange(int firstFrame, int lastFrame, bool looping) {
 	if (_frames.empty())
 		return;
@@ -477,6 +469,12 @@ void Entity::setAnimationFrameRange(int firstFrame, int lastFrame, bool looping)
 }
 
 void Entity::setAnimationSequence(int sequence) {
+	warning(
+		"HARVESTER CURSOR SET SEQUENCE: sequence=%d frameCount=%d pngFrameCount=%d",
+		sequence,
+		(int)_frames.size(),
+		(int)_pngFrames.size()
+	);
 
 	if ((_frames.empty() && _pngFrames.empty()) ||
 		sequence == _animationSequence)
@@ -503,6 +501,14 @@ void Entity::setAnimationSequence(int sequence) {
 	_lastFrame = MIN<int>(
 		_firstFrame + kFramesPerSequence - 1,
 		frameCount - 1
+	);
+
+	warning(
+		"HARVESTER CURSOR SEQUENCE RANGE: sequence=%d first=%d last=%d count=%d",
+		sequence,
+		_firstFrame,
+		_lastFrame,
+		frameCount
 	);
 
 	advanceAnimationFrame(_firstFrame);
@@ -583,6 +589,16 @@ void Entity::setDepthScale(float scale) {
 }
 
 bool Entity::tickVisualState(uint32 now) {
+
+    warning(
+        "HARVESTER TICK: path=%s frames=%d pngFrames=%d enabled=%d current=%d rate=%d",
+        _resourcePath.c_str(),
+        (int)_frames.size(),
+        (int)_pngFrames.size(),
+        _animationEnabled,
+        _currentFrame,
+        _animationRate
+    );
 
 	_animationAdvancedLastTick = false;
 
@@ -964,9 +980,26 @@ bool Entity::measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transp
 }
 
 void Entity::advanceAnimationFrame(int directive) {
+    warning(
+        "HARVESTER ADVANCE: path=%s current=%d first=%d last=%d enabled=%d",
+        _resourcePath.c_str(),
+        _currentFrame,
+        _firstFrame,
+        _lastFrame,
+        _animationEnabled
+    );
 	const int frameCount = !_pngFrames.empty()
 		? (int)_pngFrames.size()
 		: (int)_frames.size();
+
+	warning(
+		"HARVESTER CURSOR ADVANCE: current=%d first=%d last=%d count=%d directive=%d",
+		_currentFrame,
+		_firstFrame,
+		_lastFrame,
+		frameCount,
+		directive
+	);
 
 	if (frameCount == 0)
 		return;
@@ -1018,8 +1051,20 @@ void Entity::advanceAnimationFrame(int directive) {
 	_currentFrame = CLIP<int>(directive, 0, frameCount - 1);
 
 done:
+	warning(
+		"HARVESTER CURSOR AFTER ADVANCE: current=%d first=%d last=%d count=%d",
+		_currentFrame,
+		_firstFrame,
+		_lastFrame,
+		frameCount
+	);
 
 	if (_currentFrame < 0 || _currentFrame >= frameCount) {
+		warning(
+			"HARVESTER CURSOR INVALID FRAME: current=%d count=%d",
+			_currentFrame,
+			frameCount
+		);
 		return;
 	}
 
@@ -1159,13 +1204,17 @@ Entity *EntityManager::spawnAbmEntityFromResource(const Common::String &name,
 Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 		const Common::String &resourcePath, int classId, const Common::Point &position, float z) {
 
+	warning("HARVESTER SPAWN BITMAP: %s", resourcePath.c_str());
+
 	Entity *entity = new Entity();
 	bool loaded = false;
 
 	if (resourcePath.hasSuffixIgnoreCase(".PNG")) {
 		loaded = entity->loadPngResource(_resources, resourcePath);
+	    warning("HARVESTER PNG DETECTED LOADED: %s", resourcePath.c_str());
 
 	} else if (resourcePath.hasSuffixIgnoreCase(".ZIP")) {
+	    warning("HARVESTER ZIP DETECTED: %s", resourcePath.c_str());
         loaded = entity->loadPngAnimationZipResource(_resources, resourcePath);
 
     } else {
@@ -1175,6 +1224,7 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 	if (!loaded) {
 		delete entity;
 		return nullptr;
+	    warning("DELETED THE LOAD: %s", resourcePath.c_str());
 
 	}
 
@@ -1188,19 +1238,27 @@ bool Entity::loadPngAnimationZipResource(
 		ResourceManager &resources,
 		const Common::String &path) {
 
+	warning("HARVESTER PNG ZIP LOAD: %s", path.c_str());
 
 	Common::SeekableReadStream *stream = resources.openFile(path);
 	if (!stream) {
+		warning("HARVESTER PNG ZIP: could not open %s", path.c_str());
 		return false;
 	}
 
 	Common::Archive *archive = Common::makeZipArchive(stream);
 	if (!archive) {
+		warning("HARVESTER PNG ZIP: could not create archive %s", path.c_str());
 		return false;
 	}
 
 	Common::ArchiveMemberList members;
 	archive->listMembers(members);
+
+	warning(
+		"HARVESTER PNG ZIP: %d members found",
+		(int)members.size()
+	);
 
 	_pngFrames.clear();
 
@@ -1254,6 +1312,12 @@ bool Entity::loadPngAnimationZipResource(
 
 		_pngFrames.push_back(frame);
 
+		warning(
+			"HARVESTER PNG ZIP FRAME: %s (%d x %d)",
+			frameName.c_str(),
+			frame->w,
+			frame->h
+		);
 	}
 
 	delete archive;
@@ -1281,6 +1345,11 @@ bool Entity::loadPngAnimationZipResource(
 	_boundsHeight = _pngFrames[0]->h;
 
 	_hitTestMode = kRuntimeEntityHitTestOpaquePixels;
+
+	warning(
+		"HARVESTER PNG ZIP COMPLETE: %d frames loaded",
+		(int)_pngFrames.size()
+	);
 
 	return true;
 }
