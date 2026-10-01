@@ -32,6 +32,8 @@
 #include "image/png.h"
 #include "harvester/detection.h"
 #include "harvester/resources.h"
+#include "common/archive.h"
+#include "common/compression/unzip.h"
 
 namespace Harvester {
 
@@ -1208,8 +1210,33 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 }
 
 bool Entity::loadPngAnimationZipResource(
-        ResourceManager &resources,
-        const Common::String &path) {
+		ResourceManager &resources,
+		const Common::String &path) {
+
+	warning("HARVESTER PNG ZIP LOAD: %s", path.c_str());
+
+	Common::SeekableReadStream *stream = resources.openFile(path);
+	if (!stream) {
+		warning("HARVESTER PNG ZIP: could not open %s", path.c_str());
+		return false;
+	}
+
+	Common::Archive *archive = Common::makeZipArchive(stream);
+	if (!archive) {
+		warning("HARVESTER PNG ZIP: could not create archive %s", path.c_str());
+		return false;
+	}
+
+	Common::ArchiveMemberList members;
+	archive->listMembers(members);
+
+	warning(
+		"HARVESTER PNG ZIP: %d members found",
+		(int)members.size()
+	);
+
+	delete archive;
+
 	return false;
 }
 
