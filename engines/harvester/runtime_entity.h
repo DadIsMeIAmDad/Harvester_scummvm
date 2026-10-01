@@ -64,9 +64,11 @@ enum RuntimeEntityAnchorMode {
 
 class Entity {
 public:
-	bool loadBitmapResource(ResourceManager &resources, const Common::String &path);
-	bool loadAbmResource(ResourceManager &resources, const Common::String &path);
-	bool loadPngResource(ResourceManager &resources, const Common::String &path);
+    bool loadBitmapResource(ResourceManager &resources, const Common::String &path);
+    bool loadAbmResource(ResourceManager &resources, const Common::String &path);
+    bool loadPngResource(ResourceManager &resources, const Common::String &path);
+    bool loadPngAnimationResource(ResourceManager &resources, const Common::String &path);
+
 
 	void setName(const Common::String &name) { _name = name; }
 	const Common::String &getName() const { return _name; }
@@ -95,7 +97,12 @@ public:
 	void setCurrentFrame(int frame);
 	int getCurrentFrame() const { return _currentFrame; }
 	int getLastFrame() const { return _lastFrame; }
-	uint getFrameCount() const { return _frames.size(); }
+	uint getFrameCount() const {
+	if (!_pngFrames.empty())
+		return _pngFrames.size();
+
+	return _frames.size();
+    }
 	bool didAnimationAdvanceLastTick() const { return _animationAdvancedLastTick; }
 	void setAnimationFrameRange(int firstFrame, int lastFrame, bool looping);
 	void setAnimationSequence(int sequence);
@@ -120,7 +127,9 @@ public:
 	int getTimerInitialValue() const { return _timerInitialValue; }
 	int getTimerCurrentValue() const { return _timerCurrentValue; }
 
-	bool hasFrames() const { return !_frames.empty(); }
+	bool hasFrames() const {
+	return !_frames.empty() || !_pngFrames.empty();
+    }
 	bool hasPngSurface() const { return _pngSurface != nullptr; }
 	bool tickVisualState(uint32 now);
 	void draw(Graphics::Screen &screen) const;
@@ -144,6 +153,7 @@ private:
 	Common::Array<AbmFrame> _frames;
 	Common::Array<AbmFrame> _baseFrames;
 	Graphics::Surface *_pngSurface = nullptr;
+    Common::Array<Graphics::Surface *> _pngFrames;
 	int _classId = 0;
 	int _x = 0;
 	int _y = 0;
