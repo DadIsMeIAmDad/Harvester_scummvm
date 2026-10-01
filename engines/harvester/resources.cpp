@@ -40,7 +40,8 @@ struct ArchiveSpec {
 static const ArchiveSpec kArchiveSpecs[] = {
 	{ '1', "INDEX.001", "HARVEST.DAT", 30 },
 	{ '2', "INDEX.002", "SOUND.DAT", 29 },
-	{ '3', "INDEX.003", "HARVEST2.DAT", 28 }
+	{ '3', "INDEX.003", "HARVEST2.DAT", 28 },
+	{ '4', "INDEX.004", "HARVEST4.DAT", 27 }
 };
 
 static bool hasArchiveSetPrefix(const Common::String &path) {
