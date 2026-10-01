@@ -39,6 +39,7 @@ namespace {
 
 static const char *const kCursorEntityName = "MOUSE";
 static const char *const kCursorResourcePath = "1:/GRAPHIC/POINTERS/POINTERS.ABM";
+static const char *const kCursorPngResourcePath = "HD/POINTERS";
 static const float kCursorEntityZ = -100.0f;
 static const int kCursorAnimationRate = 10;
 static const int kFramesPerSequence = 10;
@@ -1046,7 +1047,32 @@ void EntityManager::clearSceneEntities(bool preserveGlobalTimers) {
 	_expiredTimerNames.clear();
 	_timerPauseDepth = 0;
 }
+Entity *EntityManager::spawnPngAnimationEntityFromResource(
+		const Common::String &name,
+		const Common::String &resourcePath,
+		int classId,
+		const Common::Point &position,
+		float z,
+		int animationRate,
+		bool looping,
+		bool pingPong) {
 
+	Entity *entity = new Entity();
+
+	if (!entity->loadPngAnimationResource(_resources, resourcePath)) {
+		delete entity;
+		return nullptr;
+	}
+
+	entity->setName(name);
+	entity->setClassId(classId);
+	entity->setPosition(position.x, position.y, z);
+	entity->setLooping(looping);
+	entity->setPingPong(pingPong);
+	entity->setAnimationRate(animationRate);
+
+	return entity;
+}
 Entity *EntityManager::spawnAbmEntityFromResource(const Common::String &name,
 		const Common::String &resourcePath, int classId, const Common::Point &position, float z,
 		int animationRate, bool looping, bool pingPong) {
@@ -1098,15 +1124,47 @@ Entity *EntityManager::spawnCursorEntity(const Common::Point &position) {
 	if (_cursorEntity)
 		return _cursorEntity;
 
+	// Try the HD PNG cursor animation first.
+	_cursorEntity = spawnPngAnimationEntityFromResource(
+		kCursorEntityName,
+		"HD/POINTERS",
+		kRuntimeEntityClassCursor,
+		position,
+		kCursorEntityZ,
+		kCursorAnimationRate,
+		true,
+		false);
+
+	if (_cursorEntity) {
+		_cursorEntity->setAnimationSequence(0);
+		_cursorEntity->setHitTestMode(kRuntimeEntityHitTestNone);
+
+		const uint32 animationInterval = _cursorEntity->getAnimationRate() == 0 ? 0 :
+			(100U / (uint32)_cursorEntity->getAnimationRate());
+
+		debugC(1, kDebugCursor,
+			"Harvester: spawned PNG cursor rate=%d intervalTicks=%u frame=%d..%d pos=(%d,%d)",
+			_cursorEntity->getAnimationRate(), animationInterval,
+			_cursorEntity->getCurrentFrame(),
+			_cursorEntity->getLastFrame(), position.x, position.y);
+
+		return _cursorEntity;
+	}
+
+	// Fall back to the original ABM cursor.
 	_cursorEntity = spawnAbmEntityFromResource(kCursorEntityName, kCursorResourcePath,
 		kRuntimeEntityClassCursor, position, kCursorEntityZ, kCursorAnimationRate, true, false);
+
 	if (_cursorEntity)
 		_cursorEntity->setAnimationSequence(0);
+
 	if (_cursorEntity)
 		_cursorEntity->setHitTestMode(kRuntimeEntityHitTestNone);
+
 	if (_cursorEntity) {
 		const uint32 animationInterval = _cursorEntity->getAnimationRate() == 0 ? 0 :
 			(100U / (uint32)_cursorEntity->getAnimationRate());
+
 		debugC(1, kDebugCursor,
 			"Harvester: spawned cursor entity rate=%d intervalTicks=%u clock_source=dos_centiseconds frame=%d..%d pos=(%d,%d)",
 			_cursorEntity->getAnimationRate(), animationInterval,
@@ -1116,7 +1174,6 @@ Entity *EntityManager::spawnCursorEntity(const Common::Point &position) {
 
 	return _cursorEntity;
 }
-
 Entity *EntityManager::spawnSceneBitmapEntity(const Common::String &name,
 		const Common::String &resourcePath, const Common::Point &position, float z) {
 	Entity *entity = spawnBitmapEntityFromResource(name, resourcePath, kRuntimeEntityClassObject,

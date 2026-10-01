@@ -68,7 +68,7 @@ public:
     bool loadAbmResource(ResourceManager &resources, const Common::String &path);
     bool loadPngResource(ResourceManager &resources, const Common::String &path);
     bool loadPngAnimationResource(ResourceManager &resources, const Common::String &path);
-
+    
 
 	void setName(const Common::String &name) { _name = name; }
 	const Common::String &getName() const { return _name; }
@@ -200,6 +200,15 @@ public:
 	void clearSceneEntities(bool preserveGlobalTimers = false);
 	Entity *spawnAbmEntityFromResource(const Common::String &name, const Common::String &resourcePath,
 		int classId, const Common::Point &position, float z, int animationRate, bool looping, bool pingPong);
+	Entity *spawnPngAnimationEntityFromResource(
+		const Common::String &name,
+		const Common::String &resourcePath,
+		int classId,
+		const Common::Point &position,
+		float z,
+		int animationRate,
+		bool looping,
+		bool pingPong);
 	Entity *spawnBitmapEntityFromResource(const Common::String &name, const Common::String &resourcePath,
 		int classId, const Common::Point &position, float z);
 	Entity *spawnCursorEntity(const Common::Point &position);
