@@ -435,7 +435,20 @@ void Entity::setAnimationEnabled(bool enabled) {
             _lastFrame);
     }
 }
+void Entity::setCurrentFrame(int frame) {
+	if (_frames.empty() && _pngFrames.empty())
+		return;
 
+	const int frameCount = !_pngFrames.empty()
+		? (int)_pngFrames.size()
+		: (int)_frames.size();
+
+	if (frame < 0 || frame >= frameCount)
+		return;
+
+	_currentFrame = frame;
+	updateBoundsFromCurrentFrame();
+}
 void Entity::setAnimationFrameRange(int firstFrame, int lastFrame, bool looping) {
 	if (_frames.empty())
 		return;
