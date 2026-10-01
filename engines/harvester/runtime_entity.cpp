@@ -1188,7 +1188,7 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 	    warning("HARVESTER PNG DETECTED LOADED: %s", resourcePath.c_str());
 
 	} else if (resourcePath.hasSuffixIgnoreCase(".ZIP")) {
-    loaded = entity->loadPngAnimationZipResource(_resources, resourcePath);
+        loaded = entity->loadPngAnimationZipResource(_resources, resourcePath);
 
     } else {
 		loaded = entity->loadBitmapResource(_resources, resourcePath);
@@ -1209,7 +1209,8 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 
 bool Entity::loadPngAnimationZipResource(
         ResourceManager &resources,
-        const Common::String &path)
+        const Common::String &path) {
+}
 
 Entity *EntityManager::spawnCursorEntity(const Common::Point &position) {
 	if (_cursorEntity)
