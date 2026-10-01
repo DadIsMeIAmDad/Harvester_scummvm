@@ -269,7 +269,7 @@ bool Entity::loadPngAnimationResource(ResourceManager &resources, const Common::
 
 		Common::SeekableReadStream *stream = resources.openFile(framePath);
 		if (!stream) {
-			// No more frames.
+			warning("HARVESTER PNG CURSOR: could not open %s", framePath.c_str());
 			break;
 		}
 
