@@ -701,7 +701,30 @@ void Entity::draw(Graphics::Screen &screen) const {
 		return;
 
 	const Common::Point drawOrigin = getDrawOrigin();
+    if (!_pngFrames.empty()) {
+	int frameIndex = _currentFrame;
 
+	if (frameIndex < 0 || frameIndex >= (int)_pngFrames.size())
+		frameIndex = 0;
+
+	const Graphics::Surface *frame = _pngFrames[frameIndex];
+
+	if (frame) {
+		warning("HARVESTER PNG ANIMATION DRAW: frame=%d/%d size=%dx%d origin=(%d,%d)",
+			frameIndex,
+			(int)_pngFrames.size(),
+			frame->w,
+			frame->h,
+			drawOrigin.x,
+			drawOrigin.y);
+
+		screen.blitFrom(*frame,
+						Common::Rect(0, 0, frame->w, frame->h),
+						Common::Point(drawOrigin.x, drawOrigin.y));
+	}
+
+	return;
+}
 	if (_pngSurface) {
 		warning("HARVESTER PNG DRAW: image=%d x %d screen=%d x %d origin=(%d,%d) pitch=%d bpp=%d",
 		        _pngSurface->w,
