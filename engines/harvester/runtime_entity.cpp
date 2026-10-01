@@ -968,6 +968,14 @@ bool Entity::measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transp
 }
 
 void Entity::advanceAnimationFrame(int directive) {
+    warning(
+        "HARVESTER ADVANCE: path=%s current=%d first=%d last=%d enabled=%d",
+        _resourcePath.c_str(),
+        _currentFrame,
+        _firstFrame,
+        _lastFrame,
+        _animationEnabled
+    );
 	const int frameCount = !_pngFrames.empty()
 		? (int)_pngFrames.size()
 		: (int)_frames.size();
