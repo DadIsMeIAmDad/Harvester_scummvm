@@ -1236,9 +1236,16 @@ bool Entity::loadPngAnimationZipResource(
 	archive->listMembers(members);
 
 	warning(
-		"HARVESTER PNG ZIP: %d members found",
-		(int)members.size()
-	);
+    "HARVESTER PNG ZIP: %d members found",
+    (int)members.size()
+    );
+
+for (Common::ArchiveMemberList::iterator it = members.begin(); it != members.end(); ++it) {
+    warning(
+        "HARVESTER PNG ZIP MEMBER: %s",
+        (*it)->getName().c_str()
+    );
+    }
 
 	delete archive;
 
