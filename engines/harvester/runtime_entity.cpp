@@ -462,6 +462,11 @@ void Entity::setAnimationFrameRange(int firstFrame, int lastFrame, bool looping)
 }
 
 void Entity::setAnimationSequence(int sequence) {
+    warning(
+	    "HARVESTER CURSOR SET SEQUENCE: sequence=%d frameCount=%d",
+	    sequence,
+	    (int)_frames.size()
+    );
 	if (_frames.empty() || sequence == _animationSequence)
 		return;
 
@@ -470,8 +475,29 @@ void Entity::setAnimationSequence(int sequence) {
 	_playBackwards = false;
 	_animationEnabled = true;
 	_firstFrame = MIN<int>(sequence * kFramesPerSequence, (int)_frames.size() - 1);
+	warning(
+	    "HARVESTER CURSOR SEQUENCE RANGE First Frame: sequence=%d first=%d last=%d count=%d",
+	    sequence,
+	    _firstFrame,
+	    _lastFrame,
+	    (int)_frames.size()
+    );
 	_lastFrame = MIN<int>(_firstFrame + kFramesPerSequence - 1, (int)_frames.size() - 1);
+	warning(
+	    "HARVESTER CURSOR SEQUENCE RANGE Last Frame: sequence=%d first=%d last=%d count=%d",
+	    sequence,
+	    _firstFrame,
+	    _lastFrame,
+	    (int)_frames.size()
+    );
 	advanceAnimationFrame(_firstFrame);
+	warning(
+	    "HARVESTER CURSOR SEQUENCE RANGE Advanced First Frame: sequence=%d first=%d last=%d count=%d",
+	    sequence,
+	    _firstFrame,
+	    _lastFrame,
+	    (int)_frames.size()
+    );
 
 	if (_classId == kRuntimeEntityClassCursor) {
 		debugC(1, kDebugCursor,
@@ -698,13 +724,6 @@ void Entity::draw(Graphics::Screen &screen) const {
 	const Graphics::Surface *frame = _pngFrames[frameIndex];
 
 	if (frame) {
-		warning("HARVESTER PNG ANIMATION DRAW: frame=%d/%d size=%dx%d origin=(%d,%d)",
-			frameIndex,
-			(int)_pngFrames.size(),
-			frame->w,
-			frame->h,
-			drawOrigin.x,
-			drawOrigin.y);
 
 		screen.blitFrom(*frame,
 						Common::Rect(0, 0, frame->w, frame->h),
@@ -714,28 +733,11 @@ void Entity::draw(Graphics::Screen &screen) const {
 	return;
 }
 	if (_pngSurface) {
-		warning("HARVESTER PNG DRAW: image=%d x %d screen=%d x %d origin=(%d,%d) pitch=%d bpp=%d",
-		        _pngSurface->w,
-		        _pngSurface->h,
-		        screen.w,
-		        screen.h,
-		        drawOrigin.x,
-		        drawOrigin.y,
-		        screen.pitch,
-		        screen.format.bytesPerPixel);
 
-		warning("SCREEN:");
-		warning("pitch=%d bpp=%d",
-		        screen.pitch,
-		        screen.format.bytesPerPixel);
-
-		warning("PNG DRAW: BEFORE BLIT");
 
 		screen.blitFrom(*_pngSurface,
 		               Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
 		               Common::Point(drawOrigin.x, drawOrigin.y));
-
-		warning("PNG DRAW: AFTER BLIT");
 
 		return;
 	}
@@ -895,6 +897,14 @@ bool Entity::measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transp
 }
 
 void Entity::advanceAnimationFrame(int directive) {
+    warning(
+	    "HARVESTER CURSOR ADVANCE: current=%d first=%d last=%d count=%d directive=%d",
+	    _currentFrame,
+	    _firstFrame,
+	    _lastFrame,
+	    (int)_frames.size(),
+	    directive
+    );
 	if (_frames.empty())
 		return;
 
@@ -945,6 +955,22 @@ void Entity::advanceAnimationFrame(int directive) {
 	_currentFrame = CLIP<int>(directive, 0, (int)_frames.size() - 1);
 
 done:
+	warning(
+		"HARVESTER CURSOR AFTER ADVANCE: current=%d first=%d last=%d count=%d",
+		_currentFrame,
+		_firstFrame,
+		_lastFrame,
+		(int)_frames.size()
+	);
+
+	if (_currentFrame < 0 || _currentFrame >= (int)_frames.size()) {
+		warning(
+			"HARVESTER CURSOR INVALID FRAME: current=%d count=%d",
+			_currentFrame,
+			(int)_frames.size()
+		);
+		return;
+	}
 	updateBoundsFromCurrentFrame();
 }
 
@@ -1322,11 +1348,9 @@ void EntityManager::drawCursor(Graphics::Screen &screen) const {
 
 void EntityManager::drawSceneEntities(Graphics::Screen &screen) const {
 	for (Entity *entity : _sceneEntities) {
-		warning("SCENE ENTITY: BEFORE DRAW");
 
 		entity->draw(screen);
 
-		warning("SCENE ENTITY: AFTER DRAW");
 	}
 }
 
