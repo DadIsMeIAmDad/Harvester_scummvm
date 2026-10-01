@@ -462,49 +462,61 @@ void Entity::setAnimationFrameRange(int firstFrame, int lastFrame, bool looping)
 }
 
 void Entity::setAnimationSequence(int sequence) {
-    warning(
-	    "HARVESTER CURSOR SET SEQUENCE: sequence=%d frameCount=%d",
-	    sequence,
-	    (int)_frames.size()
-    );
-	if (_frames.empty() || sequence == _animationSequence)
+	warning(
+		"HARVESTER CURSOR SET SEQUENCE: sequence=%d frameCount=%d pngFrameCount=%d",
+		sequence,
+		(int)_frames.size(),
+		(int)_pngFrames.size()
+	);
+
+	if ((_frames.empty() && _pngFrames.empty()) ||
+		sequence == _animationSequence)
+		return;
+
+	const int frameCount = !_pngFrames.empty()
+		? (int)_pngFrames.size()
+		: (int)_frames.size();
+
+	if (frameCount <= 0)
 		return;
 
 	_animationSequence = sequence;
+
 	_looping = true;
 	_playBackwards = false;
 	_animationEnabled = true;
-	_firstFrame = MIN<int>(sequence * kFramesPerSequence, (int)_frames.size() - 1);
+
+	_firstFrame = MIN<int>(
+		sequence * kFramesPerSequence,
+		frameCount - 1
+	);
+
+	_lastFrame = MIN<int>(
+		_firstFrame + kFramesPerSequence - 1,
+		frameCount - 1
+	);
+
 	warning(
-	    "HARVESTER CURSOR SEQUENCE RANGE First Frame: sequence=%d first=%d last=%d count=%d",
-	    sequence,
-	    _firstFrame,
-	    _lastFrame,
-	    (int)_frames.size()
-    );
-	_lastFrame = MIN<int>(_firstFrame + kFramesPerSequence - 1, (int)_frames.size() - 1);
-	warning(
-	    "HARVESTER CURSOR SEQUENCE RANGE Last Frame: sequence=%d first=%d last=%d count=%d",
-	    sequence,
-	    _firstFrame,
-	    _lastFrame,
-	    (int)_frames.size()
-    );
+		"HARVESTER CURSOR SEQUENCE RANGE: sequence=%d first=%d last=%d count=%d",
+		sequence,
+		_firstFrame,
+		_lastFrame,
+		frameCount
+	);
+
 	advanceAnimationFrame(_firstFrame);
-	warning(
-	    "HARVESTER CURSOR SEQUENCE RANGE Advanced First Frame: sequence=%d first=%d last=%d count=%d",
-	    sequence,
-	    _firstFrame,
-	    _lastFrame,
-	    (int)_frames.size()
-    );
 
 	if (_classId == kRuntimeEntityClassCursor) {
 		debugC(1, kDebugCursor,
 			"Harvester: cursor animation sequence=%d frames=%d..%d current=%d",
-			_animationSequence, _firstFrame, _lastFrame, _currentFrame);
+			_animationSequence,
+			_firstFrame,
+			_lastFrame,
+			_currentFrame);
 	}
 }
+```
+
 
 void Entity::configureHotspotBounds(int width, int height) {
 	_frames.clear();
@@ -573,36 +585,91 @@ void Entity::setDepthScale(float scale) {
 
 bool Entity::tickVisualState(uint32 now) {
 	_animationAdvancedLastTick = false;
+
 	if (!_animationEnabled || _currentFrame < 0)
 		return false;
+
 	if (now < _nextAnimationTick)
 		return false;
 
 	const int previousFrameIndex = _currentFrame;
 	const bool wasPlayingBackwards = _playBackwards;
-	const AbmFrame &previousFrame = _frames[(uint)previousFrameIndex];
-	const Common::Point previousDrawOrigin = getDrawOrigin();
+
 	advanceAnimationFrame(_playBackwards ? -1 : -2);
+
 	_nextAnimationTick = now + _animationTickInterval;
 	_animationAdvancedLastTick = true;
 
-	if (_classId == kRuntimeEntityClassNpc) {
-		const AbmFrame &currentFrame = _frames[(uint)_currentFrame];
+	// ABM/NPC debugging requires _frames.
+	// PNG animations use _pngFrames instead.
+	if (_classId == kRuntimeEntityClassNpc && !_pngFrames.empty()) {
+		const Graphics::Surface *currentFrame = nullptr;
+
+		if (_currentFrame >= 0 &&
+			(uint)_currentFrame < _pngFrames.size()) {
+			currentFrame = _pngFrames[_currentFrame];
+		}
+
 		const Common::Point drawOrigin = getDrawOrigin();
+
+		debugC(3, kDebugPlayer,
+			"Harvester: PNG npc animation advance npc='%s' frame=%d->%d range=%d..%d rate=%d interval=%u draw=(%d,%d)",
+			_name.c_str(),
+			previousFrameIndex,
+			_currentFrame,
+			_firstFrame,
+			_lastFrame,
+			_animationRate,
+			_animationTickInterval,
+			drawOrigin.x,
+			drawOrigin.y);
+	}
+
+	// Original ABM/NPC debugging
+	if (_classId == kRuntimeEntityClassNpc && _pngFrames.empty()) {
+		const AbmFrame &previousFrame = _frames[(uint)previousFrameIndex];
+		const AbmFrame &currentFrame = _frames[(uint)_currentFrame];
+
+		const Common::Point previousDrawOrigin = getDrawOrigin();
+		const Common::Point drawOrigin = getDrawOrigin();
+
 		const bool loopReset = _looping && !_pingPong &&
-			((!wasPlayingBackwards && previousFrameIndex == _lastFrame && _currentFrame == _firstFrame) ||
-			 (wasPlayingBackwards && previousFrameIndex == _firstFrame && _currentFrame == _lastFrame));
+			((!wasPlayingBackwards &&
+				previousFrameIndex == _lastFrame &&
+				_currentFrame == _firstFrame) ||
+			 (wasPlayingBackwards &&
+				previousFrameIndex == _firstFrame &&
+				_currentFrame == _lastFrame));
+
 		debugC(3, kDebugPlayer,
 			"Harvester: npc animation advance npc='%s' frame=%d->%d range=%d..%d loop_reset=%d backwards=%d->%d rate=%d interval=%u entity=(%d,%d,z=%.2f) previous=(size=%ux%u offset=%d,%d draw=%d,%d) current=(size=%ux%u offset=%d,%d draw=%d,%d)",
 			_name.c_str(),
-			previousFrameIndex, _currentFrame, _firstFrame, _lastFrame,
-			loopReset, wasPlayingBackwards, _playBackwards,
-			_animationRate, _animationTickInterval, _x, _y, (double)_z,
-			previousFrame.width, previousFrame.height, previousFrame.xOffset, previousFrame.yOffset,
-			previousDrawOrigin.x, previousDrawOrigin.y,
-			currentFrame.width, currentFrame.height, currentFrame.xOffset, currentFrame.yOffset,
-			drawOrigin.x, drawOrigin.y);
+			previousFrameIndex,
+			_currentFrame,
+			_firstFrame,
+			_lastFrame,
+			loopReset,
+			wasPlayingBackwards,
+			_playBackwards,
+			_animationRate,
+			_animationTickInterval,
+			_x,
+			_y,
+			(double)_z,
+			previousFrame.width,
+			previousFrame.height,
+			previousFrame.xOffset,
+			previousFrame.yOffset,
+			previousDrawOrigin.x,
+			previousDrawOrigin.y,
+			currentFrame.width,
+			currentFrame.height,
+			currentFrame.xOffset,
+			currentFrame.yOffset,
+			drawOrigin.x,
+			drawOrigin.y);
 	}
+
 	return true;
 }
 
