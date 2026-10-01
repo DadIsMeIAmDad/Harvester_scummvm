@@ -105,7 +105,7 @@ bool Art::load(ResourceManager &resources) {
 
 	return loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette) &&
 	       loadAnimation(resources, "1:/GRAPHIC/OTHER/WAIT.ABM", _waitFrames) &&
-	       loadBitmap(resources, "4:/OTHER/INVENTRY.BM", _inventoryBitmap) &&
+	       loadBitmap(resources, "4:/OTHER/INVENTRY.png", _inventoryBitmap) &&
 	       loadBitmap(resources, "1:/GRAPHIC/OTHER/HARVLOGO.BM", _logoBitmap);
 }
 
