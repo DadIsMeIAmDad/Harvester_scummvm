@@ -34,7 +34,7 @@ namespace Harvester {
 
 namespace {
 
-static const char *const kPlayerActorResourcePath = "1:/GRAPHIC/MONSTERS/PC/PC0.ABM";
+static const char *const kPlayerActorResourcePath = "4:/GRAPHIC/MONSTERS/PC/PC0.zip";
 static const float kRoomPlayerHorizontalMoveBase = 8.0f;
 static const float kRoomPlayerHorizontalTargetSlackBase = 50.0f;
 static const float kRoomPlayerDepthTargetSlack = 8.0f;
