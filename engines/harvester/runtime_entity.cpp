@@ -646,8 +646,18 @@ bool Entity::hasOpaqueFramesInRange(int firstFrame, int lastFrame) const {
 }
 
 void Entity::setDepthScale(float scale) {
-	if (_frames.empty() && _pngFrames.empty())
+	if (_frames.empty() && _pngFrames.empty() && _pngBaseFrames.empty())
 		return;
+
+	const float newScale = scale > 0.0f ? scale : 1.0f;
+
+	if (fabsf(_depthScale - newScale) < 0.0001f)
+		return;
+
+	_depthScale = newScale;
+
+	rebuildScaledFrames();
+}
 
 	const float newScale = scale > 0.0f ? scale : 1.0f;
 
@@ -1176,13 +1186,32 @@ done:
 }
 
 void Entity::updateBoundsFromCurrentFrame() {
+	if (!_pngFrames.empty()) {
+		if (_currentFrame >= 0 &&
+				(uint)_currentFrame < _pngFrames.size() &&
+				_pngFrames[(uint)_currentFrame]) {
+			_boundsWidth = _pngFrames[(uint)_currentFrame]->w;
+			_boundsHeight = _pngFrames[(uint)_currentFrame]->h;
+		} else {
+			_boundsWidth = 0;
+			_boundsHeight = 0;
+		}
+
+		return;
+	}
+
 	if (_frames.empty()) {
 		_boundsWidth = 0;
 		_boundsHeight = 0;
 		return;
 	}
 
-	const int frameIndex = (_currentFrame >= 0 && (uint)_currentFrame < _frames.size()) ? _currentFrame : 0;
+	const int frameIndex =
+		(_currentFrame >= 0 &&
+			(uint)_currentFrame < _frames.size())
+		? _currentFrame
+		: 0;
+
 	_boundsWidth = (int)_frames[(uint)frameIndex].width;
 	_boundsHeight = (int)_frames[(uint)frameIndex].height;
 }
@@ -1201,24 +1230,32 @@ void Entity::updateScreenBaseFromCurrentFrame() {
 }
 
 void Entity::rebuildScaledFrames() {
-	// PNG animation frames
-	if (!_pngFrames.empty()) {
+	// PNG animation scaling
+	if (!_pngBaseFrames.empty()) {
+		// Free the current scaled PNG frames.
 		for (uint i = 0; i < _pngFrames.size(); ++i) {
-			Graphics::Surface *source = _pngFrames[i];
+			if (_pngFrames[i]) {
+				_pngFrames[i]->free();
+				delete _pngFrames[i];
+			}
+		}
 
-			if (!source)
+		_pngFrames.clear();
+
+		// Rebuild every displayed frame from the ORIGINAL PNG.
+		for (uint i = 0; i < _pngBaseFrames.size(); ++i) {
+			const Graphics::Surface *source = _pngBaseFrames[i];
+
+			if (!source) {
+				_pngFrames.push_back(nullptr);
 				continue;
+			}
 
 			const int scaledWidth =
 				scaleDimension(source->w, _depthScale);
 
 			const int scaledHeight =
 				scaleDimension(source->h, _depthScale);
-
-			if (scaledWidth == source->w &&
-					scaledHeight == source->h) {
-				continue;
-			}
 
 			Graphics::Surface *scaled = new Graphics::Surface();
 
@@ -1229,24 +1266,15 @@ void Entity::rebuildScaledFrames() {
 				scaledHeight
 			);
 
-			source->free();
-			delete source;
-
-			_pngFrames[i] = scaled;
+			_pngFrames.push_back(scaled);
 		}
 
-		if (_currentFrame >= 0 &&
-				(uint)_currentFrame < _pngFrames.size() &&
-				_pngFrames[(uint)_currentFrame]) {
-			_boundsWidth = _pngFrames[(uint)_currentFrame]->w;
-			_boundsHeight = _pngFrames[(uint)_currentFrame]->h;
-		}
-
+		updateBoundsFromCurrentFrame();
 		updateScreenBaseFromCurrentFrame();
 		return;
 	}
 
-	// Original ABM frame scaling
+	// Original ABM scaling
 	if (_baseFrames.empty()) {
 		_frames.clear();
 		updateBoundsFromCurrentFrame();
@@ -1398,7 +1426,27 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 bool Entity::loadPngAnimationZipResource(
 		ResourceManager &resources,
 		const Common::String &path) {
+ 
+ 
+    for (uint i = 0; i < _pngFrames.size(); ++i) {
+	    if (_pngFrames[i]) {
+		    _pngFrames[i]->free();
+		    delete _pngFrames[i];
+	    }
+    }
 
+for (uint i = 0; i < _pngBaseFrames.size(); ++i) {
+	if (_pngBaseFrames[i]) {
+		_pngBaseFrames[i]->free();
+		delete _pngBaseFrames[i];
+	}
+}
+
+_pngFrames.clear();
+_pngBaseFrames.clear();
+ 
+ 
+ 
 	warning("HARVESTER PNG ZIP LOAD: %s", path.c_str());
 
 	Common::SeekableReadStream *stream = resources.openFile(path);
@@ -1422,6 +1470,7 @@ bool Entity::loadPngAnimationZipResource(
 	);
 
 	_pngFrames.clear();
+	_pngBaseFrames.clear();
 
 	// Load frames in numeric order: 001.png, 002.png, 003.png...
 	for (int frameNumber = 1; frameNumber <= (int)members.size(); ++frameNumber) {
@@ -1468,10 +1517,14 @@ bool Entity::loadPngAnimationZipResource(
 			return false;
 		}
 
-		Graphics::Surface *frame = new Graphics::Surface();
-		frame->copyFrom(*surface);
+        Graphics::Surface *frame = new Graphics::Surface();
+        frame->copyFrom(*surface);
 
-		_pngFrames.push_back(frame);
+        Graphics::Surface *baseFrame = new Graphics::Surface();
+        baseFrame->copyFrom(*surface);
+
+        _pngFrames.push_back(frame);
+        _pngBaseFrames.push_back(baseFrame);
 
 		warning(
 			"HARVESTER PNG ZIP FRAME: %s (%d x %d)",
