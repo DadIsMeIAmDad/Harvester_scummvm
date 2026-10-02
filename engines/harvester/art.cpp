@@ -76,14 +76,14 @@ static const byte kTransparentPaletteIndex = 0;
 static const uint kQuickTipsTextboxIndex = 5;
 
 static const char *const kTextboxPaths[] = {
-	"4:/GRAPHIC/OTHER/TEXTBOX1.png",
-	"4:/GRAPHIC/OTHER/TEXTBOX2.png",
-	"4:/GRAPHIC/OTHER/TEXTBOX3.png",
-	"4:/GRAPHIC/OTHER/TEXTBOX4.png",
-	"4:/GRAPHIC/OTHER/TEXTBOX5.png",
-	"4:/GRAPHIC/OTHER/TEXTBOX6.png",
-	"4:/GRAPHIC/OTHER/TEXTBOX7.png",
-	"4:/GRAPHIC/OTHER/TEXTBOX8.png"
+	"4:/GRAPHIC/OTHER/TEXTBOX1.BM",
+	"1:/GRAPHIC/OTHER/TEXTBOX2.BM",
+	"1:/GRAPHIC/OTHER/TEXTBOX3.BM",
+	"1:/GRAPHIC/OTHER/TEXTBOX4.BM",
+	"1:/GRAPHIC/OTHER/TEXTBOX5.BM",
+	"1:/GRAPHIC/OTHER/TEXTBOX6.BM",
+	"1:/GRAPHIC/OTHER/TEXTBOX7.BM",
+	"1:/GRAPHIC/OTHER/TEXTBOX8.BM"
 };
 
 static const char *const kAmmoIconPaths[] = {
