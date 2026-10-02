@@ -613,15 +613,22 @@ void Entity::freeBasePngFrames() {
 
 void Entity::setDepthScale(float scale) {
 	const float newScale = scale > 0.0f ? scale : 1.0f;
-	if (fabsf(_depthScale - newScale) < 0.0001f)
+	if (fabsf(_depthScale - newScale) < 0.01f)   // slightly larger dead-zone
 		return;
 
 	_depthScale = newScale;
 
+	// ABM path still needs full rebuild (indexed frames)
 	if (!_baseFrames.empty()) {
 		rebuildScaledFrames();
-	} else if (!_basePngFrames.empty()) {
-		rebuildScaledPngFrames();
+		return;
+	}
+
+	// PNG path: only update bounds / screen base.
+	// Actual scaling happens in draw().
+	if (!_basePngFrames.empty()) {
+		updateBoundsFromCurrentFrame();
+		updateScreenBaseFromCurrentFrame();
 	}
 }
 
@@ -831,8 +838,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 	const Common::Point drawOrigin = getDrawOrigin();
 
-	// Prefer the original (unscaled) frames when available so we can scale
-	// only the frame we are about to draw.
+	// Prefer original (unscaled) frames
 	const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
 	if (!_basePngFrames.empty())
 		sourceFrames = &_basePngFrames;
@@ -849,12 +855,12 @@ void Entity::draw(Graphics::Screen &screen) const {
 			return;
 
 		if (fabsf(_depthScale - 1.0f) < 0.001f) {
-			// No scaling needed – blit directly
+			// identity scale – direct blit
 			screen.blitFrom(*src,
 				Common::Rect(0, 0, src->w, src->h),
 				Common::Point(drawOrigin.x, drawOrigin.y));
 		} else {
-			// Scale only the current frame
+			// scale only this one frame
 			const int sw = scaleDimension(src->w, _depthScale);
 			const int sh = scaleDimension(src->h, _depthScale);
 
@@ -870,7 +876,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 		return;
 	}
 
-	// Single PNG surface (non-animation)
+	// single PNG surface
 	if (_pngSurface) {
 		screen.blitFrom(*_pngSurface,
 			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
@@ -878,7 +884,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 		return;
 	}
 
-	// Classic ABM / indexed frames
+	// classic ABM
 	if (_currentFrame < 0)
 		return;
 
@@ -1101,17 +1107,28 @@ done:
 }
 
 void Entity::updateBoundsFromCurrentFrame() {
-	if (!_pngFrames.empty()) {
-		if (_currentFrame >= 0 && (uint)_currentFrame < _pngFrames.size() &&
-			_pngFrames[_currentFrame]) {
-			_boundsWidth  = _pngFrames[_currentFrame]->w;
-			_boundsHeight = _pngFrames[_currentFrame]->h;
+	if (!_basePngFrames.empty() || !_pngFrames.empty()) {
+		const Common::Array<Graphics::Surface *> &src =
+			!_basePngFrames.empty() ? _basePngFrames : _pngFrames;
+
+		if (_currentFrame >= 0 && (uint)_currentFrame < src.size() && src[_currentFrame]) {
+			const int rawW = src[_currentFrame]->w;
+			const int rawH = src[_currentFrame]->h;
+
+			if (fabsf(_depthScale - 1.0f) < 0.001f) {
+				_boundsWidth  = rawW;
+				_boundsHeight = rawH;
+			} else {
+				_boundsWidth  = scaleDimension(rawW, _depthScale);
+				_boundsHeight = scaleDimension(rawH, _depthScale);
+			}
 		} else {
 			_boundsWidth = _boundsHeight = 0;
 		}
 		return;
 	}
 
+	// original ABM path unchanged
 	if (_frames.empty()) {
 		_boundsWidth = _boundsHeight = 0;
 		return;
