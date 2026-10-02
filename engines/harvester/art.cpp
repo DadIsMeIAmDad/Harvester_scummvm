@@ -28,6 +28,7 @@
 #include "harvester/detection.h"
 #include "harvester/palette_utils.h"
 #include "harvester/resources.h"
+#include "image/png.h"
 
 namespace Harvester {
 
@@ -212,6 +213,62 @@ bool Art::loadBitmap(ResourceManager &resources, const Common::String &path, Ind
 
 	bitmap.pixels.resize(pixelCount);
 	memcpy(bitmap.pixels.data(), data.data() + 12, pixelCount);
+	return true;
+}
+
+bool Art::loadPngAsIndexedBitmap(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) const {
+	Common::SeekableReadStream *stream = resources.openFile(path);
+	if (!stream) {
+		warning("Harvester: unable to open PNG '%s'", path.c_str());
+		return false;
+	}
+
+	Image::PNGDecoder decoder;
+	if (!decoder.loadStream(*stream)) {
+		delete stream;
+		warning("Harvester: could not decode PNG '%s'", path.c_str());
+		return false;
+	}
+	delete stream;
+
+	const Graphics::Surface *surface = decoder.getSurface();
+	if (!surface || surface->w == 0 || surface->h == 0) {
+		warning("Harvester: PNG decoder returned empty surface for '%s'", path.c_str());
+		return false;
+	}
+
+	// Convert to 8-bit indexed. For a first working version we take the red
+	// channel (or luminance) and treat fully transparent pixels as index 0.
+	// We will refine palette mapping later if needed.
+	bitmap.width = surface->w;
+	bitmap.height = surface->h;
+	const uint32 pixelCount = bitmap.width * bitmap.height;
+	bitmap.pixels.resize(pixelCount);
+
+	const bool hasAlpha = surface->format.aBits() > 0;
+
+	for (uint32 y = 0; y < bitmap.height; ++y) {
+		for (uint32 x = 0; x < bitmap.width; ++x) {
+			uint32 color = surface->getPixel(x, y);
+			byte r, g, b, a;
+			surface->format.colorToARGB(color, a, r, g, b);
+
+			byte index;
+			if (hasAlpha && a < 128) {
+				index = 0; // transparent
+			} else {
+				// Simple luminance ? index (placeholder mapping)
+				index = (byte)((r * 30 + g * 59 + b * 11) / 100);
+				if (index == 0)
+					index = 1; // reserve 0 for transparency
+			}
+
+			bitmap.pixels[y * bitmap.width + x] = index;
+		}
+	}
+
+	debug(1, "Harvester: loaded PNG as indexed bitmap '%s' (%ux%u)", path.c_str(),
+		bitmap.width, bitmap.height);
 	return true;
 }
 
