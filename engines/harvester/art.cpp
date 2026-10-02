@@ -28,6 +28,9 @@
 #include "harvester/detection.h"
 #include "harvester/palette_utils.h"
 #include "harvester/resources.h"
+#include "image/png.h"
+#include "common/rect.h"
+#include "common/point.h"
 
 namespace Harvester {
 
@@ -111,10 +114,21 @@ bool Art::load(ResourceManager &resources) {
 
 bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel) {
 	_textboxes.resize(ARRAYSIZE(kTextboxPaths));
-	for (uint i = 0; i < _textboxes.size(); ++i) {
-		if (!loadBitmap(resources, kTextboxPaths[i], _textboxes[i]))
-			return false;
-	}
+
+    for (uint i = 0; i < _textboxes.size(); ++i) {
+	    const Common::String path = kTextboxPaths[i];
+
+	    bool loaded = false;
+
+	    if (path.hasSuffixIgnoreCase(".PNG")) {
+		    loaded = loadPngBitmap(resources, path, _textboxes[i]);
+	    } else {
+		    loaded = loadBitmap(resources, path, _textboxes[i].indexed);
+	    }
+
+	    if (!loaded)
+		    return false;
+    }
 
 	_ammoIcons.resize(ARRAYSIZE(kAmmoIconPaths));
 	for (uint i = 0; i < _ammoIcons.size(); ++i) {
@@ -125,16 +139,75 @@ bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPane
 	if (useTextboxPanel) {
 		_tipsBitmap = IndexedBitmap();
 		debugC(2, kDebugResources, "Harvester: quick tips panel '%s'", kTextboxPaths[kQuickTipsTextboxIndex]);
-		const IndexedBitmap *textbox = getQuickTipsTextboxBitmap();
-		return textbox && textbox->isValid();
+		const TextboxBitmap *textbox = getQuickTipsTextboxBitmap();
+        return textbox && textbox->isValid();
 	}
 
 	debugC(2, kDebugResources, "Harvester: quick tips panel '1:/GRAPHIC/OTHER/TIPS.BM'");
 	return loadBitmap(resources, "1:/GRAPHIC/OTHER/TIPS.BM", _tipsBitmap);
 }
+void Art::blitTextbox(Graphics::Screen &screen, const TextboxBitmap &bitmap,
+		int x, int y) const {
+	if (bitmap.pngSurface) {
+		screen.blitFrom(
+			*bitmap.pngSurface,
+			Common::Rect(
+				0,
+				0,
+				bitmap.pngSurface->w,
+				bitmap.pngSurface->h),
+			Common::Point(x, y));
+		return;
+	}
 
-const IndexedBitmap *Art::getQuickTipsTextboxBitmap() const {
+	if (bitmap.indexed.isValid()) {
+		blitTransparentBitmap(
+			screen,
+			bitmap.indexed,
+			x,
+			y);
+	}
+}
+const TextboxBitmap *Art::getQuickTipsTextboxBitmap() const {
 	return getTextboxBitmap(kQuickTipsTextboxIndex);
+}
+
+bool Art::loadPngBitmap(ResourceManager &resources, const Common::String &path,
+		TextboxBitmap &bitmap) const {
+	Common::SeekableReadStream *stream = resources.openFile(path);
+	if (!stream) {
+		warning("Harvester: unable to open PNG '%s'", path.c_str());
+		return false;
+	}
+
+	Image::PNGDecoder decoder;
+	if (!decoder.loadStream(*stream)) {
+		delete stream;
+		warning("Harvester: unable to decode PNG '%s'", path.c_str());
+		return false;
+	}
+
+	delete stream;
+
+	const Graphics::Surface *surface = decoder.getSurface();
+	if (!surface) {
+		warning("Harvester: PNG decoder returned no surface '%s'", path.c_str());
+		return false;
+	}
+
+	bitmap.free();
+
+	bitmap.pngSurface = new Graphics::Surface();
+	bitmap.pngSurface->copyFrom(*surface);
+
+	debugC(1, kDebugGraphics,
+		"HARVESTER TEXTBOX PNG LOADED: %s (%d x %d, bpp=%d)",
+		path.c_str(),
+		surface->w,
+		surface->h,
+		surface->format.bytesPerPixel);
+
+	return true;
 }
 
 void Art::drawWaitFrame(Graphics::Screen &screen) const {
@@ -289,6 +362,7 @@ bool Art::decodeAnimationFrame(const byte *source, uint32 sourceSize, bool compr
 
 	return dstOffset == dest.size();
 }
+
 
 void Art::blitTransparentBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y) const {
 	if (!bitmap.isValid())
