@@ -112,6 +112,7 @@ bool Art::load(ResourceManager &resources) {
 }
 
 bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel) {
+    warning("Harvester: ENTER loadQuickTipsResources useTextboxPanel=%d", (int)useTextboxPanel);
 	freeTextboxSurfaces();
 
 	_textboxes.resize(ARRAYSIZE(kTextboxPaths));
@@ -225,6 +226,7 @@ void Art::freeTextboxSurfaces() {
 	_textboxSurfaces.clear();
 }
 bool Art::loadPngAsSurface(ResourceManager &resources, const Common::String &path, Graphics::Surface *&outSurface) const {
+    warning("Harvester: ENTER loadPngAsSurface '%s'", path.c_str());
 	outSurface = nullptr;
 
 	Common::SeekableReadStream *stream = resources.openFile(path);
