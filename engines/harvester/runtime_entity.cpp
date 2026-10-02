@@ -73,6 +73,8 @@ static void scaleIndexedBitmapNearest(const IndexedBitmap &source, IndexedBitmap
 	}
 }
 
+
+
 static uint32 getAnimationClockTicks() {
 	if (!g_system)
 		return 0;
@@ -615,6 +617,12 @@ bool Entity::hasOpaqueFramesInRange(int firstFrame, int lastFrame) const {
 }
 
 void Entity::setDepthScale(float scale) {
+    warning(
+	    "HARVESTER DEPTH SCALE: path=%s scale=%f pngFrames=%d",
+	    _resourcePath.c_str(),
+	    (double)_depthScale,
+        (int)_pngFrames.size()
+    );
 	const float newScale = scale > 0.0f ? scale : 1.0f;
 
 	if (fabsf(_depthScale - newScale) < 0.0001f)
