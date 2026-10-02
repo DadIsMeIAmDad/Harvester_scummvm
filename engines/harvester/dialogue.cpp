@@ -544,13 +544,12 @@ public:
 		const bool textEnabled = textMode != kStartupDialogueTextNone &&
 			_text->resolveDialogueSubtitle(wavId, subtitleText);
 		Common::Array<Common::String> subtitleLines;
-        const TextboxBitmap *textboxBitmap = nullptr;
-        if (textEnabled) {
-	        wrapDialogueTextLikeNative(*_subtitleFont, _subtitleFontUsesCft,
-		        subtitleText, kDialogueSubtitleTextWidth, subtitleLines);
-	        textboxBitmap = _art->getTextboxBitmap(
-		        resolveDialogueTextboxIndex(subtitleLines.size()));
-        }
+		const IndexedBitmap *textboxBitmap = nullptr;
+		if (textEnabled) {
+			wrapDialogueTextLikeNative(*_subtitleFont, _subtitleFontUsesCft,
+				subtitleText, kDialogueSubtitleTextWidth, subtitleLines);
+			textboxBitmap = _art->getTextboxBitmap(resolveDialogueTextboxIndex(subtitleLines.size()));
+		}
 
 		const Common::String voicePath = buildDialogueVoicePath(*_script, wavId);
 		const bool voiceStarted = !voicePath.empty() && _engine.playSpeech(voicePath);
@@ -1073,7 +1072,7 @@ private:
 		}
 	}
 
-	void drawDialogueOverlay(const TextboxBitmap *textboxBitmap,
+	void drawDialogueOverlay(const IndexedBitmap *overlayBitmap,
 			const Common::Array<Common::String> *subtitleLines, const Common::Array<Common::String> *topics,
 			int hoveredTopicIndex, bool hoverOther, const Common::String *textEntryValue) {
 		Graphics::Screen *activeScreen = getActiveScreen();
@@ -1242,7 +1241,7 @@ private:
 		return -1;
 	}
 
-	void drawDialogueResponseMenu(const TextboxBitmap *textboxBitmap,
+	void drawDialogueResponseMenu(const IndexedBitmap *textboxBitmap,
 			const Common::Array<DialogueResponseOptionLayout> &options, int hoveredOptionIndex) {
 		Graphics::Screen *activeScreen = getActiveScreen();
 		if (!activeScreen)
@@ -1255,8 +1254,7 @@ private:
 		if (_rightHeadVisible && _rightHeadBitmap.isValid())
 			blitTransparentBitmap(*activeScreen, _rightHeadBitmap, kDialogueRightHeadX, kDialogueHeadY);
 		if (textboxBitmap && textboxBitmap->isValid())
-	        _art->blitTextbox(*activeScreen, *textboxBitmap,
-		        kDialogueOverlayX, kDialogueOverlayY);
+			blitTransparentBitmap(*activeScreen, *textboxBitmap, kDialogueOverlayX, kDialogueOverlayY);
 
 		const Common::String &title = _menuTextConfig.dialogueResponsesLabel;
 		const Graphics::Font &titleFont = *_highlightFont;
@@ -1318,7 +1316,7 @@ private:
 			optionTexts.push_back(option.text);
 		logDialogueMenuItems("Response menu", responseLineIndex, responseLine, optionTexts);
 
-		const TextboxBitmap *textboxBitmap = _art->getTextboxBitmap(resolveDialogueResponseTextboxIndex(totalRows));
+		const IndexedBitmap *textboxBitmap = _art->getTextboxBitmap(resolveDialogueResponseTextboxIndex(totalRows));
 		Common::Error releaseError = waitForPointerRelease();
 		if (releaseError.getCode() != Common::kNoError)
 			return releaseError;

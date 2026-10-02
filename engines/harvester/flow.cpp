@@ -1012,7 +1012,7 @@ static const NpcRecord *findRoomNpcAtPoint(HarvesterEngine &engine,
 	return npc;
 }
 
-const TextboxBitmap *resolveInspectTextboxBitmap(const Art &art, const ResolvedText &text) {
+const IndexedBitmap *resolveInspectTextboxBitmap(const Art &art, const ResolvedText &text) {
 	if (text.boxName.equalsIgnoreCase("BOX1"))
 		return art.getTextboxBitmap(0);
 	if (text.boxName.equalsIgnoreCase("BOX2"))
@@ -1031,24 +1031,12 @@ void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphic
 	if (!textbox || !textbox->isValid())
 		return;
 
-	art.blitTextbox(screen, *textbox, kIdentTextboxX, kIdentTextboxY);
-
-	int textboxWidth = 0;
-
-	if (textbox->pngSurface) {
-		textboxWidth = textbox->pngSurface->w;
-	} else if (textbox->indexed.isValid()) {
-		textboxWidth = (int)textbox->indexed.width;
-	}
-
-	if (textboxWidth <= 0)
-		return;
-
+	blitBitmap(screen, *textbox, kIdentTextboxX, kIdentTextboxY);
 	if (useNativeFont) {
 		drawWrappedText(screen, font, inspectText.value,
 			kIdentTextboxX + kIdentTextboxTextInsetX,
 			kIdentTextboxY + kIdentTextboxTextInsetY,
-			MAX<int>(0, textboxWidth - 2),
+			MAX<int>(0, (int)textbox->width - 2),
 			0,
 			kNativeIdentTextLineSpacing,
 			true);
@@ -1058,7 +1046,7 @@ void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphic
 	drawWrappedShadowedText(screen, font, inspectText.value,
 		kIdentTextboxX + kIdentTextboxTextInsetX,
 		kIdentTextboxY + kIdentTextboxTextInsetY,
-		MAX<int>(0, textboxWidth - (kIdentTextboxTextInsetX + 2)),
+		MAX<int>(0, (int)textbox->width - (kIdentTextboxTextInsetX + 2)),
 		kIdentTextColor);
 }
 
