@@ -558,11 +558,32 @@ void Entity::configureHotspotBounds(int width, int height) {
 	updateScreenBaseFromCurrentFrame();
 }
 
-bool Entity::getCurrentFrameMetrics(int &width, int &height, int &xOffset, int &yOffset) const {
-	if (_frames.empty() || _currentFrame < 0 || (uint)_currentFrame >= _frames.size())
+bool Entity::getCurrentFrameMetrics(int &width, int &height,
+		int &xOffset, int &yOffset) const {
+	if (!_pngFrames.empty()) {
+		if (_currentFrame < 0 ||
+				(uint)_currentFrame >= _pngFrames.size())
+			return false;
+
+		const Graphics::Surface *frame =
+			_pngFrames[(uint)_currentFrame];
+
+		if (!frame)
+			return false;
+
+		width = frame->w;
+		height = frame->h;
+		xOffset = 0;
+		yOffset = 0;
+		return true;
+	}
+
+	if (_frames.empty() || _currentFrame < 0 ||
+			(uint)_currentFrame >= _frames.size())
 		return false;
 
 	const AbmFrame &frame = _frames[(uint)_currentFrame];
+
 	width = (int)frame.width;
 	height = (int)frame.height;
 	xOffset = frame.xOffset;
