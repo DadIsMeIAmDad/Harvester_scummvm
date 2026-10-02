@@ -73,37 +73,6 @@ static void scaleIndexedBitmapNearest(const IndexedBitmap &source, IndexedBitmap
 	}
 }
 
-static void scaleSurfaceNearest(const Graphics::Surface &source,
-		Graphics::Surface &dest, int scaledWidth, int scaledHeight) {
-
-	if (scaledWidth <= 0 || scaledHeight <= 0)
-		return;
-
-	dest.create(scaledWidth, scaledHeight, source.format);
-
-	for (int y = 0; y < scaledHeight; ++y) {
-		const int srcY = MIN<int>(
-			(y * source.h) / scaledHeight,
-			source.h - 1
-		);
-
-		for (int x = 0; x < scaledWidth; ++x) {
-			const int srcX = MIN<int>(
-				(x * source.w) / scaledWidth,
-				source.w - 1
-			);
-
-			const byte *srcPixel =
-				(const byte *)source.getBasePtr(srcX, srcY);
-
-			byte *dstPixel =
-				(byte *)dest.getBasePtr(x, y);
-
-			memcpy(dstPixel, srcPixel, source.format.bytesPerPixel);
-		}
-	}
-}
-
 static uint32 getAnimationClockTicks() {
 	if (!g_system)
 		return 0;
@@ -646,9 +615,6 @@ bool Entity::hasOpaqueFramesInRange(int firstFrame, int lastFrame) const {
 }
 
 void Entity::setDepthScale(float scale) {
-	if (_frames.empty() && _pngFrames.empty() && _pngBaseFrames.empty())
-		return;
-
 	const float newScale = scale > 0.0f ? scale : 1.0f;
 
 	if (fabsf(_depthScale - newScale) < 0.0001f)
@@ -656,31 +622,15 @@ void Entity::setDepthScale(float scale) {
 
 	_depthScale = newScale;
 
-	rebuildScaledFrames();
-}
+	if (!_frames.empty()) {
+		if (_baseFrames.empty())
+			_baseFrames = _frames;
 
-	const float newScale = scale > 0.0f ? scale : 1.0f;
-
-	if (fabsf(_depthScale - newScale) < 0.0001f)
-		return;
-
-	Common::Point drawOrigin = getDrawOrigin();
-
-	warning(
-		"HARVESTER DEPTH SCALE: path=%s scale=%f pngFrames=%d draw=(%d,%d)",
-		_resourcePath.c_str(),
-		newScale,
-		(int)_pngFrames.size(),
-		drawOrigin.x,
-		drawOrigin.y
-	);
-
-	if (_baseFrames.empty() && !_frames.empty())
-		_baseFrames = _frames;
-
-	_depthScale = newScale;
-
-	rebuildScaledFrames();
+		rebuildScaledFrames();
+	} else if (!_pngFrames.empty()) {
+		updateBoundsFromCurrentFrame();
+		updateScreenBaseFromCurrentFrame();
+	}
 }
 
 bool Entity::tickVisualState(uint32 now) {
@@ -889,7 +839,11 @@ void Entity::resumeTimerCountdown(uint32 now) {
 }
 
 void Entity::draw(Graphics::Screen &screen) const {
-	if (!_pngFrames.empty()) {
+	if (!_visible || !_drawEnabled)
+		return;
+
+	const Common::Point drawOrigin = getDrawOrigin();
+    if (!_pngFrames.empty()) {
 	int frameIndex = _currentFrame;
 
 	if (frameIndex < 0 || frameIndex >= (int)_pngFrames.size())
@@ -898,33 +852,10 @@ void Entity::draw(Graphics::Screen &screen) const {
 	const Graphics::Surface *frame = _pngFrames[frameIndex];
 
 	if (frame) {
-		const int scaledWidth = MAX<int>(
-			roundToInt((float)frame->w * _depthScale), 1);
 
-		const int scaledHeight = MAX<int>(
-			roundToInt((float)frame->h * _depthScale), 1);
-
-		if (fabsf(_depthScale - 1.0f) < 0.0001f) {
-			screen.blitFrom(
-				*frame,
-				Common::Rect(0, 0, frame->w, frame->h),
-				Common::Point(drawOrigin.x, drawOrigin.y));
-		} else {
-			Graphics::Surface scaledFrame;
-
-			scaleSurfaceNearest(
-				*frame,
-				scaledFrame,
-				scaledWidth,
-				scaledHeight);
-
-			screen.blitFrom(
-				scaledFrame,
-				Common::Rect(0, 0, scaledWidth, scaledHeight),
-				Common::Point(drawOrigin.x, drawOrigin.y));
-
-			scaledFrame.free();
-		}
+		screen.blitFrom(*frame,
+						Common::Rect(0, 0, frame->w, frame->h),
+						Common::Point(drawOrigin.x, drawOrigin.y));
 	}
 
 	return;
@@ -1186,32 +1117,13 @@ done:
 }
 
 void Entity::updateBoundsFromCurrentFrame() {
-	if (!_pngFrames.empty()) {
-		if (_currentFrame >= 0 &&
-				(uint)_currentFrame < _pngFrames.size() &&
-				_pngFrames[(uint)_currentFrame]) {
-			_boundsWidth = _pngFrames[(uint)_currentFrame]->w;
-			_boundsHeight = _pngFrames[(uint)_currentFrame]->h;
-		} else {
-			_boundsWidth = 0;
-			_boundsHeight = 0;
-		}
-
-		return;
-	}
-
 	if (_frames.empty()) {
 		_boundsWidth = 0;
 		_boundsHeight = 0;
 		return;
 	}
 
-	const int frameIndex =
-		(_currentFrame >= 0 &&
-			(uint)_currentFrame < _frames.size())
-		? _currentFrame
-		: 0;
-
+	const int frameIndex = (_currentFrame >= 0 && (uint)_currentFrame < _frames.size()) ? _currentFrame : 0;
 	_boundsWidth = (int)_frames[(uint)frameIndex].width;
 	_boundsHeight = (int)_frames[(uint)frameIndex].height;
 }
@@ -1230,51 +1142,6 @@ void Entity::updateScreenBaseFromCurrentFrame() {
 }
 
 void Entity::rebuildScaledFrames() {
-	// PNG animation scaling
-	if (!_pngBaseFrames.empty()) {
-		// Free the current scaled PNG frames.
-		for (uint i = 0; i < _pngFrames.size(); ++i) {
-			if (_pngFrames[i]) {
-				_pngFrames[i]->free();
-				delete _pngFrames[i];
-			}
-		}
-
-		_pngFrames.clear();
-
-		// Rebuild every displayed frame from the ORIGINAL PNG.
-		for (uint i = 0; i < _pngBaseFrames.size(); ++i) {
-			const Graphics::Surface *source = _pngBaseFrames[i];
-
-			if (!source) {
-				_pngFrames.push_back(nullptr);
-				continue;
-			}
-
-			const int scaledWidth =
-				scaleDimension(source->w, _depthScale);
-
-			const int scaledHeight =
-				scaleDimension(source->h, _depthScale);
-
-			Graphics::Surface *scaled = new Graphics::Surface();
-
-			scaleSurfaceNearest(
-				*source,
-				*scaled,
-				scaledWidth,
-				scaledHeight
-			);
-
-			_pngFrames.push_back(scaled);
-		}
-
-		updateBoundsFromCurrentFrame();
-		updateScreenBaseFromCurrentFrame();
-		return;
-	}
-
-	// Original ABM scaling
 	if (_baseFrames.empty()) {
 		_frames.clear();
 		updateBoundsFromCurrentFrame();
@@ -1290,27 +1157,16 @@ void Entity::rebuildScaledFrames() {
 	}
 
 	_frames.resize(_baseFrames.size());
-
 	for (uint i = 0; i < _baseFrames.size(); ++i) {
 		const AbmFrame &source = _baseFrames[i];
 		AbmFrame &scaled = _frames[i];
+		const int scaledWidth = scaleDimension(source.width, _depthScale);
+		const int scaledHeight = scaleDimension(source.height, _depthScale);
 
-		const int scaledWidth =
-			scaleDimension(source.width, _depthScale);
-
-		const int scaledHeight =
-			scaleDimension(source.height, _depthScale);
-
-		scaleIndexedBitmapNearest(
-			source,
-			scaled,
-			scaledWidth,
-			scaledHeight
-		);
-
+		scaleIndexedBitmapNearest(source, scaled, scaledWidth, scaledHeight);
+		// Native depth scaling preserves the authored horizontal frame offset.
 		scaled.xOffset = source.xOffset;
-		scaled.yOffset =
-			roundToInt((float)source.yOffset * _depthScale);
+		scaled.yOffset = roundToInt((float)source.yOffset * _depthScale);
 	}
 
 	updateBoundsFromCurrentFrame();
@@ -1426,27 +1282,7 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 bool Entity::loadPngAnimationZipResource(
 		ResourceManager &resources,
 		const Common::String &path) {
- 
- 
-    for (uint i = 0; i < _pngFrames.size(); ++i) {
-	    if (_pngFrames[i]) {
-		    _pngFrames[i]->free();
-		    delete _pngFrames[i];
-	    }
-    }
 
-for (uint i = 0; i < _pngBaseFrames.size(); ++i) {
-	if (_pngBaseFrames[i]) {
-		_pngBaseFrames[i]->free();
-		delete _pngBaseFrames[i];
-	}
-}
-
-_pngFrames.clear();
-_pngBaseFrames.clear();
- 
- 
- 
 	warning("HARVESTER PNG ZIP LOAD: %s", path.c_str());
 
 	Common::SeekableReadStream *stream = resources.openFile(path);
@@ -1470,7 +1306,6 @@ _pngBaseFrames.clear();
 	);
 
 	_pngFrames.clear();
-	_pngBaseFrames.clear();
 
 	// Load frames in numeric order: 001.png, 002.png, 003.png...
 	for (int frameNumber = 1; frameNumber <= (int)members.size(); ++frameNumber) {
@@ -1517,14 +1352,10 @@ _pngBaseFrames.clear();
 			return false;
 		}
 
-        Graphics::Surface *frame = new Graphics::Surface();
-        frame->copyFrom(*surface);
+		Graphics::Surface *frame = new Graphics::Surface();
+		frame->copyFrom(*surface);
 
-        Graphics::Surface *baseFrame = new Graphics::Surface();
-        baseFrame->copyFrom(*surface);
-
-        _pngFrames.push_back(frame);
-        _pngBaseFrames.push_back(baseFrame);
+		_pngFrames.push_back(frame);
 
 		warning(
 			"HARVESTER PNG ZIP FRAME: %s (%d x %d)",
