@@ -155,6 +155,7 @@ private:
 	Common::Array<AbmFrame> _baseFrames;
 	Graphics::Surface *_pngSurface = nullptr;
     Common::Array<Graphics::Surface *> _pngFrames;
+	Common::Array<Graphics::Surface *> _basePngFrames;
 	int _classId = 0;
 	int _x = 0;
 	int _y = 0;
