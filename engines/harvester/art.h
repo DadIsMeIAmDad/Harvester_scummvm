@@ -56,46 +56,42 @@ struct AbmFrame : IndexedBitmap {
 	int32 yOffset = 0;
 };
 
-class Art {
-public:
-	bool load(ResourceManager &resources);
-	bool loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel);
-	void drawWaitFrame(Graphics::Screen &screen) const;
+void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphics::Font &font,
+		const ResolvedText &inspectText, bool useNativeFont) {
+	const TextboxBitmap *textbox = resolveInspectTextboxBitmap(art, inspectText);
+	if (!textbox || !textbox->isValid())
+		return;
 
-	// MUST be public
-	void blitTextbox(Graphics::Screen &screen,
-			const TextboxBitmap &bitmap,
-			int x, int y) const;
+	art.blitTextbox(screen, *textbox, kIdentTextboxX, kIdentTextboxY);
 
-	const byte *getWaitPalette() const {
-		return _waitPalette;
+	int textboxWidth = 0;
+
+	if (textbox->pngSurface) {
+		textboxWidth = textbox->pngSurface->w;
+	} else if (textbox->indexed.isValid()) {
+		textboxWidth = (int)textbox->indexed.width;
 	}
 
-	const Common::Array<AbmFrame> &getWaitFrames() const {
-		return _waitFrames;
+	if (textboxWidth <= 0)
+		return;
+
+	if (useNativeFont) {
+		drawWrappedText(screen, font, inspectText.value,
+			kIdentTextboxX + kIdentTextboxTextInsetX,
+			kIdentTextboxY + kIdentTextboxTextInsetY,
+			MAX<int>(0, textboxWidth - 2),
+			0,
+			kNativeIdentTextLineSpacing,
+			true);
+		return;
 	}
 
-	const IndexedBitmap &getInventoryBitmap() const {
-		return _inventoryBitmap;
-	}
-
-	const IndexedBitmap &getLogoBitmap() const {
-		return _logoBitmap;
-	}
-
-	const IndexedBitmap &getTipsBitmap() const {
-		return _tipsBitmap;
-	}
-
-	const TextboxBitmap *getQuickTipsTextboxBitmap() const;
-
-	const Common::Array<IndexedBitmap> &getAmmoIcons() const {
-		return _ammoIcons;
-	}
-
-	const TextboxBitmap *getTextboxBitmap(uint index) const {
-		return index < _textboxes.size() ? &_textboxes[index] : nullptr;
-	}
+	drawWrappedShadowedText(screen, font, inspectText.value,
+		kIdentTextboxX + kIdentTextboxTextInsetX,
+		kIdentTextboxY + kIdentTextboxTextInsetY,
+		MAX<int>(0, textboxWidth - (kIdentTextboxTextInsetX + 2)),
+		kIdentTextColor);
+}
 
 private:
 	bool loadPalette(ResourceManager &resources,
