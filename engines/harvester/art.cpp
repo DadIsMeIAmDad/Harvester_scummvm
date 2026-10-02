@@ -20,7 +20,7 @@
  */
 
 #include "harvester/art.h"
-
+#include "graphics/surface.h"
 #include "common/debug.h"
 #include "common/endian.h"
 #include "graphics/blit.h"
@@ -77,7 +77,7 @@ static const byte kTransparentPaletteIndex = 0;
 static const uint kQuickTipsTextboxIndex = 5;
 
 static const char *const kTextboxPaths[] = {
-	"4:/GRAPHIC/OTHER/TEXTBOX1.BM",
+	"4:/GRAPHIC/OTHER/TEXTBOX1.png",
 	"1:/GRAPHIC/OTHER/TEXTBOX2.BM",
 	"1:/GRAPHIC/OTHER/TEXTBOX3.BM",
 	"1:/GRAPHIC/OTHER/TEXTBOX4.BM",
@@ -99,6 +99,7 @@ static const char *const kAmmoIconPaths[] = {
 bool Art::load(ResourceManager &resources) {
 	_waitFrames.clear();
 	_textboxes.clear();
+	freeTextboxSurfaces();
 	_ammoIcons.clear();
 	_inventoryBitmap = IndexedBitmap();
 	_logoBitmap = IndexedBitmap();
@@ -111,14 +112,22 @@ bool Art::load(ResourceManager &resources) {
 }
 
 bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel) {
+	freeTextboxSurfaces();
+
 	_textboxes.resize(ARRAYSIZE(kTextboxPaths));
+	_textboxSurfaces.resize(ARRAYSIZE(kTextboxPaths));
+	for (uint i = 0; i < ARRAYSIZE(kTextboxPaths); ++i)
+		_textboxSurfaces[i] = nullptr;
+
 	for (uint i = 0; i < _textboxes.size(); ++i) {
 		const Common::String path = kTextboxPaths[i];
 		bool ok;
-		if (path.hasSuffixIgnoreCase(".png"))
-			ok = loadPngAsIndexedBitmap(resources, path, _textboxes[i]);
-		else
+		if (path.hasSuffixIgnoreCase(".png")) {
+			ok = loadPngAsSurface(resources, path, _textboxSurfaces[i]);
+			// Leave _textboxes[i] empty; true-color path will use the surface.
+		} else {
 			ok = loadBitmap(resources, path, _textboxes[i]);
+		}
 		if (!ok)
 			return false;
 	}
@@ -132,6 +141,10 @@ bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPane
 	if (useTextboxPanel) {
 		_tipsBitmap = IndexedBitmap();
 		debugC(2, kDebugResources, "Harvester: quick tips panel '%s'", kTextboxPaths[kQuickTipsTextboxIndex]);
+
+		// Prefer surface if this slot is a PNG; otherwise fall back to indexed.
+		if (_textboxSurfaces[kQuickTipsTextboxIndex])
+			return true;
 		const IndexedBitmap *textbox = getQuickTipsTextboxBitmap();
 		return textbox && textbox->isValid();
 	}
@@ -201,7 +214,46 @@ bool Art::loadPalette(ResourceManager &resources, const Common::String &path, by
 	logPaletteSummary("loaded palette", path, dest);
 	return true;
 }
+void Art::freeTextboxSurfaces() {
+	for (uint i = 0; i < _textboxSurfaces.size(); ++i) {
+		if (_textboxSurfaces[i]) {
+			_textboxSurfaces[i]->free();
+			delete _textboxSurfaces[i];
+			_textboxSurfaces[i] = nullptr;
+		}
+	}
+	_textboxSurfaces.clear();
+}
+bool Art::loadPngAsSurface(ResourceManager &resources, const Common::String &path, Graphics::Surface *&outSurface) const {
+	outSurface = nullptr;
 
+	Common::SeekableReadStream *stream = resources.openFile(path);
+	if (!stream) {
+		warning("Harvester: unable to open PNG textbox '%s'", path.c_str());
+		return false;
+	}
+
+	Image::PNGDecoder decoder;
+	if (!decoder.loadStream(*stream)) {
+		delete stream;
+		warning("Harvester: could not decode PNG textbox '%s'", path.c_str());
+		return false;
+	}
+	delete stream;
+
+	const Graphics::Surface *surface = decoder.getSurface();
+	if (!surface || surface->w == 0 || surface->h == 0) {
+		warning("Harvester: PNG textbox returned empty surface '%s'", path.c_str());
+		return false;
+	}
+
+	outSurface = new Graphics::Surface();
+	outSurface->copyFrom(*surface);
+
+	warning("Harvester: loaded PNG textbox '%s' (%dx%d bpp=%u)",
+		path.c_str(), surface->w, surface->h, surface->format.bytesPerPixel);
+	return true;
+}
 bool Art::loadBitmap(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) const {
 	Common::Array<byte> data;
 	if (!resources.loadFile(path, data) || data.size() < 12) {
