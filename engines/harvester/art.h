@@ -2,6 +2,7 @@
 #define HARVESTER_ART_H
 
 #include "common/array.h"
+#include "common/str.h"
 #include "graphics/surface.h"
 
 namespace Graphics {
@@ -34,7 +35,6 @@ struct TextboxBitmap {
 	bool isValid() const {
 		if (pngSurface)
 			return pngSurface->w > 0 && pngSurface->h > 0;
-
 		return indexed.isValid();
 	}
 
@@ -44,10 +44,13 @@ struct TextboxBitmap {
 			delete pngSurface;
 			pngSurface = nullptr;
 		}
-
 		indexed.width = 0;
 		indexed.height = 0;
 		indexed.pixels.clear();
+	}
+
+	~TextboxBitmap() {
+		free();
 	}
 };
 
@@ -56,34 +59,47 @@ struct AbmFrame : IndexedBitmap {
 	int32 yOffset = 0;
 };
 
+class Art {
+public:
+	bool load(ResourceManager &resources);
+	bool loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel);
 
+	void drawWaitFrame(Graphics::Screen &screen) const;
+	void blitTextbox(Graphics::Screen &screen, const TextboxBitmap &bitmap, int x, int y) const;
+
+	const TextboxBitmap *getTextboxBitmap(uint index) const {
+		if (index >= _textboxes.size())
+			return nullptr;
+		return &_textboxes[index];
+	}
+
+	const TextboxBitmap *getQuickTipsTextboxBitmap() const;
+
+	const IndexedBitmap &getInventoryBitmap() const { return _inventoryBitmap; }
+	const IndexedBitmap &getLogoBitmap() const { return _logoBitmap; }
+	const IndexedBitmap &getTipsBitmap() const { return _tipsBitmap; }
+	const Common::Array<IndexedBitmap> &getAmmoIcons() const { return _ammoIcons; }
 
 private:
 	bool loadPalette(ResourceManager &resources,
 			const Common::String &path,
 			byte *dest) const;
-
 	bool loadBitmap(ResourceManager &resources,
 			const Common::String &path,
 			IndexedBitmap &bitmap) const;
-
 	bool loadPngBitmap(ResourceManager &resources,
 			const Common::String &path,
 			TextboxBitmap &bitmap) const;
-
 	bool loadAnimation(ResourceManager &resources,
 			const Common::String &path,
 			Common::Array<AbmFrame> &frames) const;
-
 	bool decodeAnimationFrame(const byte *source,
 			uint32 sourceSize,
 			bool compressed,
 			Common::Array<byte> &dest) const;
-
 	void blitTransparentBitmap(Graphics::Screen &screen,
 			const IndexedBitmap &bitmap,
 			int x, int y) const;
-
 	void blitTransparentAnimationFrame(
 			Graphics::Screen &screen,
 			const Common::Array<AbmFrame> &frames,
@@ -91,11 +107,9 @@ private:
 			int x, int y) const;
 
 	byte _waitPalette[256 * 3] = { 0 };
-
 	Common::Array<AbmFrame> _waitFrames;
 	Common::Array<TextboxBitmap> _textboxes;
 	Common::Array<IndexedBitmap> _ammoIcons;
-
 	IndexedBitmap _inventoryBitmap;
 	IndexedBitmap _logoBitmap;
 	IndexedBitmap _tipsBitmap;
@@ -103,4 +117,4 @@ private:
 
 } // namespace Harvester
 
-#endif
+#endif // HARVESTER_ART_H
