@@ -1201,6 +1201,52 @@ void Entity::updateScreenBaseFromCurrentFrame() {
 }
 
 void Entity::rebuildScaledFrames() {
+	// PNG animation frames
+	if (!_pngFrames.empty()) {
+		for (uint i = 0; i < _pngFrames.size(); ++i) {
+			Graphics::Surface *source = _pngFrames[i];
+
+			if (!source)
+				continue;
+
+			const int scaledWidth =
+				scaleDimension(source->w, _depthScale);
+
+			const int scaledHeight =
+				scaleDimension(source->h, _depthScale);
+
+			if (scaledWidth == source->w &&
+					scaledHeight == source->h) {
+				continue;
+			}
+
+			Graphics::Surface *scaled = new Graphics::Surface();
+
+			scaleSurfaceNearest(
+				*source,
+				*scaled,
+				scaledWidth,
+				scaledHeight
+			);
+
+			source->free();
+			delete source;
+
+			_pngFrames[i] = scaled;
+		}
+
+		if (_currentFrame >= 0 &&
+				(uint)_currentFrame < _pngFrames.size() &&
+				_pngFrames[(uint)_currentFrame]) {
+			_boundsWidth = _pngFrames[(uint)_currentFrame]->w;
+			_boundsHeight = _pngFrames[(uint)_currentFrame]->h;
+		}
+
+		updateScreenBaseFromCurrentFrame();
+		return;
+	}
+
+	// Original ABM frame scaling
 	if (_baseFrames.empty()) {
 		_frames.clear();
 		updateBoundsFromCurrentFrame();
@@ -1216,16 +1262,27 @@ void Entity::rebuildScaledFrames() {
 	}
 
 	_frames.resize(_baseFrames.size());
+
 	for (uint i = 0; i < _baseFrames.size(); ++i) {
 		const AbmFrame &source = _baseFrames[i];
 		AbmFrame &scaled = _frames[i];
-		const int scaledWidth = scaleDimension(source.width, _depthScale);
-		const int scaledHeight = scaleDimension(source.height, _depthScale);
 
-		scaleIndexedBitmapNearest(source, scaled, scaledWidth, scaledHeight);
-		// Native depth scaling preserves the authored horizontal frame offset.
+		const int scaledWidth =
+			scaleDimension(source.width, _depthScale);
+
+		const int scaledHeight =
+			scaleDimension(source.height, _depthScale);
+
+		scaleIndexedBitmapNearest(
+			source,
+			scaled,
+			scaledWidth,
+			scaledHeight
+		);
+
 		scaled.xOffset = source.xOffset;
-		scaled.yOffset = roundToInt((float)source.yOffset * _depthScale);
+		scaled.yOffset =
+			roundToInt((float)source.yOffset * _depthScale);
 	}
 
 	updateBoundsFromCurrentFrame();
