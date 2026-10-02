@@ -29,6 +29,7 @@
 #include "harvester/palette_utils.h"
 #include "harvester/resources.h"
 #include "image/png.h"
+#include "common/memstream.h"
 
 namespace Harvester {
 
@@ -230,22 +231,27 @@ void Art::freeTextboxSurfaces() {
 	_textboxSurfaces.clear();
 }
 bool Art::loadPngAsSurface(ResourceManager &resources, const Common::String &path, Graphics::Surface *&outSurface) const {
-    warning("Harvester: ENTER loadPngAsSurface '%s'", path.c_str());
 	outSurface = nullptr;
 
-	Common::SeekableReadStream *stream = resources.openFile(path);
-	if (!stream) {
-		warning("Harvester: unable to open PNG textbox '%s'", path.c_str());
+	warning("Harvester: ENTER loadPngAsSurface '%s'", path.c_str());
+	warning("Harvester: hasFile=%d", resources.hasFile(path) ? 1 : 0);
+
+	// Prefer loading into memory first (same path BM uses via loadFile).
+	Common::Array<byte> data;
+	if (!resources.loadFile(path, data) || data.empty()) {
+		warning("Harvester: unable to load PNG textbox bytes '%s'", path.c_str());
 		return false;
 	}
+	warning("Harvester: PNG textbox bytes loaded OK '%s' size=%u", path.c_str(), (uint)data.size());
+
+	Common::MemoryReadStream stream(data.data(), data.size());
 
 	Image::PNGDecoder decoder;
-	if (!decoder.loadStream(*stream)) {
-		delete stream;
+	if (!decoder.loadStream(stream)) {
 		warning("Harvester: could not decode PNG textbox '%s'", path.c_str());
 		return false;
 	}
-	delete stream;
+	warning("Harvester: PNG textbox decoded OK '%s'", path.c_str());
 
 	const Graphics::Surface *surface = decoder.getSurface();
 	if (!surface || surface->w == 0 || surface->h == 0) {
@@ -260,6 +266,7 @@ bool Art::loadPngAsSurface(ResourceManager &resources, const Common::String &pat
 		path.c_str(), surface->w, surface->h, surface->format.bytesPerPixel);
 	return true;
 }
+
 bool Art::loadBitmap(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) const {
 	Common::Array<byte> data;
 	if (!resources.loadFile(path, data) || data.size() < 12) {
