@@ -541,28 +541,37 @@ void Entity::configureHotspotBounds(int width, int height) {
 
 bool Entity::getCurrentFrameMetrics(int &width, int &height,
 		int &xOffset, int &yOffset) const {
-	if (!_pngFrames.empty()) {
-		if (_currentFrame < 0 || (uint)_currentFrame >= _pngFrames.size())
+	// Prefer the original (unscaled) frames
+	if (!_basePngFrames.empty() || !_pngFrames.empty()) {
+		const Common::Array<Graphics::Surface *> &src =
+			!_basePngFrames.empty() ? _basePngFrames : _pngFrames;
+
+		if (_currentFrame < 0 || (uint)_currentFrame >= src.size() || !src[_currentFrame])
 			return false;
 
-		const Graphics::Surface *frame = _pngFrames[(uint)_currentFrame];
-		if (!frame)
-			return false;
+		const int rawW = src[_currentFrame]->w;
+		const int rawH = src[_currentFrame]->h;
 
-		width = frame->w;
-		height = frame->h;
+		if (fabsf(_depthScale - 1.0f) < 0.001f) {
+			width  = rawW;
+			height = rawH;
+		} else {
+			width  = scaleDimension(rawW, _depthScale);
+			height = scaleDimension(rawH, _depthScale);
+		}
 		xOffset = 0;
 		yOffset = 0;
 		return true;
 	}
 
+	// Classic ABM path (unchanged)
 	if (_frames.empty() || _currentFrame < 0 ||
 			(uint)_currentFrame >= _frames.size())
 		return false;
 
 	const AbmFrame &frame = _frames[(uint)_currentFrame];
-	width = (int)frame.width;
-	height = (int)frame.height;
+	width   = (int)frame.width;
+	height  = (int)frame.height;
 	xOffset = frame.xOffset;
 	yOffset = frame.yOffset;
 	return true;
