@@ -656,7 +656,7 @@ void Entity::setDepthScale(float scale) {
 
 	if (fabsf(_depthScale - newScale) < 0.0001f)
 		return;
-
+	Common::Point drawOrigin = getDrawOrigin();
 	_depthScale = newScale;
 
 	if (!_frames.empty()) {
