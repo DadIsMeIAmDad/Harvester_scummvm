@@ -544,12 +544,13 @@ public:
 		const bool textEnabled = textMode != kStartupDialogueTextNone &&
 			_text->resolveDialogueSubtitle(wavId, subtitleText);
 		Common::Array<Common::String> subtitleLines;
-		const IndexedBitmap *textboxBitmap = nullptr;
-		if (textEnabled) {
-			wrapDialogueTextLikeNative(*_subtitleFont, _subtitleFontUsesCft,
-				subtitleText, kDialogueSubtitleTextWidth, subtitleLines);
-			textboxBitmap = _art->getTextboxBitmap(resolveDialogueTextboxIndex(subtitleLines.size()));
-		}
+        const TextboxBitmap *textboxBitmap = nullptr;
+        if (textEnabled) {
+	        wrapDialogueTextLikeNative(*_subtitleFont, _subtitleFontUsesCft,
+		        subtitleText, kDialogueSubtitleTextWidth, subtitleLines);
+	        textboxBitmap = _art->getTextboxBitmap(
+		        resolveDialogueTextboxIndex(subtitleLines.size()));
+        }
 
 		const Common::String voicePath = buildDialogueVoicePath(*_script, wavId);
 		const bool voiceStarted = !voicePath.empty() && _engine.playSpeech(voicePath);
@@ -1316,7 +1317,7 @@ private:
 			optionTexts.push_back(option.text);
 		logDialogueMenuItems("Response menu", responseLineIndex, responseLine, optionTexts);
 
-		const IndexedBitmap *textboxBitmap = _art->getTextboxBitmap(resolveDialogueResponseTextboxIndex(totalRows));
+		const TextboxBitmap *textboxBitmap = _art->getTextboxBitmap(resolveDialogueResponseTextboxIndex(totalRows));
 		Common::Error releaseError = waitForPointerRelease();
 		if (releaseError.getCode() != Common::kNoError)
 			return releaseError;

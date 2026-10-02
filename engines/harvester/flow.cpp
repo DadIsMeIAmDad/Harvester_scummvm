@@ -1012,7 +1012,7 @@ static const NpcRecord *findRoomNpcAtPoint(HarvesterEngine &engine,
 	return npc;
 }
 
-const IndexedBitmap *resolveInspectTextboxBitmap(const Art &art, const ResolvedText &text) {
+const TextboxBitmap *resolveInspectTextboxBitmap(const Art &art, const ResolvedText &text) {
 	if (text.boxName.equalsIgnoreCase("BOX1"))
 		return art.getTextboxBitmap(0);
 	if (text.boxName.equalsIgnoreCase("BOX2"))
