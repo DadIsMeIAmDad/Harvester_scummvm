@@ -114,9 +114,11 @@ bool Art::load(ResourceManager &resources) {
 bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel) {
     warning("Harvester: ENTER loadQuickTipsResources useTextboxPanel=%d", (int)useTextboxPanel);
 	freeTextboxSurfaces();
-
+	warning("MARK: TEXTBOX BEGIN RESIZE");
 	_textboxes.resize(ARRAYSIZE(kTextboxPaths));
+	warning("MARK: TEXTBOX RESIZED");
 	_textboxSurfaces.resize(ARRAYSIZE(kTextboxPaths));
+	warning("MARK: TEXTBOX RESIZED2");
 	for (uint i = 0; i < ARRAYSIZE(kTextboxPaths); ++i)
 		_textboxSurfaces[i] = nullptr;
 
@@ -124,9 +126,11 @@ bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPane
 		const Common::String path = kTextboxPaths[i];
 		bool ok;
 		if (path.hasSuffixIgnoreCase(".png")) {
+		    warning("MARK: TEXTBOX PNG LOADED");
 			ok = loadPngAsSurface(resources, path, _textboxSurfaces[i]);
 			// Leave _textboxes[i] empty; true-color path will use the surface.
 		} else {
+		    warning("MARK: TEXTBOX BITMAP LOADED");
 			ok = loadBitmap(resources, path, _textboxes[i]);
 		}
 		if (!ok)
