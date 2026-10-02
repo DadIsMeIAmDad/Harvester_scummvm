@@ -113,7 +113,13 @@ bool Art::load(ResourceManager &resources) {
 bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel) {
 	_textboxes.resize(ARRAYSIZE(kTextboxPaths));
 	for (uint i = 0; i < _textboxes.size(); ++i) {
-		if (!loadBitmap(resources, kTextboxPaths[i], _textboxes[i]))
+		const Common::String path = kTextboxPaths[i];
+		bool ok;
+		if (path.hasSuffixIgnoreCase(".png"))
+			ok = loadPngAsIndexedBitmap(resources, path, _textboxes[i]);
+		else
+			ok = loadBitmap(resources, path, _textboxes[i]);
+		if (!ok)
 			return false;
 	}
 
