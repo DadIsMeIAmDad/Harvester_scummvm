@@ -1073,7 +1073,7 @@ private:
 		}
 	}
 
-	void drawDialogueOverlay(const IndexedBitmap *overlayBitmap,
+	void drawDialogueOverlay(const TextboxBitmap *textboxBitmap,
 			const Common::Array<Common::String> *subtitleLines, const Common::Array<Common::String> *topics,
 			int hoveredTopicIndex, bool hoverOther, const Common::String *textEntryValue) {
 		Graphics::Screen *activeScreen = getActiveScreen();
