@@ -450,14 +450,20 @@ void Entity::setCurrentFrame(int frame) {
 	updateBoundsFromCurrentFrame();
 }
 void Entity::setAnimationFrameRange(int firstFrame, int lastFrame, bool looping) {
-	if (_frames.empty())
+	const int frameCount = !_pngFrames.empty()
+		? (int)_pngFrames.size()
+		: (int)_frames.size();
+
+	if (frameCount <= 0)
 		return;
 
 	const int previousFirstFrame = _firstFrame;
 	const int previousLastFrame = _lastFrame;
 	const bool wasLooping = _looping;
-	firstFrame = CLIP<int>(firstFrame, 0, (int)_frames.size() - 1);
-	lastFrame = CLIP<int>(lastFrame, 0, (int)_frames.size() - 1);
+
+	firstFrame = CLIP<int>(firstFrame, 0, frameCount - 1);
+	lastFrame = CLIP<int>(lastFrame, 0, frameCount - 1);
+
 	if (lastFrame < firstFrame)
 		SWAP(firstFrame, lastFrame);
 
@@ -467,6 +473,7 @@ void Entity::setAnimationFrameRange(int firstFrame, int lastFrame, bool looping)
 	_firstFrame = firstFrame;
 	_lastFrame = lastFrame;
 	_animationEnabled = firstFrame != lastFrame;
+
 	if (_currentFrame < _firstFrame || _currentFrame > _lastFrame)
 		advanceAnimationFrame(_firstFrame);
 	else
