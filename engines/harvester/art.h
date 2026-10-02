@@ -1,30 +1,11 @@
-/* ScummVM - Graphic Adventure Engine
- *
- * ScummVM is the legal property of the developers of ScummVM.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
 #ifndef HARVESTER_ART_H
 #define HARVESTER_ART_H
 
 #include "common/array.h"
+#include "graphics/surface.h"
 
 namespace Graphics {
 class Screen;
-struct Surface;
 }
 
 namespace Harvester {
@@ -37,7 +18,8 @@ struct IndexedBitmap {
 	Common::Array<byte> pixels;
 
 	bool isValid() const {
-		return width != 0 && height != 0 && pixels.size() >= width * height;
+		return width != 0 && height != 0 &&
+			pixels.size() >= width * height;
 	}
 };
 
@@ -80,7 +62,15 @@ public:
 	bool loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel);
 	void drawWaitFrame(Graphics::Screen &screen) const;
 
-	const byte *getWaitPalette() const { return _waitPalette; }
+	// MUST be public
+	void blitTextbox(Graphics::Screen &screen,
+			const TextboxBitmap &bitmap,
+			int x, int y) const;
+
+	const byte *getWaitPalette() const {
+		return _waitPalette;
+	}
+
 	const Common::Array<AbmFrame> &getWaitFrames() const {
 		return _waitFrames;
 	}
@@ -109,13 +99,16 @@ public:
 
 private:
 	bool loadPalette(ResourceManager &resources,
-			const Common::String &path, byte *dest) const;
+			const Common::String &path,
+			byte *dest) const;
 
 	bool loadBitmap(ResourceManager &resources,
-			const Common::String &path, IndexedBitmap &bitmap) const;
+			const Common::String &path,
+			IndexedBitmap &bitmap) const;
 
 	bool loadPngBitmap(ResourceManager &resources,
-			const Common::String &path, TextboxBitmap &bitmap) const;
+			const Common::String &path,
+			TextboxBitmap &bitmap) const;
 
 	bool loadAnimation(ResourceManager &resources,
 			const Common::String &path,
@@ -126,28 +119,20 @@ private:
 			bool compressed,
 			Common::Array<byte> &dest) const;
 
-	void blitTextbox(Graphics::Screen &screen,
-			const TextboxBitmap &bitmap,
-			int x,
-			int y) const;
-
 	void blitTransparentBitmap(Graphics::Screen &screen,
 			const IndexedBitmap &bitmap,
-			int x,
-			int y) const;
+			int x, int y) const;
 
-	void blitTransparentAnimationFrame(Graphics::Screen &screen,
+	void blitTransparentAnimationFrame(
+			Graphics::Screen &screen,
 			const Common::Array<AbmFrame> &frames,
 			uint frameIndex,
-			int x,
-			int y) const;
+			int x, int y) const;
 
 	byte _waitPalette[256 * 3] = { 0 };
 
 	Common::Array<AbmFrame> _waitFrames;
-
 	Common::Array<TextboxBitmap> _textboxes;
-
 	Common::Array<IndexedBitmap> _ammoIcons;
 
 	IndexedBitmap _inventoryBitmap;
@@ -155,6 +140,6 @@ private:
 	IndexedBitmap _tipsBitmap;
 };
 
-} // End of namespace Harvester
+} // namespace Harvester
 
-#endif // HARVESTER_ART_H
+#endif

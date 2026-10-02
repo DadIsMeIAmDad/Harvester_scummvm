@@ -203,12 +203,12 @@ bool Art::loadPngBitmap(ResourceManager &resources, const Common::String &path,
 	bitmap.pngSurface = new Graphics::Surface();
 	bitmap.pngSurface->copyFrom(*surface);
 
-	debugC(1, kDebugGraphics,
-		"HARVESTER TEXTBOX PNG LOADED: %s (%d x %d, bpp=%d)",
-		path.c_str(),
-		surface->w,
-		surface->h,
-		surface->format.bytesPerPixel);
+	debugC(1, kDebugGeneral,
+	    "HARVESTER TEXTBOX PNG LOADED: %s (%d x %d, bpp=%d)",
+	    path.c_str(),
+	    surface->w,
+	    surface->h,
+	    surface->format.bytesPerPixel);
 
 	return true;
 }
