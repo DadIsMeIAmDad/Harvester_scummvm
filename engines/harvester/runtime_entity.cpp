@@ -646,28 +646,31 @@ bool Entity::hasOpaqueFramesInRange(int firstFrame, int lastFrame) const {
 }
 
 void Entity::setDepthScale(float scale) {
-    warning(
-	    "HARVESTER DEPTH SCALE: path=%s scale=%f pngFrames=%d",
-	    _resourcePath.c_str(),
-	    (double)_depthScale,
-        (int)_pngFrames.size()
-    );
+	if (_frames.empty() && _pngFrames.empty())
+		return;
+
 	const float newScale = scale > 0.0f ? scale : 1.0f;
 
 	if (fabsf(_depthScale - newScale) < 0.0001f)
 		return;
+
 	Common::Point drawOrigin = getDrawOrigin();
+
+	warning(
+		"HARVESTER DEPTH SCALE: path=%s scale=%f pngFrames=%d draw=(%d,%d)",
+		_resourcePath.c_str(),
+		newScale,
+		(int)_pngFrames.size(),
+		drawOrigin.x,
+		drawOrigin.y
+	);
+
+	if (_baseFrames.empty() && !_frames.empty())
+		_baseFrames = _frames;
+
 	_depthScale = newScale;
 
-	if (!_frames.empty()) {
-		if (_baseFrames.empty())
-			_baseFrames = _frames;
-
-		rebuildScaledFrames();
-	} else if (!_pngFrames.empty()) {
-		updateBoundsFromCurrentFrame();
-		updateScreenBaseFromCurrentFrame();
-	}
+	rebuildScaledFrames();
 }
 
 bool Entity::tickVisualState(uint32 now) {
