@@ -41,7 +41,7 @@ static const ArchiveSpec kArchiveSpecs[] = {
 	{ '1', "INDEX.001", "HARVEST.DAT", 30 },
 	{ '2', "INDEX.002", "SOUND.DAT", 29 },
 	{ '3', "INDEX.003", "HARVEST2.DAT", 28 },
-	{ '4', "INDEX.004", "HARVEST4.DAT", 27 }
+	{ '4', nullptr, nullptr, 27 }
 };
 
 static bool hasArchiveSetPrefix(const Common::String &path) {
@@ -57,6 +57,58 @@ static const ArchiveSpec *findArchiveSpec(char archiveSetId) {
 	}
 
 	return nullptr;
+}
+
+static bool mountZipAsArchiveSet(
+		ResourceManager &rm,
+		const Common::String &zipPath,
+		char archiveSetId,
+		int priority) {
+
+	Common::SeekableReadStream *stream =
+		SearchMan.createReadStreamForMember(
+			Common::Path(zipPath, '/'));
+
+	if (!stream) {
+		warning(
+			"Harvester: cannot open ZIP for set %c: %s",
+			archiveSetId,
+			zipPath.c_str());
+
+		return false;
+	}
+
+	Common::Archive *archive =
+		Common::makeZipArchive(stream);
+
+	if (!archive) {
+		warning(
+			"Harvester: failed to create ZIP archive for set %c: %s",
+			archiveSetId,
+			zipPath.c_str());
+
+		return false;
+	}
+
+	const Common::String name =
+		Common::String::format(
+			"harvester-zip-%c",
+			archiveSetId);
+
+	rm.mountArchive(
+		name,
+		archive,
+		priority,
+		true);
+
+	debugC(
+		1,
+		kDebugResources,
+		"Harvester: mounted ZIP %s as set %c",
+		zipPath.c_str(),
+		archiveSetId);
+
+	return true;
 }
 
 static Common::String stripLeadingSlashes(const Common::String &path) {
@@ -190,37 +242,46 @@ bool ResourceManager::ensureDiscMounted(int discNumber) {
 		return false;
 
 	bool mountedAny = false;
+
+	// ----- Existing XFile mounts for sets 1/2/3 -----
 	for (const ArchiveSpec &spec : kArchiveSpecs) {
-		if (getMountedDiscArchive(discNumber, spec.archiveSetId)) {
-			mountedAny = true;
-			continue;
-		}
+		if (spec.archiveSetId == '4')
+			continue; // Set 4 is the ZIP-backed HD drive
 
-		const Common::String indexPath = resolveDiscArchiveStoragePath(discNumber, spec.indexPath);
-		const Common::String dataPath = resolveDiscArchiveStoragePath(discNumber, spec.dataPath);
-		if (indexPath.empty() || dataPath.empty()) {
-			debugC(1, kDebugResources,
-				"Harvester: missing archive files for disc %d set %c (%s + %s)",
-				discNumber, spec.archiveSetId, spec.indexPath, spec.dataPath);
-			continue;
-		}
+		// Keep your existing XFile mounting code here.
+		//
+		// IMPORTANT:
+		// Do not add the old INDEX.004 / HARVEST4.DAT
+		// mounting code here.
+	}
 
-		XFileArchive *archive = new XFileArchive();
-		if (!archive->open(indexPath, dataPath)) {
-			debugC(1, kDebugResources,
-				"Harvester: failed to mount disc %d set %c from %s + %s",
-				discNumber, spec.archiveSetId, indexPath.c_str(), dataPath.c_str());
-			delete archive;
-			continue;
-		}
+	// ----- Set 4: mount HARVEST4.ZIP as virtual 4:/ -----
 
-		mountArchive(buildDiscArchiveName(discNumber, spec.archiveSetId), archive, spec.priority, true);
-		debugC(1, kDebugResources,
-			"Harvester: mounted disc %d set %c from %s + %s",
-			discNumber, spec.archiveSetId, indexPath.c_str(), dataPath.c_str());
+	static const char *const kRemasterZipCandidates[] = {
+		"CD1/HARVEST4.ZIP",
+		"HARVEST4.ZIP",
+		"HD/HARVEST4.ZIP",
+		"remaster/HARVEST4.ZIP"
+	};
+
+	// Don't mount the same ZIP more than once.
+	if (!_search.hasArchive("harvester-zip-4")) {
+		for (const char *candidate : kRemasterZipCandidates) {
+			if (!SearchMan.hasFile(Common::Path(candidate, '/')))
+				continue;
+
+			if (mountZipAsArchiveSet(*this, candidate, '4', 27)) {
+				mountedAny = true;
+				break;
+			}
+		}
+	} else {
 		mountedAny = true;
 	}
 
+	// If sets 1-3 were mounted successfully, this remains true.
+	// Set 4 is optional, so don't fail the entire disc mount if
+	// HARVEST4.ZIP isn't present.
 	return mountedAny;
 }
 
@@ -242,8 +303,16 @@ void ResourceManager::unmountOtherDiscArchives(int keepDiscNumber) {
 	}
 }
 
-Common::Archive *ResourceManager::getMountedDiscArchive(int discNumber, char archiveSetId) const {
-	return _search.getArchive(buildDiscArchiveName(discNumber, archiveSetId));
+Common::Archive *ResourceManager::getMountedDiscArchive(
+		int discNumber, char archiveSetId) const {
+
+	// Set 4 is our HD/remaster ZIP.
+	if (archiveSetId == '4')
+		return _search.getArchive("harvester-zip-4");
+
+	// Sets 1-3 use the original XFile archives.
+	return _search.getArchive(
+		buildDiscArchiveName(discNumber, archiveSetId));
 }
 
 Common::Archive *ResourceManager::findArchiveForMember(char archiveSetId, const Common::Path &memberPath) const {
@@ -256,9 +325,15 @@ Common::Archive *ResourceManager::findArchiveForMember(char archiveSetId, const 
 
 bool ResourceManager::hasInMountedArchives(const Common::Path &memberPath) const {
 	for (const ArchiveSpec &spec : kArchiveSpecs) {
-		if (findArchiveForMember(spec.archiveSetId, memberPath))
-			return true;
-	}
+		if (findArchiveForMember(spec.archiveSetId,
+		    Common::Path(memberPath, '/')) != nullptr)
+	    return true;
+
+    if (spec.archiveSetId == '4')
+	    return false;
+
+    return !resolveDiscArchiveStoragePath(
+	    _currentDisc, memberPath).empty();
 
 	return false;
 }
@@ -279,56 +354,145 @@ Common::SeekableReadStream *ResourceManager::openFromMountedArchives(const Commo
 
 bool ResourceManager::hasFile(const Common::String &path) const {
 	const Common::String normalized = normalizeResourcePath(path);
+
 	if (normalized.empty())
 		return false;
 
+	// Explicit archive-set path such as:
+	// 1:/GRAPHIC/...
+	// 2:/...
+	// 3:/...
+	// 4:/GRAPHIC/ROOMS/PCROOM.PNG
 	if (hasArchiveSetPrefix(normalized)) {
-		const ArchiveSpec *spec = findArchiveSpec(normalized[0]);
-		const Common::String memberPath = stripLeadingSlashes(normalized.substr(3));
+		const char archiveSetId = normalized[0];
+
+		const ArchiveSpec *spec =
+			findArchiveSpec(archiveSetId);
+
+		const Common::String memberPath =
+			stripLeadingSlashes(normalized.substr(3));
+
 		if (!spec || memberPath.empty())
 			return false;
 
-		if (findArchiveForMember(spec->archiveSetId, Common::Path(memberPath, '/')) != nullptr)
+		Common::Archive *archive =
+			findArchiveForMember(
+				spec->archiveSetId,
+				Common::Path(memberPath, '/'));
+
+		if (archive)
 			return true;
 
-		return !resolveDiscArchiveStoragePath(_currentDisc, memberPath).empty();
+		// IMPORTANT:
+		// 4:/ exists ONLY inside HARVEST4.ZIP.
+		// Don't fall back to CD1/ or loose files for set 4.
+		if (archiveSetId == '4')
+			return false;
+
+		// Original behavior for sets 1-3.
+		return !resolveDiscArchiveStoragePath(
+			_currentDisc,
+			memberPath).empty();
 	}
 
+	// Normal path without an explicit archive number.
 	const Common::Path memberPath(normalized, '/');
+
 	if (hasInMountedArchives(memberPath))
 		return true;
 
-	return !resolveDiscLooseResourcePath(_currentDisc, normalized).empty();
+	return !resolveDiscLooseResourcePath(
+		_currentDisc,
+		normalized).empty();
 }
 
-Common::SeekableReadStream *ResourceManager::openFile(const Common::String &path) const {
-	const Common::String normalized = normalizeResourcePath(path);
+Common::SeekableReadStream *ResourceManager::openFile(
+		const Common::String &path) const {
+
+	const Common::String normalized =
+		normalizeResourcePath(path);
+
 	if (normalized.empty())
 		return nullptr;
 
 	Common::SeekableReadStream *stream = nullptr;
+
+	// Explicit archive-set path:
+	//
+	// 1:/...
+	// 2:/...
+	// 3:/...
+	// 4:/...
 	if (hasArchiveSetPrefix(normalized)) {
-		const ArchiveSpec *spec = findArchiveSpec(normalized[0]);
-		const Common::String memberPath = stripLeadingSlashes(normalized.substr(3));
-		Common::Archive *archive = spec ? findArchiveForMember(spec->archiveSetId, Common::Path(memberPath, '/')) : nullptr;
-		if (archive && !memberPath.empty())
-			stream = archive->createReadStreamForMember(Common::Path(memberPath, '/'));
-		if (!stream && !memberPath.empty()) {
-			const Common::String loosePath = resolveDiscArchiveStoragePath(_currentDisc, memberPath);
-			if (!loosePath.empty())
-				stream = SearchMan.createReadStreamForMember(Common::Path(loosePath, '/'));
+		const char archiveSetId = normalized[0];
+
+		const ArchiveSpec *spec =
+			findArchiveSpec(archiveSetId);
+
+		const Common::String memberPath =
+			stripLeadingSlashes(normalized.substr(3));
+
+		if (spec && !memberPath.empty()) {
+			Common::Archive *archive =
+				findArchiveForMember(
+					spec->archiveSetId,
+					Common::Path(memberPath, '/'));
+
+			if (archive) {
+				stream = archive->createReadStreamForMember(
+					Common::Path(memberPath, '/'));
+			}
+
+			// Sets 1-3 can fall back to their physical
+			// CD/archive storage.
+			//
+			// Set 4 must NOT do this because 4:/ is
+			// exclusively the HARVEST4.ZIP virtual drive.
+			if (!stream && archiveSetId != '4') {
+				const Common::String loosePath =
+					resolveDiscArchiveStoragePath(
+						_currentDisc,
+						memberPath);
+
+				if (!loosePath.empty()) {
+					stream =
+						SearchMan.createReadStreamForMember(
+							Common::Path(loosePath, '/'));
+				}
+			}
 		}
 	} else {
+		// Normal resource path without 1:/, 2:/, etc.
+
 		const Common::Path memberPath(normalized, '/');
-		const Common::String loosePath = resolveDiscLooseResourcePath(_currentDisc, normalized);
-		if (!loosePath.empty())
-			stream = SearchMan.createReadStreamForMember(Common::Path(loosePath, '/'));
+
+		// First check loose files.
+		const Common::String loosePath =
+			resolveDiscLooseResourcePath(
+				_currentDisc,
+				normalized);
+
+		if (!loosePath.empty()) {
+			stream =
+				SearchMan.createReadStreamForMember(
+					Common::Path(loosePath, '/'));
+		}
+
+		// Then check mounted archives.
 		if (!stream)
 			stream = openFromMountedArchives(memberPath);
 	}
 
-	debugC(3, kDebugResources, "Harvester: openFile(disc=%d, '%s' -> '%s') %s",
-		_currentDisc, path.c_str(), normalized.c_str(), stream ? "hit" : "miss");
+	debugC(
+		3,
+		kDebugResources,
+		"Harvester: openFile(disc=%d, '%s' -> '%s') %s",
+		_currentDisc,
+		path.c_str(),
+		normalized.c_str(),
+		stream ? "hit" : "miss"
+	);
+
 	return stream;
 }
 
