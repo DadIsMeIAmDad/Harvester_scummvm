@@ -1012,25 +1012,39 @@ static const NpcRecord *findRoomNpcAtPoint(HarvesterEngine &engine,
 	return npc;
 }
 
-const IndexedBitmap *resolveInspectTextboxBitmap(const Art &art, const ResolvedText &text) {
+static int resolveInspectTextboxIndex(const ResolvedText &text) {
 	if (text.boxName.equalsIgnoreCase("BOX1"))
-		return art.getTextboxBitmap(0);
+		return 0;
 	if (text.boxName.equalsIgnoreCase("BOX2"))
-		return art.getTextboxBitmap(1);
+		return 1;
 	if (text.boxName.equalsIgnoreCase("BOX3"))
-		return art.getTextboxBitmap(2);
+		return 2;
 	if (text.boxName.equalsIgnoreCase("BOX4"))
-		return art.getTextboxBitmap(3);
+		return 3;
 
-	return nullptr;
+	return -1;
+}
+
+const IndexedBitmap *resolveInspectTextboxBitmap(const Art &art, const ResolvedText &text) {
+	const int index = resolveInspectTextboxIndex(text);
+	if (index < 0)
+		return nullptr;
+
+	return art.getTextboxBitmap(index);
 }
 
 void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphics::Font &font,
 		const ResolvedText &inspectText, bool useNativeFont) {
 
-	const Graphics::Surface *textboxSurface = art.getTextboxSurface(0);
-	const IndexedBitmap *textboxBitmap = nullptr;
+	const int textboxIndex = resolveInspectTextboxIndex(inspectText);
 
+	if (textboxIndex < 0)
+		return;
+
+	const Graphics::Surface *textboxSurface =
+		art.getTextboxSurface(textboxIndex);
+
+	const IndexedBitmap *textboxBitmap = nullptr;
 	int textboxWidth = 0;
 
 	if (textboxSurface) {
@@ -1053,7 +1067,7 @@ void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphic
 		screen.blitFrom(*textboxSurface, srcRect, dstRect);
 
 	} else {
-		textboxBitmap = resolveInspectTextboxBitmap(art, inspectText);
+		textboxBitmap = art.getTextboxBitmap(textboxIndex);
 
 		if (!textboxBitmap || !textboxBitmap->isValid())
 			return;
@@ -1079,11 +1093,6 @@ void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphic
 		kIdentTextboxY + kIdentTextboxTextInsetY,
 		MAX<int>(0, textboxWidth - (kIdentTextboxTextInsetX + 2)),
 		kIdentTextColor);
-}
-
-static bool suppressesInitialObjectInspectGate(const ObjectRecord &object) {
-	// Native HARVEST.SCR uses ident key X as a no-text sentinel.
-	return object.identTextKey.equalsIgnoreCase("X");
 }
 
 static bool usesBareOperatePrompt(const ObjectRecord &object) {
