@@ -1099,7 +1099,10 @@ static bool usesBareOperatePrompt(const ObjectRecord &object) {
 	return object.objectName.equalsIgnoreCase("HAPPLY_HS") ||
 		object.objectName.equalsIgnoreCase("KILL_STEPH_HS");
 }
-
+static bool suppressesInitialObjectInspectGate(const ObjectRecord &object) {
+    // Native HARVEST.SCR uses ident key X as a no-text sentinel.
+    return object.identTextKey.equalsIgnoreCase("X");
+}
 bool unlocksRoomObjectInteractionAfterInitialExamine(const ObjectRecord &object,
 		Script &script) {
 	if (suppressesInitialObjectInspectGate(object))
