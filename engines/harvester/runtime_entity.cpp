@@ -252,8 +252,7 @@ bool Entity::loadPngResource(ResourceManager &resources, const Common::String &p
 }
 bool Entity::loadPngAnimationResource(ResourceManager &resources, const Common::String &path) {
 	_pngFrames.clear();
-    _basePngFrames = _pngFrames;   // or deep-copy if you prefer ownership clarity
-    _depthScale = 1.0f;
+
 	for (int frameNumber = 1; ; ++frameNumber) {
 		Common::String framePath = Common::String::format(
 			"%s/%03d.png", path.c_str(), frameNumber);
@@ -618,63 +617,30 @@ bool Entity::hasOpaqueFramesInRange(int firstFrame, int lastFrame) const {
 }
 
 void Entity::setDepthScale(float scale) {
+    warning(
+	    "HARVESTER DEPTH SCALE: path=%s scale=%f pngFrames=%d",
+	    _resourcePath.c_str(),
+	    (double)_depthScale,
+        (int)_pngFrames.size()
+    );
 	const float newScale = scale > 0.0f ? scale : 1.0f;
+
 	if (fabsf(_depthScale - newScale) < 0.0001f)
 		return;
 
 	_depthScale = newScale;
 
-	if (!_baseFrames.empty()) {
-		rebuildScaledFrames();          // existing ABM path
-	} else if (!_basePngFrames.empty()) {
-		rebuildScaledPngFrames();       // new PNG path
-	}
-}
-static void scaleSurfaceNearest(const Graphics::Surface &src,
-                                Graphics::Surface &dst,
-                                int scaledW, int scaledH) {
-	dst.create(scaledW, scaledH, src.format);
-	for (int y = 0; y < scaledH; ++y) {
-		const uint32 srcY = MIN<uint32>((uint32)y * src.h / scaledH, src.h - 1);
-		for (int x = 0; x < scaledW; ++x) {
-			const uint32 srcX = MIN<uint32>((uint32)x * src.w / scaledW, src.w - 1);
-			// copy pixel (handles any bpp via format)
-			dst.setPixel(x, y, src.getPixel(srcX, srcY));
-		}
+	if (!_frames.empty()) {
+		if (_baseFrames.empty())
+			_baseFrames = _frames;
+
+		rebuildScaledFrames();
+	} else if (!_pngFrames.empty()) {
+		updateBoundsFromCurrentFrame();
+		updateScreenBaseFromCurrentFrame();
 	}
 }
 
-void Entity::rebuildScaledPngFrames() {
-	// free old scaled frames
-	for (Graphics::Surface *s : _pngFrames)
-		if (s) { s->free(); delete s; }
-	_pngFrames.clear();
-
-	if (fabsf(_depthScale - 1.0f) < 0.0001f) {
-		// just alias the base frames (or deep-copy if ownership requires it)
-		for (Graphics::Surface *s : _basePngFrames) {
-			Graphics::Surface *copy = new Graphics::Surface();
-			copy->copyFrom(*s);
-			_pngFrames.push_back(copy);
-		}
-	} else {
-		for (Graphics::Surface *src : _basePngFrames) {
-			const int sw = scaleDimension(src->w, _depthScale);
-			const int sh = scaleDimension(src->h, _depthScale);
-			Graphics::Surface *dst = new Graphics::Surface();
-			scaleSurfaceNearest(*src, *dst, sw, sh);
-			_pngFrames.push_back(dst);
-		}
-	}
-
-	// update bounds from the (now scaled) current frame
-	if (!_pngFrames.empty() && _currentFrame >= 0 &&
-	    (uint)_currentFrame < _pngFrames.size()) {
-		_boundsWidth  = _pngFrames[_currentFrame]->w;
-		_boundsHeight = _pngFrames[_currentFrame]->h;
-	}
-	updateScreenBaseFromCurrentFrame();
-}
 bool Entity::tickVisualState(uint32 now) {
 
     warning(
@@ -1324,8 +1290,7 @@ Entity *EntityManager::spawnBitmapEntityFromResource(const Common::String &name,
 bool Entity::loadPngAnimationZipResource(
 		ResourceManager &resources,
 		const Common::String &path) {
-    _basePngFrames = _pngFrames;   // or deep-copy if you prefer ownership clarity
-    _depthScale = 1.0f;
+
 	warning("HARVESTER PNG ZIP LOAD: %s", path.c_str());
 
 	Common::SeekableReadStream *stream = resources.openFile(path);
