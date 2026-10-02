@@ -33,8 +33,7 @@
 namespace Harvester {
 
 namespace {
-
-static const char *const kPlayerActorResourcePath = "1:/GRAPHIC/MONSTERS/PC/PC0.ABM";
+static const char *const kPlayerActorResourcePath = "4:/GRAPHICS/MONSTERS/PC/PC0.zip";
 static const float kRoomPlayerHorizontalMoveBase = 8.0f;
 static const float kRoomPlayerHorizontalTargetSlackBase = 50.0f;
 static const float kRoomPlayerDepthTargetSlack = 8.0f;
@@ -1149,9 +1148,11 @@ int Player::resolveFacingFrame(int facing) {
 
 Common::String Player::resolveCombatLoadoutResourcePath(int loadout) {
 	if (loadout <= 0)
-		return Common::String(kPlayerActorResourcePath);
+		return Common::String("4:/GRAPHICS/MONSTERS/PC/PC0.zip");
 
-	return Common::String::format("1:/GRAPHIC/MONSTERS/PC/PC%02d.ABM", loadout);
+	return Common::String::format(
+		"4:/GRAPHICS/MONSTERS/PC/PC%02d.zip",
+		loadout);
 }
 
 const char *Player::describeCombatLoadout(int loadout) {
