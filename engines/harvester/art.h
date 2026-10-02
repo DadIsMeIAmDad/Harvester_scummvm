@@ -26,6 +26,7 @@
 
 namespace Graphics {
 class Screen;
+struct Surface;
 }
 
 namespace Harvester {
@@ -68,6 +69,8 @@ private:
     bool loadPngAsIndexedBitmap(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) const;
 	bool loadPalette(ResourceManager &resources, const Common::String &path, byte *dest) const;
 	bool loadBitmap(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) const;
+	bool loadPngAsSurface(ResourceManager &resources, const Common::String &path, Graphics::Surface *&outSurface) const;
+	void freeTextboxSurfaces();
 	bool loadAnimation(ResourceManager &resources, const Common::String &path, Common::Array<AbmFrame> &frames) const;
 	bool decodeAnimationFrame(const byte *source, uint32 sourceSize, bool compressed, Common::Array<byte> &dest) const;
 	void blitTransparentBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y) const;
@@ -77,6 +80,7 @@ private:
 	byte _waitPalette[256 * 3] = { 0 };
 	Common::Array<AbmFrame> _waitFrames;
 	Common::Array<IndexedBitmap> _textboxes;
+	Common::Array<Graphics::Surface *> _textboxSurfaces;
 	Common::Array<IndexedBitmap> _ammoIcons;
 	IndexedBitmap _inventoryBitmap;
 	IndexedBitmap _logoBitmap;
