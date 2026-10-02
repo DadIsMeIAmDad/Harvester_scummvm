@@ -1242,7 +1242,7 @@ private:
 		return -1;
 	}
 
-	void drawDialogueResponseMenu(const IndexedBitmap *textboxBitmap,
+	void drawDialogueResponseMenu(const TextboxBitmap *textboxBitmap,
 			const Common::Array<DialogueResponseOptionLayout> &options, int hoveredOptionIndex) {
 		Graphics::Screen *activeScreen = getActiveScreen();
 		if (!activeScreen)
@@ -1255,7 +1255,8 @@ private:
 		if (_rightHeadVisible && _rightHeadBitmap.isValid())
 			blitTransparentBitmap(*activeScreen, _rightHeadBitmap, kDialogueRightHeadX, kDialogueHeadY);
 		if (textboxBitmap && textboxBitmap->isValid())
-			blitTransparentBitmap(*activeScreen, *textboxBitmap, kDialogueOverlayX, kDialogueOverlayY);
+	        _art->blitTextbox(*activeScreen, *textboxBitmap,
+		        kDialogueOverlayX, kDialogueOverlayY);
 
 		const Common::String &title = _menuTextConfig.dialogueResponsesLabel;
 		const Graphics::Font &titleFont = *_highlightFont;

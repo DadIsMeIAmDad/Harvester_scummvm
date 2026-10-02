@@ -20,7 +20,7 @@
  */
 
 #include "harvester/art.h"
-
+#include "graphics/surface.h"
 #include "common/debug.h"
 #include "common/endian.h"
 #include "graphics/blit.h"
@@ -30,7 +30,10 @@
 #include "harvester/resources.h"
 #include "image/png.h"
 #include "common/rect.h"
-#include "common/point.h"
+
+namespace Graphics {
+class Screen;
+}
 
 namespace Harvester {
 
