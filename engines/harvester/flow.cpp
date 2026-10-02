@@ -1027,16 +1027,47 @@ const IndexedBitmap *resolveInspectTextboxBitmap(const Art &art, const ResolvedT
 
 void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphics::Font &font,
 		const ResolvedText &inspectText, bool useNativeFont) {
-	const IndexedBitmap *textbox = resolveInspectTextboxBitmap(art, inspectText);
-	if (!textbox || !textbox->isValid())
-		return;
 
-	blitBitmap(screen, *textbox, kIdentTextboxX, kIdentTextboxY);
+	const Graphics::Surface *textboxSurface = art.getTextboxSurface(0);
+	const IndexedBitmap *textboxBitmap = nullptr;
+
+	int textboxWidth = 0;
+
+	if (textboxSurface) {
+		textboxWidth = textboxSurface->w;
+
+		const Common::Rect srcRect(
+			0,
+			0,
+			textboxSurface->w,
+			textboxSurface->h
+		);
+
+		const Common::Rect dstRect(
+			kIdentTextboxX,
+			kIdentTextboxY,
+			kIdentTextboxX + textboxSurface->w,
+			kIdentTextboxY + textboxSurface->h
+		);
+
+		screen.blitFrom(*textboxSurface, srcRect, dstRect);
+
+	} else {
+		textboxBitmap = resolveInspectTextboxBitmap(art, inspectText);
+
+		if (!textboxBitmap || !textboxBitmap->isValid())
+			return;
+
+		textboxWidth = textboxBitmap->width;
+
+		blitBitmap(screen, *textboxBitmap, kIdentTextboxX, kIdentTextboxY);
+	}
+
 	if (useNativeFont) {
 		drawWrappedText(screen, font, inspectText.value,
 			kIdentTextboxX + kIdentTextboxTextInsetX,
 			kIdentTextboxY + kIdentTextboxTextInsetY,
-			MAX<int>(0, (int)textbox->width - 2),
+			MAX<int>(0, textboxWidth - 2),
 			0,
 			kNativeIdentTextLineSpacing,
 			true);
@@ -1046,7 +1077,7 @@ void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphic
 	drawWrappedShadowedText(screen, font, inspectText.value,
 		kIdentTextboxX + kIdentTextboxTextInsetX,
 		kIdentTextboxY + kIdentTextboxTextInsetY,
-		MAX<int>(0, (int)textbox->width - (kIdentTextboxTextInsetX + 2)),
+		MAX<int>(0, textboxWidth - (kIdentTextboxTextInsetX + 2)),
 		kIdentTextColor);
 }
 

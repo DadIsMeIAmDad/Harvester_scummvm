@@ -64,7 +64,9 @@ public:
 	const IndexedBitmap *getTextboxBitmap(uint index) const {
 		return index < _textboxes.size() ? &_textboxes[index] : nullptr;
 	}
-
+    const Graphics::Surface *getTextboxSurface(uint index) const {
+		return index < _textboxSurfaces.size() ? _textboxSurfaces[index] : nullptr;
+	}
 private:
     bool loadPngAsIndexedBitmap(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) const;
 	bool loadPalette(ResourceManager &resources, const Common::String &path, byte *dest) const;
