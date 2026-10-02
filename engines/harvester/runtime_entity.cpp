@@ -73,6 +73,37 @@ static void scaleIndexedBitmapNearest(const IndexedBitmap &source, IndexedBitmap
 	}
 }
 
+static void scaleSurfaceNearest(const Graphics::Surface &source,
+		Graphics::Surface &dest, int scaledWidth, int scaledHeight) {
+
+	if (scaledWidth <= 0 || scaledHeight <= 0)
+		return;
+
+	dest.create(scaledWidth, scaledHeight, source.format);
+
+	for (int y = 0; y < scaledHeight; ++y) {
+		const int srcY = MIN<int>(
+			(y * source.h) / scaledHeight,
+			source.h - 1
+		);
+
+		for (int x = 0; x < scaledWidth; ++x) {
+			const int srcX = MIN<int>(
+				(x * source.w) / scaledWidth,
+				source.w - 1
+			);
+
+			const byte *srcPixel =
+				(const byte *)source.getBasePtr(srcX, srcY);
+
+			byte *dstPixel =
+				(byte *)dest.getBasePtr(x, y);
+
+			memcpy(dstPixel, srcPixel, source.format.bytesPerPixel);
+		}
+	}
+}
+
 static uint32 getAnimationClockTicks() {
 	if (!g_system)
 		return 0;
@@ -845,11 +876,7 @@ void Entity::resumeTimerCountdown(uint32 now) {
 }
 
 void Entity::draw(Graphics::Screen &screen) const {
-	if (!_visible || !_drawEnabled)
-		return;
-
-	const Common::Point drawOrigin = getDrawOrigin();
-    if (!_pngFrames.empty()) {
+	if (!_pngFrames.empty()) {
 	int frameIndex = _currentFrame;
 
 	if (frameIndex < 0 || frameIndex >= (int)_pngFrames.size())
@@ -858,10 +885,33 @@ void Entity::draw(Graphics::Screen &screen) const {
 	const Graphics::Surface *frame = _pngFrames[frameIndex];
 
 	if (frame) {
+		const int scaledWidth = MAX<int>(
+			roundToInt((float)frame->w * _depthScale), 1);
 
-		screen.blitFrom(*frame,
-						Common::Rect(0, 0, frame->w, frame->h),
-						Common::Point(drawOrigin.x, drawOrigin.y));
+		const int scaledHeight = MAX<int>(
+			roundToInt((float)frame->h * _depthScale), 1);
+
+		if (fabsf(_depthScale - 1.0f) < 0.0001f) {
+			screen.blitFrom(
+				*frame,
+				Common::Rect(0, 0, frame->w, frame->h),
+				Common::Point(drawOrigin.x, drawOrigin.y));
+		} else {
+			Graphics::Surface scaledFrame;
+
+			scaleSurfaceNearest(
+				*frame,
+				scaledFrame,
+				scaledWidth,
+				scaledHeight);
+
+			screen.blitFrom(
+				scaledFrame,
+				Common::Rect(0, 0, scaledWidth, scaledHeight),
+				Common::Point(drawOrigin.x, drawOrigin.y));
+
+			scaledFrame.free();
+		}
 	}
 
 	return;
