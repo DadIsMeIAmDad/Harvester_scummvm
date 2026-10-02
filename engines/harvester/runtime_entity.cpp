@@ -831,20 +831,46 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 	const Common::Point drawOrigin = getDrawOrigin();
 
-	if (!_pngFrames.empty()) {
+	// Prefer the original (unscaled) frames when available so we can scale
+	// only the frame we are about to draw.
+	const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
+	if (!_basePngFrames.empty())
+		sourceFrames = &_basePngFrames;
+	else if (!_pngFrames.empty())
+		sourceFrames = &_pngFrames;
+
+	if (sourceFrames && !sourceFrames->empty()) {
 		int frameIndex = _currentFrame;
-		if (frameIndex < 0 || frameIndex >= (int)_pngFrames.size())
+		if (frameIndex < 0 || frameIndex >= (int)sourceFrames->size())
 			frameIndex = 0;
 
-		const Graphics::Surface *frame = _pngFrames[frameIndex];
-		if (frame) {
-			screen.blitFrom(*frame,
-				Common::Rect(0, 0, frame->w, frame->h),
+		const Graphics::Surface *src = (*sourceFrames)[frameIndex];
+		if (!src)
+			return;
+
+		if (fabsf(_depthScale - 1.0f) < 0.001f) {
+			// No scaling needed – blit directly
+			screen.blitFrom(*src,
+				Common::Rect(0, 0, src->w, src->h),
 				Common::Point(drawOrigin.x, drawOrigin.y));
+		} else {
+			// Scale only the current frame
+			const int sw = scaleDimension(src->w, _depthScale);
+			const int sh = scaleDimension(src->h, _depthScale);
+
+			Graphics::Surface scaled;
+			scaleSurfaceNearest(*src, scaled, sw, sh);
+
+			screen.blitFrom(scaled,
+				Common::Rect(0, 0, scaled.w, scaled.h),
+				Common::Point(drawOrigin.x, drawOrigin.y));
+
+			scaled.free();
 		}
 		return;
 	}
 
+	// Single PNG surface (non-animation)
 	if (_pngSurface) {
 		screen.blitFrom(*_pngSurface,
 			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
@@ -852,6 +878,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 		return;
 	}
 
+	// Classic ABM / indexed frames
 	if (_currentFrame < 0)
 		return;
 
