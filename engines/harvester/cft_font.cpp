@@ -169,7 +169,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 			glyph->x;
 
 		// Render at 50% horizontal width.
-		const int drawWidth = (glyph->width + 1) / 2;
+		const int drawWidth = (glyph->width - 5);
 
 		for (int col = 0; col < drawWidth; ++col) {
 			const int dstX = x + col;
