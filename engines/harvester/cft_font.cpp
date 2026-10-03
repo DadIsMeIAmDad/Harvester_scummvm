@@ -170,7 +170,13 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 					(uint16)dst->format.RGBToColor(entry[0], entry[1], entry[2]);
 				break;
 			}
-
+			case 3: {
+				const byte *entry = palette + srcColor * 3;
+				const uint32 pixel = dst->format.RGBToColor(entry[0], entry[1], entry[2]);
+				byte *p = (byte *)dst->getBasePtr(dstX, dstY);
+				// Write the 3 bytes in the surface’s native order
+				WRITE_UINT24(p, pixel);          // or the manual version below if preferred
+				break;
 			case 4: {
 				const byte *entry = palette + srcColor * 3;
 				*((uint32 *)dst->getBasePtr(dstX, dstY)) =
