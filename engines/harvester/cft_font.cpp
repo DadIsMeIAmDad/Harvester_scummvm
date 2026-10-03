@@ -164,50 +164,39 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 		if (dstY < 0 || dstY >= dst->h)
 			continue;
 
-		const byte *srcRow =
-			_resource.atlasPixels.data() +
-			row * _resource.atlasWidth +
-			glyph->x;
-
-		// TEST: draw the full original glyph width
-		const int drawWidth = glyph->width;
-
-		for (int col = 0; col < drawWidth; ++col) {
+		const byte *srcRow = _resource.atlasPixels.data() + row * _resource.atlasWidth + glyph->x;
+		for (int col = 0; col < glyph->width; ++col) {
 			const int dstX = x + col;
-
-			// TEST: use every source pixel instead of every second pixel
-			const int srcCol = col;
-
-			const byte srcColor = srcRow[srcCol];
-
+			const byte srcColor = srcRow[col];
+			
+			
 			if (dstX < 0 || dstX >= dst->w || srcColor == 0)
 				continue;
+
 
 			switch (dst->format.bytesPerPixel) {
 			case 1:
 				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
-
 			case 2:
 				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
-
 			case 4: {
-				const uint32 pixel = dst->format.ARGBToColor(
-					255,
-					(color >> 16) & 0xFF,
-					(color >> 8) & 0xFF,
-					color & 0xFF);
+			    const uint32 pixel = dst->format.ARGBToColor(
+        	        255,
+        	        (color >> 16) & 0xFF,
+        	        (color >> 8) & 0xFF,
+        	        color & 0xFF);
 
-				*((uint32 *)dst->getBasePtr(dstX, dstY)) = pixel;
-				break;
+    	        *((uint32 *)dst->getBasePtr(dstX, dstY)) = pixel;
+    	        break;
 			}
-
 			default:
 				break;
 			}
 		}
 	}
+}
 
 const HarvesterCftFont::GlyphSlice *HarvesterCftFont::findGlyph(uint32 chr) const {
 	if (chr >= ARRAYSIZE(_glyphs))
