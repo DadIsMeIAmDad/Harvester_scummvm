@@ -200,9 +200,9 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				// CFT pixel value is an intensity/alpha value.
 				uint8 intensity = srcColor;
 
-				uint8 finalR = (r * intensity) / 127;
-				uint8 finalG = (g * intensity) / 127;
-				uint8 finalB = (b * intensity) / 127;
+				uint8 finalR = (r * intensity);
+				uint8 finalG = (g * intensity);
+				uint8 finalB = (b * intensity);
 
 				uint32 pixelColor = dst->format.RGBToColor(
 					finalR,
