@@ -137,11 +137,6 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	if (!glyph)
 		return;
 
-	warning("CFT SURFACE: %dx%d bpp=%d format=%s",
-	        dst->w,
-	        dst->h,
-	        dst->format.bytesPerPixel,
-	        dst->format.toString().c_str());
 
 	// Check the range of pixel values in this glyph.
 	byte minSrc = 255;
@@ -167,8 +162,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 		}
 	}
 
-	warning("CFT GLYPH VALUES: chr=%u min=%u max=%u nonzero=%u",
-	        chr, minSrc, maxSrc, countNonZero);
+
 
 	for (int row = 0; row < _drawHeight; ++row) {
 		const int dstY = y + row;
@@ -186,7 +180,9 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 
 			if (dstX < 0 || dstX >= dst->w || srcColor == 0)
 				continue;
-
+	        if (chr == 'E' || chr == 'm')
+	            warning("CFT DRAW: chr=%u src=%u color=%08X",
+	                chr, srcColor, color);
 			switch (dst->format.bytesPerPixel) {
 			case 1:
 				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
@@ -201,7 +197,18 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				uint8 g = (color >> 8) & 0xFF;
 				uint8 b = color & 0xFF;
 
-				uint32 pixelColor = dst->format.RGBToColor(r, g, b);
+				// CFT pixel value is an intensity/alpha value.
+				uint8 intensity = srcColor;
+
+				uint8 finalR = (r * intensity) / 127;
+				uint8 finalG = (g * intensity) / 127;
+				uint8 finalB = (b * intensity) / 127;
+
+				uint32 pixelColor = dst->format.RGBToColor(
+					finalR,
+					finalG,
+					finalB
+				);
 
 				*((uint32 *)dst->getBasePtr(dstX, dstY)) = pixelColor;
 				break;
