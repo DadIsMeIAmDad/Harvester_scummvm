@@ -137,6 +137,24 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	if (!glyph)
 		return;
 
+	static const byte testPalette[16][3] = {
+		{   0,  20,  91 }, // 0 - transparent
+		{   0,   0,   0 }, // 1
+		{  18,  18,  18 }, // 2
+		{  36,  36,  36 }, // 3
+		{  57,  57,  49 }, // 4
+		{  74,  74,  66 }, // 5
+		{  91,  91,  91 }, // 6
+		{ 109, 109, 109 }, // 7
+		{ 132, 115, 107 }, // 8
+		{ 145, 145, 145 }, // 9
+		{ 163, 163, 163 }, // 10
+		{ 181, 173, 181 }, // 11
+		{ 200, 200, 200 }, // 12
+		{ 214, 198, 206 }, // 13
+		{ 236, 236, 236 }, // 14
+		{ 255, 255, 255 }  // 15
+	};
 
 	// Check the range of pixel values in this glyph.
 	byte minSrc = 255;
@@ -177,6 +195,8 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 		for (int col = 0; col < glyph->width; ++col) {
 			const int dstX = x + col;
 			const byte srcColor = srcRow[col];
+			
+
 
 			if (dstX < 0 || dstX >= dst->w || srcColor == 0)
 				continue;
@@ -193,22 +213,11 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				break;
 
 			case 4: {
-				uint8 r = (color >> 16) & 0xFF;
-				uint8 g = (color >> 8) & 0xFF;
-				uint8 b = color & 0xFF;
+				const byte r = testPalette[srcColor][0];
+				const byte g = testPalette[srcColor][1];
+				const byte b = testPalette[srcColor][2];
 
-				// CFT pixel value is an intensity/alpha value.
-				uint8 intensity = srcColor;
-
-				uint8 finalR = (r * intensity);
-				uint8 finalG = (g * intensity);
-				uint8 finalB = (b * intensity);
-
-				uint32 pixelColor = dst->format.RGBToColor(
-					finalR,
-					finalG,
-					finalB
-				);
+				const uint32 pixelColor = dst->format.RGBToColor(r, g, b);
 
 				*((uint32 *)dst->getBasePtr(dstX, dstY)) = pixelColor;
 				break;
