@@ -165,32 +165,36 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 			continue;
 
 		const byte *srcRow = _resource.atlasPixels.data() + row * _resource.atlasWidth + glyph->x;
-		for (int col = 0; col < glyph->width; ++col) {
-			const int dstX = x + col;
-			const byte srcColor = srcRow[col];
-			
-			
-			if (dstX < 0 || dstX >= dst->w)
-    			continue;
 
-			// Treat the CFT atlas as a glyph mask.
-			// Ignore weak/transparent atlas pixels.
-			if (srcColor < 64)
-    			continue;
+
+
+		for (int col = 0; col < glyph->width / 2; ++col) {
+			const int dstX = x + col;
+		
+			const byte srcColor = srcRow[col * 2];
+
+			if (dstX < 0 || dstX >= dst->w || srcColor == 0)
+				continue;
+			
+
 
 			switch (dst->format.bytesPerPixel) {
 			case 1:
-    			*((byte *)dst->getBasePtr(dstX, dstY)) = (byte)color;
-    			break;
-
+				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
+				break;
 			case 2:
-    			*((uint16 *)dst->getBasePtr(dstX, dstY)) = (uint16)color;
-    			break;
+				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
+				break;
+			case 4: {
+			    const uint32 pixel = dst->format.ARGBToColor(
+        	        255,
+        	        (color >> 16) & 0xFF,
+        	        (color >> 8) & 0xFF,
+        	        color & 0xFF);
 
-			case 4:
-    			*((uint32 *)dst->getBasePtr(dstX, dstY)) = color;
-    			break;
-
+    	        *((uint32 *)dst->getBasePtr(dstX, dstY)) = pixel;
+    	        break;
+			}
 			default:
 				break;
 			}
