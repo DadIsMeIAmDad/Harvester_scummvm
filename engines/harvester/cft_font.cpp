@@ -137,7 +137,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	if (!glyph)
 		return;
 
-	for (int row = 0; row < _drawHeight; ++row) {
+	for (int row = 0; row < _fontHeight; ++row) {
 		const int dstY = y + row;
 		if (dstY < 0 || dstY >= dst->h)
 			continue;
@@ -151,10 +151,10 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 
 			switch (dst->format.bytesPerPixel) {
 			case 1:
-				*((byte *)dst->getBasePtr(dstX, dstY)) = color;
+				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
 			case 2:
-				*((uint16 *)dst->getBasePtr(dstX, dstY)) = color;
+				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
 			case 4:
 				*((uint32 *)dst->getBasePtr(dstX, dstY)) = color;
