@@ -137,7 +137,8 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	const GlyphSlice *glyph = findGlyph(chr);
 	if (!glyph)
 		return;
-
+    warning("CFT GLYPH: chr=%u width=%d x=%d drawHeight=%d",
+        chr, glyph->width, glyph->x, _drawHeight);
 	for (int row = 0; row < _drawHeight; ++row) {
 		const int dstY = y + row;
 		if (dstY < 0 || dstY >= dst->h)
@@ -163,8 +164,6 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				uint8 b = color & 0xFF;
 
 				uint32 pixelColor = dst->format.RGBToColor(r, g, b);
-
-				warning("CFT: chr=%u color=%08X RGB=%02X,%02X,%02X dst=%08X",
 					chr, color, r, g, b, pixelColor);
 
 				*((uint32 *)dst->getBasePtr(dstX, dstY)) = pixelColor;
