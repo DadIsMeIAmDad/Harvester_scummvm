@@ -313,8 +313,8 @@ static void drawShadowedRoomText(Graphics::Screen &screen, const Graphics::Font 
 		return;
 
 	const int width = font.getStringWidth(text);
-	font.drawString(&screen, text, x + 1, y + 1, width, shadowColor);
-	font.drawString(&screen, text, x, y, width, textColor);
+	font.drawString(&screen, text, x + 1, y + 1, width, 0x000000);
+	font.drawString(&screen, text, x, y, width, 0xFFFFFF);
 }
 
 static void setScaledRoomPalette(Graphics::Screen &screen, const byte *palette, float brightness) {
@@ -2021,7 +2021,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		screen->makeAllDirty();
 	    warning("ROOM.CPP - Scene Make Dirty");
 		screen->update();
-        warning("ROOM.CPP - Scene Updated");
+        warning("ROOM.CPP - textboxScene Updated");
 		logScenePaletteSummary("room setup fade target", scene, scene.targetPaletteBrightness);
 		transitionError = flow.fadeInRoomScene(scene.palette, scene.targetPaletteBrightness);
 		if (transitionError.getCode() != Common::kNoError)
