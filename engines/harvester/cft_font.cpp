@@ -132,7 +132,6 @@ int HarvesterCftFont::getCharWidth(uint32 chr) const {
 void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y, uint32 color) const {
 	if (!dst || chr == ' ' || chr == '_')
 		return;
-	(void)color;
 
 	const GlyphSlice *glyph = findGlyph(chr);
 	if (!glyph)
@@ -152,13 +151,13 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 
 			switch (dst->format.bytesPerPixel) {
 			case 1:
-				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
+				*((byte *)dst->getBasePtr(dstX, dstY)) = color;
 				break;
 			case 2:
-				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
+				*((uint16 *)dst->getBasePtr(dstX, dstY)) = color;
 				break;
 			case 4:
-				*((uint32 *)dst->getBasePtr(dstX, dstY)) = srcColor;
+				*((uint32 *)dst->getBasePtr(dstX, dstY)) = color;
 				break;
 			default:
 				break;
