@@ -137,14 +137,14 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	const GlyphSlice *glyph = findGlyph(chr);
 	if (!glyph)
 		return;
-        chr, glyph->width, glyph->x, _drawHeight);
+
 	for (int row = 0; row < _drawHeight; ++row) {
 		const int dstY = y + row;
 		if (dstY < 0 || dstY >= dst->h)
 			continue;
-
+        const int drawWidth = (glyph->width * 2) / 3;
+		
 		const byte *srcRow = _resource.atlasPixels.data() + row * _resource.atlasWidth + glyph->x;
-		const int drawWidth = (glyph->width * 2) / 3;
 		for (int col = 0; col < drawWidth; ++col) {
 			const int dstX = x + col;
 			const byte srcColor = srcRow[col];
