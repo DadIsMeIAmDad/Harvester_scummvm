@@ -27,6 +27,7 @@
 #include "graphics/screen.h"        // for Graphics::Screen
 #include "graphics/surface.h"
 #include "graphics/palette.h"   // for PaletteManager
+#include "graphics/paletteman.h"
 
 namespace Harvester {
 
