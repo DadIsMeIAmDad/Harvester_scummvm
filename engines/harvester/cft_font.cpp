@@ -137,8 +137,29 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	if (!glyph)
 		return;
 
-	warning("CFT GLYPH '%c': width=%d fontHeight=%d",
-		(char)chr, glyph->width, _fontHeight);
+	int minColor = 255;
+	int maxColor = 0;
+	int nonZeroCount = 0;
+
+	for (int row = 0; row < _fontHeight; ++row) {
+		const byte *srcRow =
+			_resource.atlasPixels.data() +
+			row * _resource.atlasWidth +
+			glyph->x;
+
+		for (int col = 0; col < glyph->width; ++col) {
+			const byte srcColor = srcRow[col];
+
+			if (srcColor != 0) {
+				minColor = MIN(minColor, (int)srcColor);
+				maxColor = MAX(maxColor, (int)srcColor);
+				++nonZeroCount;
+			}
+		}
+	}
+
+	warning("CFT GLYPH '%c': pixels=%d range=%d-%d",
+		(char)chr, nonZeroCount, minColor, maxColor);
 
 	for (int row = 0; row < _fontHeight; ++row) {
 		const int dstY = y + row;
