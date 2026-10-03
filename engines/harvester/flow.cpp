@@ -680,6 +680,13 @@ static void drawWrappedText(Graphics::Screen &screen, const Graphics::Font &font
 
 	const int lineHeight = font.getFontHeight() + lineSpacing;
 	for (uint i = 0; i < lines.size(); ++i)
+		warning(
+		    "HARVESTER TEXT: color=%u (0x%02X) line=%u text='%s'",
+		    color,
+		    color,
+		    i,
+		    lines[i].c_str()
+	    );
 		font.drawString(&screen, lines[i], x, y + i * lineHeight, width, color);
 }
 
