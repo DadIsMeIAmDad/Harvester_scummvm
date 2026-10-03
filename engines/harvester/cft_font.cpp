@@ -23,6 +23,8 @@
 
 #include "common/algorithm.h"
 #include "common/endian.h"
+#include "common/system.h"          // for g_system
+#include "graphics/screen.h"        // for Graphics::Screen
 #include "graphics/surface.h"
 
 namespace Harvester {
@@ -138,12 +140,22 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	if (!glyph)
 		return;
 
+	// Grab the palette once (cheap enough for now)
+	byte palette[256 * 3] = {};
+	if (Graphics::Screen *screen = dynamic_cast<Graphics::Screen *>(dst)) {
+		screen->getPalette(palette);
+	} else {
+		g_system->getPaletteManager()->grabPalette(palette, 0, 256);
+	}
+
 	for (int row = 0; row < _drawHeight; ++row) {
 		const int dstY = y + row;
 		if (dstY < 0 || dstY >= dst->h)
 			continue;
 
-		const byte *srcRow = _resource.atlasPixels.data() + row * _resource.atlasWidth + glyph->x;
+		const byte *srcRow = _resource.atlasPixels.data() +
+		                     row * _resource.atlasWidth + glyph->x;
+
 		for (int col = 0; col < glyph->width; ++col) {
 			const int dstX = x + col;
 			const byte srcColor = srcRow[col];
@@ -154,24 +166,21 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 			case 1:
 				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
-			case 2:
-				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
+
+			case 2: {
+				const byte *entry = palette + srcColor * 3;
+				*((uint16 *)dst->getBasePtr(dstX, dstY)) =
+					(uint16)dst->format.RGBToColor(entry[0], entry[1], entry[2]);
 				break;
-			case 4:
-			    byte palette[256 * 3];
-    		    if (Graphics::Screen *screen = dynamic_cast<Graphics::Screen *>(dst))
-        		    screen->getPalette(palette);
-    		    else
-        		    g_system->getPaletteManager()->grabPalette(palette, 0, 256);
+			}
 
-    		    const byte *entry = palette + srcColor * 3;
-    		    const uint32 pixel = dst->format.RGBToColor(entry[0], entry[1], entry[2]);
+			case 4: {
+				const byte *entry = palette + srcColor * 3;
+				*((uint32 *)dst->getBasePtr(dstX, dstY)) =
+					dst->format.RGBToColor(entry[0], entry[1], entry[2]);
+				break;
+			}
 
-    		    if (dst->format.bytesPerPixel == 2)
-        		    *((uint16 *)dst->getBasePtr(dstX, dstY)) = (uint16)pixel;
-    		    else
-        		    *((uint32 *)dst->getBasePtr(dstX, dstY)) = pixel;
-    		    break;
 			default:
 				break;
 			}
