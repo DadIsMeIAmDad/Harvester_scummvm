@@ -168,8 +168,11 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 		for (int col = 0; col < glyph->width; ++col) {
 			const int dstX = x + col;
 			const byte srcColor = srcRow[col];
+			
+			
 			if (dstX < 0 || dstX >= dst->w || srcColor == 0)
 				continue;
+
 
 			switch (dst->format.bytesPerPixel) {
 			case 1:
@@ -179,14 +182,14 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
 			case 4: {
-			    const uint8 coverage = MIN<uint32>(srcColor, 15) * 17;
-    			const byte r = (byte)(((color >> 16) & 0xFF) * coverage / 255);
-    			const byte g = (byte)(((color >> 8) & 0xFF) * coverage / 255);
-    			const byte b = (byte)((color & 0xFF) * coverage / 255);
+			    const uint32 pixel = dst->format.ARGBToColor(
+        	        255,
+        	        (color >> 16) & 0xFF,
+        	        (color >> 8) & 0xFF,
+        	        color & 0xFF);
 
-    			const uint32 pixel = (r << 16) | (g << 8) | b;
-    			*((uint32 *)dst->getBasePtr(dstX, dstY)) = pixel;
-    			break;
+    	        *((uint32 *)dst->getBasePtr(dstX, dstY)) = pixel;
+    	        break;
 			}
 			default:
 				break;
