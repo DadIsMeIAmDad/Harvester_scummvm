@@ -23,11 +23,7 @@
 
 #include "common/algorithm.h"
 #include "common/endian.h"
-#include "common/system.h"          // for g_system
-#include "graphics/screen.h"        // for Graphics::Screen
 #include "graphics/surface.h"
-#include "graphics/palette.h"   // for PaletteManager
-#include "graphics/paletteman.h"
 
 namespace Harvester {
 
@@ -142,17 +138,12 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	if (!glyph)
 		return;
 
-	byte palette[256 * 3] = {};
-	g_system->getPaletteManager()->grabPalette(palette, 0, 256);
-
 	for (int row = 0; row < _drawHeight; ++row) {
 		const int dstY = y + row;
 		if (dstY < 0 || dstY >= dst->h)
 			continue;
 
-		const byte *srcRow = _resource.atlasPixels.data() +
-		                     row * _resource.atlasWidth + glyph->x;
-
+		const byte *srcRow = _resource.atlasPixels.data() + row * _resource.atlasWidth + glyph->x;
 		for (int col = 0; col < glyph->width; ++col) {
 			const int dstX = x + col;
 			const byte srcColor = srcRow[col];
@@ -163,34 +154,21 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 			case 1:
 				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
-
-			case 2: {
-				const byte *entry = palette + srcColor * 3;
-				*((uint16 *)dst->getBasePtr(dstX, dstY)) =
-					(uint16)dst->format.RGBToColor(entry[0], entry[1], entry[2]);
+			case 2:
+				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
-			}
-			case 3: {
-				const byte *entry = palette + srcColor * 3;
-				const uint32 pixel = dst->format.RGBToColor(entry[0], entry[1], entry[2]);
-				byte *p = (byte *)dst->getBasePtr(dstX, dstY);
-				// Write the 3 bytes in the surface’s native order
-				WRITE_UINT24(p, pixel);          // or the manual version below if preferred
+			case 4:
+			    warning("CFT DRAW CHAR srcColor: chr=%u color=%08X", chr, srcColor);
+				warning("CFT DRAW CHAR color: chr=%u color=%08X", chr, color);
+				*((uint32 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
-			}
-			case 4: {
-				const byte *entry = palette + srcColor * 3;
-				*((uint32 *)dst->getBasePtr(dstX, dstY)) =
-					dst->format.RGBToColor(entry[0], entry[1], entry[2]);
-				break;
-			}
-
 			default:
 				break;
 			}
 		}
 	}
 }
+
 const HarvesterCftFont::GlyphSlice *HarvesterCftFont::findGlyph(uint32 chr) const {
 	if (chr >= ARRAYSIZE(_glyphs))
 		return nullptr;
