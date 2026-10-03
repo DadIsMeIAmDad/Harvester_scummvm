@@ -142,7 +142,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
         dst->h,
         dst->format.bytesPerPixel,
         dst->format.toString().c_str());
-        chr, glyph->width, glyph->x, _drawHeight);
+
 	for (int row = 0; row < _drawHeight; ++row) {
 		const int dstY = y + row;
 		if (dstY < 0 || dstY >= dst->h)
