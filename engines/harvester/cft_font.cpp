@@ -179,7 +179,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
 			case 4: {
-			    const uint32 coverage = srcColor; // 0..255
+			    const uint8 coverage = MIN<uint32>(srcColor, 15) * 17;
     			const byte r = (byte)(((color >> 16) & 0xFF) * coverage / 255);
     			const byte g = (byte)(((color >> 8) & 0xFF) * coverage / 255);
     			const byte b = (byte)((color & 0xFF) * coverage / 255);
