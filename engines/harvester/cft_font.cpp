@@ -177,6 +177,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				// Write the 3 bytes in the surface’s native order
 				WRITE_UINT24(p, pixel);          // or the manual version below if preferred
 				break;
+			}
 			case 4: {
 				const byte *entry = palette + srcColor * 3;
 				*((uint32 *)dst->getBasePtr(dstX, dstY)) =
