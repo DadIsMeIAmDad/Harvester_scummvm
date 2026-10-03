@@ -132,26 +132,58 @@ int HarvesterCftFont::getCharWidth(uint32 chr) const {
 void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y, uint32 color) const {
 	if (!dst || chr == ' ' || chr == '_')
 		return;
-	(void)color;
 
 	const GlyphSlice *glyph = findGlyph(chr);
 	if (!glyph)
 		return;
-    warning("CFT SURFACE: %dx%d bpp=%d format=%s",
-        dst->w,
-        dst->h,
-        dst->format.bytesPerPixel,
-        dst->format.toString().c_str());
+
+	warning("CFT SURFACE: %dx%d bpp=%d format=%s",
+	        dst->w,
+	        dst->h,
+	        dst->format.bytesPerPixel,
+	        dst->format.toString().c_str());
+
+	// Check the range of pixel values in this glyph.
+	byte minSrc = 255;
+	byte maxSrc = 0;
+	uint countNonZero = 0;
+
+	for (int row = 0; row < _drawHeight; ++row) {
+		const byte *srcRow =
+			_resource.atlasPixels.data() +
+			row * _resource.atlasWidth +
+			glyph->x;
+
+		for (int col = 0; col < glyph->width; ++col) {
+			const byte v = srcRow[col];
+
+			if (v != 0) {
+				if (v < minSrc)
+					minSrc = v;
+				if (v > maxSrc)
+					maxSrc = v;
+				++countNonZero;
+			}
+		}
+	}
+
+	warning("CFT GLYPH VALUES: chr=%u min=%u max=%u nonzero=%u",
+	        chr, minSrc, maxSrc, countNonZero);
 
 	for (int row = 0; row < _drawHeight; ++row) {
 		const int dstY = y + row;
 		if (dstY < 0 || dstY >= dst->h)
 			continue;
 
-		const byte *srcRow = _resource.atlasPixels.data() + row * _resource.atlasWidth + glyph->x;
+		const byte *srcRow =
+			_resource.atlasPixels.data() +
+			row * _resource.atlasWidth +
+			glyph->x;
+
 		for (int col = 0; col < glyph->width; ++col) {
 			const int dstX = x + col;
 			const byte srcColor = srcRow[col];
+
 			if (dstX < 0 || dstX >= dst->w || srcColor == 0)
 				continue;
 
@@ -159,9 +191,11 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 			case 1:
 				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
+
 			case 2:
 				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
+
 			case 4: {
 				uint8 r = (color >> 16) & 0xFF;
 				uint8 g = (color >> 8) & 0xFF;
@@ -172,6 +206,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				*((uint32 *)dst->getBasePtr(dstX, dstY)) = pixelColor;
 				break;
 			}
+
 			default:
 				break;
 			}
