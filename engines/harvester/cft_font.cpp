@@ -140,19 +140,19 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	static const byte testPalette[16][3] = {
 		{   0,  20,  91 }, // 0 - transparent
 		{   0,   0,   0 }, // 1
-		{  18,  18,  18 }, // 2
-		{  36,  36,  36 }, // 3
-		{  57,  57,  49 }, // 4
-		{  74,  74,  66 }, // 5
-		{  91,  91,  91 }, // 6
-		{ 109, 109, 109 }, // 7
-		{ 132, 115, 107 }, // 8
-		{ 145, 145, 145 }, // 9
-		{ 163, 163, 163 }, // 10
-		{ 181, 173, 181 }, // 11
-		{ 200, 200, 200 }, // 12
-		{ 214, 198, 206 }, // 13
-		{ 236, 236, 236 }, // 14
+		{   0,   0,   0 }, // 2
+		{   0,   0,   0 }, // 3
+		{   0,   0,   0 }, // 4
+		{   0,   0,   0 }, // 5
+		{ 255, 255, 255 }, // 6
+		{ 255, 255, 255 }, // 7
+		{ 255, 255, 255 }, // 8
+		{ 255, 255, 255 }, // 9
+		{ 255, 255, 255 }, // 10
+		{ 255, 255, 255 }, // 11
+		{ 255, 255, 255 }, // 12
+		{ 255, 255, 255 }, // 13
+		{ 255, 255, 255 }, // 14
 		{ 255, 255, 255 }  // 15
 	};
 
@@ -200,9 +200,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 
 			if (dstX < 0 || dstX >= dst->w || srcColor == 0)
 				continue;
-	        if (chr == 'E' || chr == 'm')
-	            warning("CFT DRAW: chr=%u src=%u color=%08X",
-	                chr, srcColor, color);
+
 			switch (dst->format.bytesPerPixel) {
 			case 1:
 				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
