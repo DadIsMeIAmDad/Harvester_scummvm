@@ -313,8 +313,8 @@ static void drawShadowedRoomText(Graphics::Screen &screen, const Graphics::Font 
 		return;
 
 	const int width = font.getStringWidth(text);
-	font.drawString(&screen, text, x + 1, y + 1, width, shadowColor);
-	font.drawString(&screen, text, x, y, width, textColor);
+	font.drawString(&screen, text, x + 1, y + 1, width, 0x000000);
+	font.drawString(&screen, text, x, y, width, 0xFFFFFF);
 }
 
 static void setScaledRoomPalette(Graphics::Screen &screen, const byte *palette, float brightness) {
