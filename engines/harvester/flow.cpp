@@ -648,6 +648,28 @@ static void drawWrappedShadowedText(Graphics::Screen &screen, const Graphics::Fo
 		drawShadowedString(screen, font, lines[i], x, y + i * lineHeight, width, color);
 }
 
+static void drawPngWrappedShadowedText(Graphics::Screen &screen, const Graphics::Font &font,
+		const Common::String &text, int x, int y, int width) {
+	Common::Array<Common::String> lines;
+	font.wordWrapText(text, width, lines);
+
+	const int lineHeight = font.getFontHeight() + 2;
+
+	for (uint i = 0; i < lines.size(); ++i) {
+		const int lineY = y + i * lineHeight;
+
+		// Black shadow/border
+		font.drawString(&screen, lines[i],
+			x + 1, lineY + 1, width,
+			0x000000, Graphics::kTextAlignLeft);
+
+		// White text
+		font.drawString(&screen, lines[i],
+			x, lineY, width,
+			color, Graphics::kTextAlignLeft);
+	}
+}
+
 static void drawWrappedText(Graphics::Screen &screen, const Graphics::Font &font, const Common::String &text,
 		int x, int y, int width, byte color, int lineSpacing, bool useCftCharacterWrapping = false) {
 	Common::Array<Common::String> lines;
@@ -1012,54 +1034,104 @@ static const NpcRecord *findRoomNpcAtPoint(HarvesterEngine &engine,
 	return npc;
 }
 
-const IndexedBitmap *resolveInspectTextboxBitmap(const Art &art, const ResolvedText &text) {
+static int resolveInspectTextboxIndex(const ResolvedText &text) {
 	if (text.boxName.equalsIgnoreCase("BOX1"))
-		return art.getTextboxBitmap(0);
+		return 0;
 	if (text.boxName.equalsIgnoreCase("BOX2"))
-		return art.getTextboxBitmap(1);
+		return 1;
 	if (text.boxName.equalsIgnoreCase("BOX3"))
-		return art.getTextboxBitmap(2);
+		return 2;
 	if (text.boxName.equalsIgnoreCase("BOX4"))
-		return art.getTextboxBitmap(3);
+		return 3;
 
-	return nullptr;
+	return -1;
+}
+
+const IndexedBitmap *resolveInspectTextboxBitmap(const Art &art, const ResolvedText &text) {
+	const int index = resolveInspectTextboxIndex(text);
+	if (index < 0)
+		return nullptr;
+
+	return art.getTextboxBitmap(index);
 }
 
 void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphics::Font &font,
 		const ResolvedText &inspectText, bool useNativeFont) {
-	const IndexedBitmap *textbox = resolveInspectTextboxBitmap(art, inspectText);
-	if (!textbox || !textbox->isValid())
+
+	const int textboxIndex = resolveInspectTextboxIndex(inspectText);
+
+	if (textboxIndex < 0)
 		return;
 
-	blitBitmap(screen, *textbox, kIdentTextboxX, kIdentTextboxY);
-	if (useNativeFont) {
-		drawWrappedText(screen, font, inspectText.value,
-			kIdentTextboxX + kIdentTextboxTextInsetX,
-			kIdentTextboxY + kIdentTextboxTextInsetY,
-			MAX<int>(0, (int)textbox->width - 2),
+	const Graphics::Surface *textboxSurface =
+		art.getTextboxSurface(textboxIndex);
+
+	const IndexedBitmap *textboxBitmap = nullptr;
+	int textboxWidth = 0;
+
+	if (textboxSurface) {
+		textboxWidth = textboxSurface->w;
+
+		const Common::Rect srcRect(
 			0,
-			kNativeIdentTextLineSpacing,
-			true);
-		return;
+			0,
+			textboxSurface->w,
+			textboxSurface->h
+		);
+
+		const Common::Rect dstRect(
+			kIdentTextboxX,
+			kIdentTextboxY,
+			kIdentTextboxX + textboxSurface->w,
+			kIdentTextboxY + textboxSurface->h
+		);
+
+		screen.blitFrom(*textboxSurface, srcRect, dstRect);
+
+	} else {
+		textboxBitmap = art.getTextboxBitmap(textboxIndex);
+
+		if (!textboxBitmap || !textboxBitmap->isValid())
+			return;
+
+		textboxWidth = textboxBitmap->width;
+
+		blitBitmap(screen, *textboxBitmap, kIdentTextboxX, kIdentTextboxY);
 	}
 
-	drawWrappedShadowedText(screen, font, inspectText.value,
-		kIdentTextboxX + kIdentTextboxTextInsetX,
-		kIdentTextboxY + kIdentTextboxTextInsetY,
-		MAX<int>(0, (int)textbox->width - (kIdentTextboxTextInsetX + 2)),
-		kIdentTextColor);
-}
+	if (textboxSurface) {
+	    drawPngWrappedShadowedText(screen, font, inspectText.value,
+		    kIdentTextboxX + kIdentTextboxTextInsetX,
+		    kIdentTextboxY + kIdentTextboxTextInsetY,
+		    MAX<int>(0, textboxWidth - (kIdentTextboxTextInsetX + 2)));
+	    return;
+    }
 
-static bool suppressesInitialObjectInspectGate(const ObjectRecord &object) {
-	// Native HARVEST.SCR uses ident key X as a no-text sentinel.
-	return object.identTextKey.equalsIgnoreCase("X");
-}
+    if (useNativeFont) {
+	    drawWrappedText(screen, font, inspectText.value,
+		    kIdentTextboxX + kIdentTextboxTextInsetX,
+		    kIdentTextboxY + kIdentTextboxTextInsetY,
+		    MAX<int>(0, textboxWidth - 2),
+		    0,
+		    kNativeIdentTextLineSpacing,
+		    true);
+	    return;
+    }
 
+    drawWrappedShadowedText(screen, font, inspectText.value,
+	    kIdentTextboxX + kIdentTextboxTextInsetX,
+	    kIdentTextboxY + kIdentTextboxTextInsetY,
+	    MAX<int>(0, textboxWidth - (kIdentTextboxTextInsetX + 2)),
+	    kIdentTextColor);
+}
 static bool usesBareOperatePrompt(const ObjectRecord &object) {
 	return object.objectName.equalsIgnoreCase("HAPPLY_HS") ||
 		object.objectName.equalsIgnoreCase("KILL_STEPH_HS");
 }
-
+static bool suppressesInitialObjectInspectGate(const ObjectRecord &object) {
+    // Native HARVEST.SCR uses ident key X as a no-text sentinel.
+    return object.identTextKey.equalsIgnoreCase("X");
+}
 bool unlocksRoomObjectInteractionAfterInitialExamine(const ObjectRecord &object,
 		Script &script) {
 	if (suppressesInitialObjectInspectGate(object))
