@@ -158,8 +158,6 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 		}
 	}
 
-	warning("CFT GLYPH '%c': pixels=%d range=%d-%d",
-		(char)chr, nonZeroCount, minColor, maxColor);
 
 	for (int row = 0; row < _fontHeight; ++row) {
 		const int dstY = y + row;
@@ -181,18 +179,14 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
 			case 4: {
-				const byte intensity = srcColor;
+				const byte pixel = srcColor;
 
-				const byte r = intensity;
-				const byte g = intensity;
-				const byte b = intensity;
+				const uint32 rgb =
+					((uint32)pixel << 16) |
+					((uint32)pixel << 8) |
+					(uint32)pixel;
 
-				const uint32 pixel =
-					(r << 16) |
-					(g << 8) |
-					b;
-
-				*((uint32 *)dst->getBasePtr(dstX, dstY)) = pixel;
+				*((uint32 *)dst->getBasePtr(dstX, dstY)) = rgb;
 				break;
 			}
 			default:
