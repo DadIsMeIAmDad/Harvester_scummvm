@@ -666,7 +666,7 @@ static void drawPngWrappedShadowedText(Graphics::Screen &screen, const Graphics:
 		// White text
 		font.drawString(&screen, lines[i],
 			x, lineY, width,
-			color, Graphics::kTextAlignLeft);
+			0xFFFFFF, Graphics::kTextAlignLeft);
 	}
 }
 
