@@ -180,7 +180,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 			case 2:
 				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
-			case 4:
+			case 4: {
 				const byte intensity = srcColor * 17;
 				const byte r = (byte)(((color >> 16) & 0xFF) * intensity / 255);
 				const byte g = (byte)(((color >> 8) & 0xFF) * intensity / 255);
@@ -193,6 +193,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 
 				*((uint32 *)dst->getBasePtr(dstX, dstY)) = pixel;
 				break;
+			}
 			default:
 				break;
 			}
