@@ -1123,7 +1123,7 @@ void drawRoomInspectText(Graphics::Screen &screen, const Art &art, const Graphic
 	    kIdentTextboxY + kIdentTextboxTextInsetY,
 	    MAX<int>(0, textboxWidth - (kIdentTextboxTextInsetX + 2)),
 	    kIdentTextColor);
-
+}
 static bool usesBareOperatePrompt(const ObjectRecord &object) {
 	return object.objectName.equalsIgnoreCase("HAPPLY_HS") ||
 		object.objectName.equalsIgnoreCase("KILL_STEPH_HS");
