@@ -313,7 +313,7 @@ static void drawShadowedRoomText(Graphics::Screen &screen, const Graphics::Font 
 		return;
 
 	const int width = font.getStringWidth(text);
-	font.drawString(&screen, text, x + 1, y + 1, width, shadowColor);
+
 	font.drawString(&screen, text, x, y, width, textColor);
 }
 
