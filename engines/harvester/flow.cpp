@@ -659,9 +659,9 @@ static void drawPngWrappedShadowedText(Graphics::Screen &screen, const Graphics:
 		const int lineY = y + i * lineHeight;
 
 		// Black shadow/border
-		font.drawString(&screen, lines[i],
-			x + 1, lineY + 1, width,
-			0x000000, Graphics::kTextAlignLeft);
+		//font.drawString(&screen, lines[i],
+			//x + 1, lineY + 1, width,
+			//0x000000, Graphics::kTextAlignLeft);
 
 		// White text
 		font.drawString(&screen, lines[i],
