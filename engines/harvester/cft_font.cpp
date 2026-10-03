@@ -137,6 +137,9 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	if (!glyph)
 		return;
 
+	warning("CFT GLYPH '%c': width=%d fontHeight=%d",
+		(char)chr, glyph->width, _fontHeight);
+
 	for (int row = 0; row < _fontHeight; ++row) {
 		const int dstY = y + row;
 		if (dstY < 0 || dstY >= dst->h)
