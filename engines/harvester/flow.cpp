@@ -673,21 +673,39 @@ static void drawPngWrappedShadowedText(Graphics::Screen &screen, const Graphics:
 static void drawWrappedText(Graphics::Screen &screen, const Graphics::Font &font, const Common::String &text,
 		int x, int y, int width, byte color, int lineSpacing, bool useCftCharacterWrapping = false) {
 	Common::Array<Common::String> lines;
+
 	if (useCftCharacterWrapping)
 		wrapCftTextByCharacterCount(font, text, width, lines);
 	else
 		font.wordWrapText(text, width, lines);
 
+	warning(
+		"HARVESTER TEXT: color=%u (0x%02X) text='%s' lines=%u",
+		color,
+		color,
+		text.c_str(),
+		lines.size()
+	);
+
 	const int lineHeight = font.getFontHeight() + lineSpacing;
-	for (uint i = 0; i < lines.size(); ++i)
+
+	for (uint i = 0; i < lines.size(); ++i) {
 		warning(
-		    "HARVESTER TEXT: color=%u (0x%02X) line=%u text='%s'",
-		    color,
-		    color,
-		    i,
-		    lines[i].c_str()
-	    );
-		font.drawString(&screen, lines[i], x, y + i * lineHeight, width, color);
+			"HARVESTER TEXT LINE: color=%u line=%u text='%s'",
+			color,
+			i,
+			lines[i].c_str()
+		);
+
+		font.drawString(
+			&screen,
+			lines[i],
+			x,
+			y + i * lineHeight,
+			width,
+			color
+		);
+	}
 }
 
 static void setScaledPalette(Graphics::Screen &screen, const byte *palette, float brightness) {
