@@ -158,8 +158,9 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				*((uint16 *)dst->getBasePtr(dstX, dstY)) = srcColor;
 				break;
 			case 4:
-				*((uint32 *)dst->getBasePtr(dstX, dstY)) = srcColor;
-				break;
+				const uint32 pixel = dst->format.RGBToColor(255, 255, 255);
+    		    *((uint32 *)dst->getBasePtr(dstX, dstY)) = pixel;
+    		    break;
 			default:
 				break;
 			}
