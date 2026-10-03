@@ -634,7 +634,7 @@ bool captureScreenBackdrop(const Graphics::Screen &screen, IndexedBitmap &bitmap
 
 static void drawShadowedString(Graphics::Screen &screen, const Graphics::Font &font, const Common::String &text,
 		int x, int y, int width, byte color, Graphics::TextAlign align = Graphics::kTextAlignLeft) {
-	font.drawString(&screen, text, x + 1, y + 1, width, kShadowColor, align);
+
 	font.drawString(&screen, text, x, y, width, color, align);
 }
 
