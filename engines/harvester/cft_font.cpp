@@ -160,7 +160,7 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 			case 4:
 			    warning("CFT DRAW CHAR srcColor: chr=%u color=%08X", chr, srcColor);
 				warning("CFT DRAW CHAR color: chr=%u color=%08X", chr, color);
-				*((uint32 *)dst->getBasePtr(dstX, dstY)) = srcColor;
+				*((uint32 *)dst->getBasePtr(dstX, dstY)) = Color;
 				break;
 			default:
 				break;
