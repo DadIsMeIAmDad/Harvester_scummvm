@@ -26,6 +26,7 @@
 #include "common/system.h"          // for g_system
 #include "graphics/screen.h"        // for Graphics::Screen
 #include "graphics/surface.h"
+#include "graphics/palette.h"   // for PaletteManager
 
 namespace Harvester {
 
@@ -140,13 +141,8 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 	if (!glyph)
 		return;
 
-	// Grab the palette once (cheap enough for now)
 	byte palette[256 * 3] = {};
-	if (Graphics::Screen *screen = dynamic_cast<Graphics::Screen *>(dst)) {
-		screen->getPalette(palette);
-	} else {
-		g_system->getPaletteManager()->grabPalette(palette, 0, 256);
-	}
+	g_system->getPaletteManager()->grabPalette(palette, 0, 256);
 
 	for (int row = 0; row < _drawHeight; ++row) {
 		const int dstY = y + row;
@@ -187,7 +183,6 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 		}
 	}
 }
-
 const HarvesterCftFont::GlyphSlice *HarvesterCftFont::findGlyph(uint32 chr) const {
 	if (chr >= ARRAYSIZE(_glyphs))
 		return nullptr;
