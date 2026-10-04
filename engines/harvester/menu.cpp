@@ -2593,7 +2593,7 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 	const Art *art = _engine.getArt();
 	const CftFontResource *selectedFontResource = findStartupFontByName(_engine, "HARVFONT");
 	const CftFontResource *unselectedFontResource = findStartupFontByName(_engine, "HARVFNT2");
-	if (!screen || !art || !selectedFontResource || !unselectedFontResource || !backdrop.isValid())
+	if (!screen || !art || !selectedFontResource || !unselectedFontResource)
 		return;
 
 	HarvesterCftFont selectedFont(*selectedFontResource);
