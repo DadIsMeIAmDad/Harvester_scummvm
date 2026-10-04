@@ -941,6 +941,12 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	bool needsRedraw = true;
 
 	auto captureMenuBackdrop = [&](IndexedBitmap &backdrop) -> bool {
+		// True-color: skip capture so we don't hard-fail; graphics can be wrong.
+		if (Graphics::Screen *screen = _engine.getScreen()) {
+			if (screen->format.bytesPerPixel != 1)
+				return true;  // empty/unused backdrop is fine for now
+		}
+
 		if (_hasMainMenuBackdrop) {
 			renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f,
 				mainMenuItems, selectedItem);
