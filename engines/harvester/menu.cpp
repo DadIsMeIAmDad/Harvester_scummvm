@@ -941,11 +941,13 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	bool needsRedraw = true;
 
 	auto captureMenuBackdrop = [&](IndexedBitmap &backdrop) -> bool {
+		warning("HARVESTER: ENTER captureMenuBackdrop!");
 		Graphics::Screen *screen = _engine.getScreen();
 		if (!screen)
+			warning("if !screen captureMenuBackdrop!");
 			return false;
 
-		if (screen->format.bytesPerPixel != 1) {
+
 			if (!_mainMenuBackdropSurface)
 				_mainMenuBackdropSurface = new Graphics::Surface();
 
@@ -957,7 +959,6 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 				_mainMenuBackdropSurface->format.bytesPerPixel);
 
 			return true;
-		}
 
 		if (_hasMainMenuBackdrop) {
 			renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f,
