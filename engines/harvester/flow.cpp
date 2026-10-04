@@ -659,9 +659,9 @@ static void drawPngWrappedShadowedText(Graphics::Screen &screen, const Graphics:
 		const int lineY = y + i * lineHeight;
 
 		// Black shadow/border
-		//font.drawString(&screen, lines[i],
-			//x + 1, lineY + 1, width,
-			//0x000000, Graphics::kTextAlignLeft);
+		font.drawString(&screen, lines[i],
+			x + 1, lineY + 1, width,
+			0x000000, Graphics::kTextAlignLeft);
 
 		// White text
 		font.drawString(&screen, lines[i],
@@ -673,39 +673,14 @@ static void drawPngWrappedShadowedText(Graphics::Screen &screen, const Graphics:
 static void drawWrappedText(Graphics::Screen &screen, const Graphics::Font &font, const Common::String &text,
 		int x, int y, int width, byte color, int lineSpacing, bool useCftCharacterWrapping = false) {
 	Common::Array<Common::String> lines;
-
 	if (useCftCharacterWrapping)
 		wrapCftTextByCharacterCount(font, text, width, lines);
 	else
 		font.wordWrapText(text, width, lines);
 
-	warning(
-		"HARVESTER TEXT: color=%u (0x%02X) text='%s' lines=%u",
-		color,
-		color,
-		text.c_str(),
-		lines.size()
-	);
-
 	const int lineHeight = font.getFontHeight() + lineSpacing;
-
-	for (uint i = 0; i < lines.size(); ++i) {
-		warning(
-			"HARVESTER TEXT LINE: color=%u line=%u text='%s'",
-			color,
-			i,
-			lines[i].c_str()
-		);
-
-		font.drawString(
-			&screen,
-			lines[i],
-			x,
-			y + i * lineHeight,
-			width,
-			color
-		);
-	}
+	for (uint i = 0; i < lines.size(); ++i)
+		font.drawString(&screen, lines[i], x, y + i * lineHeight, width, color);
 }
 
 static void setScaledPalette(Graphics::Screen &screen, const byte *palette, float brightness) {
