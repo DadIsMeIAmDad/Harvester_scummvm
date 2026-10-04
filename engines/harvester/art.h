@@ -58,18 +58,20 @@ public:
 	const Common::Array<AbmFrame> &getWaitFrames() const { return _waitFrames; }
 	const IndexedBitmap &getInventoryBitmap() const { return _inventoryBitmap; }
 	const IndexedBitmap &getLogoBitmap() const { return _logoBitmap; }
+
 	const Graphics::Surface *getInventorySurface() const { return _inventorySurface; }
 	const Graphics::Surface *getLogoSurface() const { return _logoSurface; }
-	const Graphics::Surface *getInventorySurface() const { return _inventorySurface; }
-	const Graphics::Surface *getLogoSurface() const { return _logoSurface; }
+
 	const IndexedBitmap &getTipsBitmap() const { return _tipsBitmap; }
 	const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
 	const IndexedBitmap *getQuickTipsTextboxBitmap() const;
 	const Common::Array<IndexedBitmap> &getAmmoIcons() const { return _ammoIcons; }
+
 	const IndexedBitmap *getTextboxBitmap(uint index) const {
 		return index < _textboxes.size() ? &_textboxes[index] : nullptr;
 	}
-    const Graphics::Surface *getTextboxSurface(uint index) const {
+
+	const Graphics::Surface *getTextboxSurface(uint index) const {
 		return index < _textboxSurfaces.size() ? _textboxSurfaces[index] : nullptr;
 	}
 	
