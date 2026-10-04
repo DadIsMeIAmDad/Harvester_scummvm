@@ -912,9 +912,12 @@ MenuSystem::MenuSystem(HarvesterEngine &engine, Common::Point &mousePos,
 }
 
 Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
+    warning("HARVESTER: ENTER runMainMenuStub");
 	const Art *art = _engine.getArt();
 	if (!art)
+		warning("HARVESTER: Art is invalid");
 		return Common::kReadingFailed;
+	warning("HARVESTER: Art is valid");
 	ScopedSceneTimerPause pausedTimers(_engine);
 
 	Common::Array<Common::String> mainMenuItems;
@@ -923,13 +926,14 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		_engine.canLoadGameStateCurrently(),
 		mainMenuItems);
 	if (flow.takePendingGameOverReturn()) {
+		warning("HARVESTER: BEFORE pending game-over check");
 		Common::Error gameOverError = showGameOverBackdrop(flow);
 		if (gameOverError.getCode() != Common::kNoError)
 			return gameOverError;
 	} else {
 		clearMainMenuBackdrop();
 	}
-
+	warning("HARVESTER: AFTER pending game-over check");
 	Graphics::FrameLimiter limiter(g_system, 60);
 	int selectedItem = mainMenuItems.empty() ? -1 : 0;
 	Common::String statusMessage;
