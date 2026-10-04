@@ -353,11 +353,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				if (!flow.loadDialogueSaveStateBlob(
 						_engine.getPendingLoadedDialogueStateBlob(),
 						_engine.getPendingLoadedDialogueStateBlobVersion()))
+					warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 					return Common::kReadingFailed;
 				_engine.clearPendingLoadedDialogueStateBlob();
 			}
 			if (_engine.getPendingLoadedDisc() > 0 &&
 					!_engine.activateDisc(_engine.getPendingLoadedDisc())) {
+				warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 				return Common::kReadingFailed;
 			}
 			const SaveRoomState &loadedState = _engine.getPendingLoadedSaveRoomState();
@@ -368,6 +370,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				loadedState.playerFacing, loadedState.musicPath.c_str());
 			if (!_engine.getScript()->materializeRoomState(
 					loadedState.entranceName, loadedState.roomName, state, *_engine.getResources())) {
+				warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 				return Common::kReadingFailed;
 			}
 			state.entranceName = loadedState.entranceName;
@@ -393,6 +396,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			);
 
 			return Common::kReadingFailed;
+			warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 		} else {
 			shouldRunRoomEntryCommands = true;
 		}
@@ -429,6 +433,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				"HARVESTER ROOM FAILED: loadRoomSceneResources room='%s'",
 				state.roomName.c_str()
 			);
+			warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 			return Common::kReadingFailed;
 		}
 
@@ -471,6 +476,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				"HARVESTER ROOM FAILED: populateRoomSceneEntities room='%s'",
 				scene.state.roomName.c_str()
 			);
+			warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 			return Common::kReadingFailed;
 		}
 		if (entityManager) {
@@ -1537,13 +1543,16 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		auto restoreDeniedPickup = [&](Script &script,
 				const ObjectRecord &savedObject, bool clearCarryState) -> Common::Error {
 			if (!script.syncRuntimeObjectRecord(savedObject))
+				warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 				return Common::kReadingFailed;
 			if (clearCarryState)
 				clearCarriedRoomItem();
 
 			if (!applyCurrentRoomRuntimeMutationsInPlace(true) && !refreshCurrentScene(true))
+				warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 				return Common::kReadingFailed;
 			if (!_inventory.refresh())
+				warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 				return Common::kReadingFailed;
 			needsRedraw = true;
 			return Common::kNoError;
@@ -1576,12 +1585,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 			ResourceManager *resources = _engine.getResources();
 			if (!resources)
+				warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 				return Common::kReadingFailed;
 			const int previousDisc = resources->getCurrentDisc();
 
 			if (_engine.shouldShowCdChangePrompts()) {
 				Graphics::Screen *screen = _engine.getScreen();
 				if (!screen)
+					warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 					return Common::kReadingFailed;
 
 				const Common::String bitmapPath = Common::String::format("1:/GRAPHIC/OTHER/CD%d.BM", discNumber);
@@ -1666,6 +1677,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		auto runRoomExitCommands = [&]() -> Common::Error {
 			InteractionResult exitInteraction;
 			if (!_engine.getScript()->executeRoomExitCommands(scene.state.roomName, exitInteraction))
+				warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 				return Common::kReadingFailed;
 
 			for (uint exitStep = 0; exitStep < 128; ++exitStep) {
@@ -1800,6 +1812,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 			IndexedBitmap backdrop;
 			if (!captureDialogueBackdrop(backdrop))
+				warning("HARVESTER ROOM: INDEXEDBITMAP BACKDROP RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 				return Common::kReadingFailed;
 
 			Graphics::FrameLimiter limiter(g_system, 60);
@@ -2017,6 +2030,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		if (shouldRunRoomEntryCommands) {
 			if (!_engine.getScript()->executeRoomEnterCommands(
 					scene.state.roomName, roomEntryInteraction)) {
+				warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 				return Common::kReadingFailed;
 			}
 
@@ -3307,6 +3321,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		}
 
 		if (!_inventory.refresh())
+			warning("HARVESTER ROOM: INVENTORY REFRESH RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 			return Common::kReadingFailed;
 		needsRedraw = true;
 		return Common::kNoError;
@@ -3407,6 +3422,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		if (flow.hasPendingMainMenuReturn())
 			return Common::kNoError;
 		if (!_inventory.refresh())
+			warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 			return Common::kReadingFailed;
 
 		needsRedraw = true;
@@ -3503,6 +3519,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			return Common::kNoError;
 
 		if (!_inventory.refresh())
+			warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 			return Common::kReadingFailed;
 		needsRedraw = true;
 		return Common::kNoError;
@@ -3546,6 +3563,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		return Common::kNoError;
 	};
 	if (!_inventory.refresh())
+		warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 		return Common::kReadingFailed;
 	Graphics::FrameLimiter limiter(g_system, 60);
 	captureCurrentSaveState();
@@ -3810,6 +3828,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 										_engine.getScript()->getPlayerCombatLoadout();
 								}
 								if (!_inventory.refresh())
+									warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 									return Common::kReadingFailed;
 							}
 							needsRedraw = true;
@@ -3850,6 +3869,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 							if (_inventory.isOpen()) {
 								if (!_inventory.refresh())
+									warning("HARVESTER ROOM: INVENTORY OPEN RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 									return Common::kReadingFailed;
 							} else {
 								debugC(1, kDebugInventory,
@@ -4329,9 +4349,11 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					Graphics::Screen *activeScreen = getActiveScreen();
 					if (!activeScreen)
 						return Common::kNoError;
+					warning("HARVESTER ROOM: IndexedBitmap roomMenuBackdrop RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 					IndexedBitmap roomMenuBackdrop;
 					drawRoomScene(_engine, *activeScreen, scene, scene.targetPaletteBrightness);
 					if (!captureScreenBackdrop(*activeScreen, roomMenuBackdrop))
+						warning("HARVESTER ROOM: RETURNING kReadingFailed at %s:%d", __FILE__, __LINE__);
 						return Common::kReadingFailed;
 					Common::Error menuError = flow.runRoomMenuStub(
 						roomMenuBackdrop, scene.palette, scene.targetPaletteBrightness,
