@@ -182,6 +182,21 @@ private:
 };
 
 static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y);
+static void blitSurface(Graphics::Screen &screen,
+                        const Graphics::Surface *surface,
+                        int x, int y) {
+	if (!surface)
+		return;
+
+	screen.copyRectToSurface(
+		surface->getBasePtr(0, 0),
+		surface->pitch,
+		x,
+		y,
+		surface->w,
+		surface->h
+	);
+}
 static int getNativeRoomMenuLineHeight(const Graphics::Font &selectedFont);
 
 static const CftFontResource *findStartupFontByName(const HarvesterEngine &engine, const char *fontName) {
@@ -2436,6 +2451,7 @@ void MenuSystem::renderMainMenuStub(const Common::Array<Common::String> &menuIte
 
 void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &statusMessage,
 		bool drawCursor, const Common::Array<Common::String> &menuItems) const {
+	warning("HARVESTER: USING renderMainMenuScreen");
 	Graphics::Screen *screen = _engine.getScreen();
 	const Art *art = _engine.getArt();
 	const Graphics::Font *titleFont = FontMan.getFontByUsage(Graphics::FontManager::kBigGUIFont);
@@ -2448,6 +2464,7 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 	screen->setPalette(displayPalette);
 	screen->fillRect(screen->getBounds(), 0);
 
+	// Prefer true-color PNG inventory graphic.
 	// Prefer true-color PNG inventory graphic.
 	const Graphics::Surface *inventorySurface = art->getInventorySurface();
 	if (inventorySurface) {
@@ -2463,7 +2480,7 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 		blitBitmap(*screen, art->getInventoryBitmap(), kInventoryX, kInventoryY);
 	}
 
-	// Prefer true-color PNG logo.
+	// Prefer true-color PNG logo graphic.
 	const Graphics::Surface *logoSurface = art->getLogoSurface();
 	if (logoSurface) {
 		screen->copyRectToSurface(
@@ -2510,6 +2527,7 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const byte *palette,
 		float paletteBrightness, const Common::Array<Common::String> &menuItems,
 		int selectedItem) const {
+	warning("HARVESTER: USING renderBackdropMenuScreen");
 	Graphics::Screen *screen = _engine.getScreen();
 	const Art *art = _engine.getArt();
 	const CftFontResource *selectedFontResource = findStartupFontByName(_engine, "HARVFONT");

@@ -60,6 +60,8 @@ public:
 	const IndexedBitmap &getLogoBitmap() const { return _logoBitmap; }
 	const Graphics::Surface *getInventorySurface() const { return _inventorySurface; }
 	const Graphics::Surface *getLogoSurface() const { return _logoSurface; }
+	const Graphics::Surface *getInventorySurface() const { return _inventorySurface; }
+	const Graphics::Surface *getLogoSurface() const { return _logoSurface; }
 	const IndexedBitmap &getTipsBitmap() const { return _tipsBitmap; }
 	const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
 	const IndexedBitmap *getQuickTipsTextboxBitmap() const;
