@@ -941,32 +941,22 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	bool needsRedraw = true;
 
 	auto captureMenuBackdrop = [&](IndexedBitmap &backdrop) -> bool {
-		// True-color: skip capture so we don't hard-fail; graphics can be wrong.
-		if (Graphics::Screen *screen = _engine.getScreen()) {
-			if (screen->format.bytesPerPixel != 1) {
-				warning("HARVESTER: captureMenuBackdrop: true-color path");
-		
-				if (_hasMainMenuBackdrop) {
-					warning("HARVESTER: rendering main menu backdrop");
-					renderBackdropMenuScreen(
-						_mainMenuBackdrop,
-						_mainMenuBackdropPalette,
-						1.0f,
-						mainMenuItems,
-						selectedItem
-					);
-				} else {
-					warning("HARVESTER: rendering main menu screen");
-					renderMainMenuScreen(
-						selectedItem,
-						statusMessage,
-						false,
-						mainMenuItems
-					);
-				}
+		Graphics::Screen *screen = _engine.getScreen();
+		if (!screen)
+			return false;
 
-				return true;
-			}
+		if (screen->format.bytesPerPixel != 1) {
+			if (!_mainMenuBackdropSurface)
+				_mainMenuBackdropSurface = new Graphics::Surface();
+
+			_mainMenuBackdropSurface->copyFrom(*screen);
+
+			warning("HARVESTER: captured HD menu backdrop %dx%d bpp=%u",
+				_mainMenuBackdropSurface->w,
+				_mainMenuBackdropSurface->h,
+				_mainMenuBackdropSurface->format.bytesPerPixel);
+
+			return true;
 		}
 
 		if (_hasMainMenuBackdrop) {
@@ -2603,7 +2593,18 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 
 	applyMenuPalette(*screen, _engine, palette, paletteBrightness);
 	//blitBitmap(*screen, backdrop, 0, 0);
-
+	if (_mainMenuBackdropSurface) {
+		screen->copyRectToSurface(
+			_mainMenuBackdropSurface->getPixels(),
+			_mainMenuBackdropSurface->pitch,
+			0,
+			0,
+			_mainMenuBackdropSurface->w,
+			_mainMenuBackdropSurface->h
+		);
+	} else if (backdrop.isValid()) {
+		blitBitmap(*screen, backdrop, 0, 0);
+	}
 	const Graphics::Surface *logoSurface = art->getLogoSurface();
 	if (logoSurface) {
 		screen->copyRectToSurface(

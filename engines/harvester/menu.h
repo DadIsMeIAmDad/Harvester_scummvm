@@ -27,6 +27,7 @@
 #include "common/rect.h"
 #include "common/str.h"
 #include "harvester/art.h"
+#include "graphics/surface.h"
 
 namespace Graphics {
 class Font;
@@ -127,6 +128,7 @@ private:
 	Common::Point &_mousePos;
 	const Common::Array<Common::String> &_menuItems;
 	IndexedBitmap _mainMenuBackdrop;
+	Graphics::Surface *_mainMenuBackdropSurface = nullptr;
 	byte _mainMenuBackdropPalette[256 * 3] = { 0 };
 	bool _hasMainMenuBackdrop = false;
 };
