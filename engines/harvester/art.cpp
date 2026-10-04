@@ -101,6 +101,7 @@ bool Art::load(ResourceManager &resources) {
 	_waitFrames.clear();
 	_textboxes.clear();
 	freeTextboxSurfaces();
+	freeTipsSurface();
 	_ammoIcons.clear();
 	_inventoryBitmap = IndexedBitmap();
 	_logoBitmap = IndexedBitmap();
@@ -156,7 +157,14 @@ bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPane
 	}
 
 	debugC(2, kDebugResources, "Harvester: quick tips panel '4:/GRAPHIC/OTHER/TIPS.png'");
-	return loadBitmap(resources, "4:/GRAPHIC/OTHER/TIPS.png", _tipsBitmap);
+
+	freeTipsSurface();
+
+	return loadPngAsSurface(
+		resources,
+		"4:/GRAPHIC/OTHER/TIPS.png",
+		_tipsSurface
+	);
 }
 
 const IndexedBitmap *Art::getQuickTipsTextboxBitmap() const {
@@ -220,6 +228,15 @@ bool Art::loadPalette(ResourceManager &resources, const Common::String &path, by
 	logPaletteSummary("loaded palette", path, dest);
 	return true;
 }
+
+void Art::freeTipsSurface() {
+	if (_tipsSurface) {
+		_tipsSurface->free();
+		delete _tipsSurface;
+		_tipsSurface = nullptr;
+	}
+}
+
 void Art::freeTextboxSurfaces() {
 	for (uint i = 0; i < _textboxSurfaces.size(); ++i) {
 		if (_textboxSurfaces[i]) {

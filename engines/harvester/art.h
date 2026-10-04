@@ -59,6 +59,7 @@ public:
 	const IndexedBitmap &getInventoryBitmap() const { return _inventoryBitmap; }
 	const IndexedBitmap &getLogoBitmap() const { return _logoBitmap; }
 	const IndexedBitmap &getTipsBitmap() const { return _tipsBitmap; }
+	const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
 	const IndexedBitmap *getQuickTipsTextboxBitmap() const;
 	const Common::Array<IndexedBitmap> &getAmmoIcons() const { return _ammoIcons; }
 	const IndexedBitmap *getTextboxBitmap(uint index) const {
@@ -73,6 +74,7 @@ private:
 	bool loadBitmap(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) const;
 	bool loadPngAsSurface(ResourceManager &resources, const Common::String &path, Graphics::Surface *&outSurface) const;
 	void freeTextboxSurfaces();
+	void freeTipsSurface();
 	bool loadAnimation(ResourceManager &resources, const Common::String &path, Common::Array<AbmFrame> &frames) const;
 	bool decodeAnimationFrame(const byte *source, uint32 sourceSize, bool compressed, Common::Array<byte> &dest) const;
 	void blitTransparentBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y) const;
@@ -87,6 +89,7 @@ private:
 	IndexedBitmap _inventoryBitmap;
 	IndexedBitmap _logoBitmap;
 	IndexedBitmap _tipsBitmap;
+    Graphics::Surface *_tipsSurface = nullptr;
 };
 
 } // End of namespace Harvester

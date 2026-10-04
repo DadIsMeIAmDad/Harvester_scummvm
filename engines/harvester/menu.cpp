@@ -448,7 +448,7 @@ static void applyMenuPalette(Graphics::Screen &screen, const HarvesterEngine &en
 
 	byte displayPalette[256 * 3];
 	buildHarvesterDisplayPalette(palette, brightness * engine.getGammaBrightnessScale(), displayPalette);
-	/*screen.setPalette(displayPalette); */
+	screen.setPalette(displayPalette);
 }
 
 static void renderHelpScreen(HarvesterEngine &engine, const IndexedBitmap &bitmap, const byte *palette) {
@@ -816,6 +816,7 @@ bool resolveQuickTipsLayout(HarvesterEngine &engine, const MenuTextConfig &confi
 
 void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 		const QuickTipsLayout &layout, const Common::String &tipText) {
+	const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
 	Graphics::Screen *screen = engine.getScreen();
 	const Art *art = engine.getArt();
 	const Graphics::Font *font = FontMan.getFontByUsage(Graphics::FontManager::kGUIFont);
@@ -823,15 +824,45 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 	if (!screen || !art || !font || !script)
 		return;
 
-	const IndexedBitmap *panel = config.hasQuickTipsHeader()
-		? art->getQuickTipsTextboxBitmap() : &art->getTipsBitmap();
-	if (!panel || !panel->isValid())
-		return;
+	const IndexedBitmap *panel = nullptr;
+	const Graphics::Surface *panelSurface = nullptr;
 
-	blitBitmap(*screen, *panel, kQuickTipsOverlayX, kQuickTipsOverlayY);
+	if (config.hasQuickTipsHeader()) {
+		panel = art->getQuickTipsTextboxBitmap();
+
+		if (!panel || !panel->isValid())
+			return;
+
+		blitBitmap(*screen, *panel, kQuickTipsOverlayX, kQuickTipsOverlayY);
+	} else {
+		panelSurface = art->getTipsSurface();
+
+		if (panelSurface) {
+			screen->copyRectToSurface(
+				panelSurface->getPixels(),
+				panelSurface->pitch,
+				kQuickTipsOverlayX,
+				kQuickTipsOverlayY,
+				panelSurface->w,
+				panelSurface->h
+			);
+		} else {
+			panel = &art->getTipsBitmap();
+
+			if (!panel || !panel->isValid())
+				return;
+
+			blitBitmap(*screen, *panel, kQuickTipsOverlayX, kQuickTipsOverlayY);
+		}
+	}
+
+	const int panelWidth = panelSurface
+		? panelSurface->w
+		: panel->width;
+
 	if (config.hasQuickTipsHeader()) {
 		drawShadowedString(*screen, *font, config.quickTipsHeader,
-			kQuickTipsOverlayX, kQuickTipsHeaderY, panel->width,
+			kQuickTipsOverlayX, kQuickTipsHeaderY, panelWidth,
 			kQuickTipActionColor, Graphics::kTextAlignCenter);
 	}
 
