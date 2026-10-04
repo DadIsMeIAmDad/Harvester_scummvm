@@ -2447,8 +2447,36 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 	buildHarvesterDisplayPalette(art->getWaitPalette(), 1.0f, displayPalette);
 	screen->setPalette(displayPalette);
 	screen->fillRect(screen->getBounds(), 0);
-	blitBitmap(*screen, art->getInventoryBitmap(), kInventoryX, kInventoryY);
-	blitBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
+
+	// Prefer true-color PNG inventory graphic.
+	const Graphics::Surface *inventorySurface = art->getInventorySurface();
+	if (inventorySurface) {
+		screen->copyRectToSurface(
+			inventorySurface->getPixels(),
+			inventorySurface->pitch,
+			kInventoryX,
+			kInventoryY,
+			inventorySurface->w,
+			inventorySurface->h
+		);
+	} else {
+		blitBitmap(*screen, art->getInventoryBitmap(), kInventoryX, kInventoryY);
+	}
+
+	// Prefer true-color PNG logo.
+	const Graphics::Surface *logoSurface = art->getLogoSurface();
+	if (logoSurface) {
+		screen->copyRectToSurface(
+			logoSurface->getPixels(),
+			logoSurface->pitch,
+			kLogoX,
+			kLogoY,
+			logoSurface->w,
+			logoSurface->h
+		);
+	} else {
+		blitBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
+	}
 
 	const Common::Rect panel(96, 96, 544, 432);
 	screen->fillRect(panel, kPanelFillColor);
@@ -2467,11 +2495,14 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 		drawWrappedShadowedText(*screen, *bodyFont, statusMessage, panel.left + 24, 352, panel.width() - 48,
 			kTextColorNormal);
 	}
-	drawShadowedString(*screen, *bodyFont, "Use mouse or arrow keys. Enter activates. Esc returns to launcher.",
+
+	drawShadowedString(*screen, *bodyFont,
+		"Use mouse or arrow keys. Enter activates. Esc returns to launcher.",
 		panel.left, 404, panel.width(), kTextColorDim, Graphics::kTextAlignCenter);
 
 	if (drawCursor && _engine.getRuntimeEntities())
 		_engine.getRuntimeEntities()->drawCursor(*screen);
+
 	screen->makeAllDirty();
 	screen->update();
 }
@@ -2493,7 +2524,20 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 
 	applyMenuPalette(*screen, _engine, palette, paletteBrightness);
 	blitBitmap(*screen, backdrop, 0, 0);
-	blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
+
+	const Graphics::Surface *logoSurface = art->getLogoSurface();
+	if (logoSurface) {
+		screen->copyRectToSurface(
+			logoSurface->getPixels(),
+			logoSurface->pitch,
+			kLogoX,
+			kLogoY,
+			logoSurface->w,
+			logoSurface->h
+		);
+	} else {
+		blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
+	}
 
 	const int lineSpacing = getNativeRoomMenuLineHeight(selectedFont);
 	for (uint i = 0; i < menuItems.size(); ++i) {
