@@ -2602,7 +2602,7 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 		return;
 
 	applyMenuPalette(*screen, _engine, palette, paletteBrightness);
-	blitBitmap(*screen, backdrop, 0, 0);
+	//blitBitmap(*screen, backdrop, 0, 0);
 
 	const Graphics::Surface *logoSurface = art->getLogoSurface();
 	if (logoSurface) {
