@@ -943,8 +943,30 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	auto captureMenuBackdrop = [&](IndexedBitmap &backdrop) -> bool {
 		// True-color: skip capture so we don't hard-fail; graphics can be wrong.
 		if (Graphics::Screen *screen = _engine.getScreen()) {
-			if (screen->format.bytesPerPixel != 1)
-				return true;  // empty/unused backdrop is fine for now
+			if (screen->format.bytesPerPixel != 1) {
+				warning("HARVESTER: captureMenuBackdrop: true-color path");
+		
+				if (_hasMainMenuBackdrop) {
+					warning("HARVESTER: rendering main menu backdrop");
+					renderBackdropMenuScreen(
+						_mainMenuBackdrop,
+						_mainMenuBackdropPalette,
+						1.0f,
+						mainMenuItems,
+						selectedItem
+					);
+				} else {
+					warning("HARVESTER: rendering main menu screen");
+					renderMainMenuScreen(
+						selectedItem,
+						statusMessage,
+						false,
+						mainMenuItems
+					);
+				}
+
+				return true;
+			}
 		}
 
 		if (_hasMainMenuBackdrop) {
