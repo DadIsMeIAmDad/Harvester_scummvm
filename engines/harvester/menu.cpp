@@ -461,8 +461,19 @@ static void applyMenuPalette(Graphics::Screen &screen, const HarvesterEngine &en
 	if (!palette)
 		return;
 
+	// The original Harvester menus use an 8-bit indexed screen.
+	// In true-color mode the palette must not be applied to the screen.
+	if (screen.format.bytesPerPixel != 1)
+		return;
+
 	byte displayPalette[256 * 3];
-	buildHarvesterDisplayPalette(palette, brightness * engine.getGammaBrightnessScale(), displayPalette);
+
+	buildHarvesterDisplayPalette(
+		palette,
+		brightness * engine.getGammaBrightnessScale(),
+		displayPalette
+	);
+
 	screen.setPalette(displayPalette);
 }
 
