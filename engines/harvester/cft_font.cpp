@@ -438,7 +438,7 @@ static const byte testPalette[256][3] = {
 			
 
 
-			if (dstX < 0 || dstX >= dst->w || srcColor == 0)
+			if (dstX < 0 || dstX >= dst->w || srcColor == 0 || srcColor == 255)
 				continue;
 
 			switch (dst->format.bytesPerPixel) {
