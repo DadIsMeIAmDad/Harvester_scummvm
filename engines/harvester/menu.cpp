@@ -2509,6 +2509,7 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 	// Prefer true-color PNG logo graphic.
 	const Graphics::Surface *logoSurface = art->getLogoSurface();
 	if (logoSurface) {
+		warning("LOADING LOGO PNG");
 		screen->copyRectToSurface(
 			logoSurface->getPixels(),
 			logoSurface->pitch,
@@ -2518,6 +2519,7 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 			logoSurface->h
 		);
 	} else {
+		warning("ATTEMPTING BLIT LOGO");
 		blitBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
 	}
 
