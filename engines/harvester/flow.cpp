@@ -636,7 +636,6 @@ static void drawShadowedString(Graphics::Screen &screen, const Graphics::Font &f
 		int x, int y, int width, byte color, Graphics::TextAlign align = Graphics::kTextAlignLeft) {
 	//font.drawString(&screen, text, x + 1, y + 1, width, kShadowColor, align);
 	font.drawString(&screen, text, x, y, width, color, align);
-	warning("TEXT SHADOW: kShadowColor=%u (0x%02X)", kShadowColor, kShadowColor);
 }
 
 static void drawWrappedShadowedText(Graphics::Screen &screen, const Graphics::Font &font, const Common::String &text,
@@ -646,7 +645,8 @@ static void drawWrappedShadowedText(Graphics::Screen &screen, const Graphics::Fo
 
 	const int lineHeight = font.getFontHeight() + 2;
 	for (uint i = 0; i < lines.size(); ++i)
-		drawShadowedString(screen, font, lines[i], x, y + i * lineHeight, width, color);
+		//drawShadowedString(screen, font, lines[i], x, y + i * lineHeight, width, color);
+		warning("Mark drawShadowedString NOW");
 }
 
 static void drawPngWrappedShadowedText(Graphics::Screen &screen, const Graphics::Font &font,
