@@ -620,15 +620,19 @@ static void blitTransparentBitmap(Graphics::Screen &screen, const IndexedBitmap 
 }
 
 bool captureScreenBackdrop(const Graphics::Screen &screen, IndexedBitmap &bitmap) {
-	warning(
-		"HARVESTER: captureScreenBackdrop bpp=%u size=%dx%d",
-		screen.format.bytesPerPixel,
-		screen.w,
-		screen.h
-	);
+	warning("HARVESTER: captureScreenBackdrop bpp=%u size=%dx%d!",
+		screen.format.bytesPerPixel, screen.w, screen.h);
 
 	if (screen.format.bytesPerPixel != 1) {
-		warning("HARVESTER: captureScreenBackdrop skipping true-color screen");
+		Graphics::Surface testSurface;
+		testSurface.copyFrom(screen);
+
+		warning("HARVESTER: 32-bit screen copied successfully: %dx%d bpp=%u",
+			testSurface.w,
+			testSurface.h,
+			testSurface.format.bytesPerPixel);
+
+		testSurface.free();
 		return true;
 	}
 
@@ -639,13 +643,10 @@ bool captureScreenBackdrop(const Graphics::Screen &screen, IndexedBitmap &bitmap
 	bitmap.height = (uint32)screen.h;
 	bitmap.pixels.resize(bitmap.width * bitmap.height);
 
-	for (int y = 0; y < screen.h; ++y) {
-		memcpy(
-			bitmap.pixels.data() + y * bitmap.width,
+	for (int y = 0; y < screen.h; ++y)
+		memcpy(bitmap.pixels.data() + y * bitmap.width,
 			screen.getBasePtr(0, y),
-			bitmap.width
-		);
-	}
+			bitmap.width);
 
 	return true;
 }
