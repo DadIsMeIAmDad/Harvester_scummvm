@@ -965,8 +965,7 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		} else {
 			renderMainMenuScreen(selectedItem, statusMessage, false, mainMenuItems);
 		}
-		Graphics::Screen *screen = _engine.getScreen();
-		return screen && captureScreenBackdrop(*screen, backdrop);
+		return captureScreenBackdrop(*screen, backdrop);
 	};
 	auto runSelectedRoomLoop = [&](const Common::String &targetName) -> Common::Error {
 		pausedTimers.resume();
