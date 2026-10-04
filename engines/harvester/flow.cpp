@@ -629,7 +629,7 @@ bool captureScreenBackdrop(const Graphics::Screen &screen, IndexedBitmap &bitmap
 
 	if (screen.format.bytesPerPixel != 1) {
 		warning("HARVESTER: captureScreenBackdrop skipping true-color screen");
-		return false;
+		return true;
 	}
 
 	if (screen.w <= 0 || screen.h <= 0)
