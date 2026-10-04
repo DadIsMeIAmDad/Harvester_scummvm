@@ -914,9 +914,10 @@ MenuSystem::MenuSystem(HarvesterEngine &engine, Common::Point &mousePos,
 Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
     warning("HARVESTER: ENTER runMainMenuStub");
 	const Art *art = _engine.getArt();
-	if (!art)
+	if (!art) {
 		warning("HARVESTER: Art is invalid");
 		return Common::kReadingFailed;
+		}
 	warning("HARVESTER: Art is valid");
 	ScopedSceneTimerPause pausedTimers(_engine);
 
