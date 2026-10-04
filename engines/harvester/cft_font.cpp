@@ -201,20 +201,6 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 			if (dstX < 0 || dstX >= dst->w || srcColor == 0)
 				continue;
 
-			warning(
-				"CFT DRAW: chr='%c' src=%u color=%08X",
-				(char)chr,
-				srcColor,
-				color
-			);
-	        if (chr == 'E' || chr == 'm')
-		        warning(
-			        "CFT E: color=%08X src=%u min=%u max=%u",
-			        color,
-			        srcColor,
-			        minSrc,
-			        maxSrc
-		        );
 			switch (dst->format.bytesPerPixel) {
 			case 1:
 				*((byte *)dst->getBasePtr(dstX, dstY)) = srcColor;
@@ -225,11 +211,13 @@ void HarvesterCftFont::drawChar(Graphics::Surface *dst, uint32 chr, int x, int y
 				break;
 
 			case 4: {
-				const byte r = testPalette[srcColor][0];
-				const byte g = testPalette[srcColor][1];
-				const byte b = testPalette[srcColor][2];
+				uint32 pixelColor;
 
-				const uint32 pixelColor = dst->format.RGBToColor(r, g, b);
+				if (srcColor == 1) {
+					pixelColor = dst->format.RGBToColor(0, 0, 0);
+				} else {
+					pixelColor = dst->format.RGBToColor(255, 255, 255);
+				}		
 
 				*((uint32 *)dst->getBasePtr(dstX, dstY)) = pixelColor;
 				break;
