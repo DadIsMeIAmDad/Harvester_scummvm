@@ -58,6 +58,8 @@ public:
 	const Common::Array<AbmFrame> &getWaitFrames() const { return _waitFrames; }
 	const IndexedBitmap &getInventoryBitmap() const { return _inventoryBitmap; }
 	const IndexedBitmap &getLogoBitmap() const { return _logoBitmap; }
+	const Graphics::Surface *getInventorySurface() const { return _inventorySurface; }
+	const Graphics::Surface *getLogoSurface() const { return _logoSurface; }
 	const IndexedBitmap &getTipsBitmap() const { return _tipsBitmap; }
 	const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
 	const IndexedBitmap *getQuickTipsTextboxBitmap() const;
@@ -68,7 +70,7 @@ public:
     const Graphics::Surface *getTextboxSurface(uint index) const {
 		return index < _textboxSurfaces.size() ? _textboxSurfaces[index] : nullptr;
 	}
-
+	
 private:
     bool loadPngAsIndexedBitmap(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) const;
 	bool loadPalette(ResourceManager &resources, const Common::String &path, byte *dest) const;
@@ -76,6 +78,7 @@ private:
 	bool loadPngAsSurface(ResourceManager &resources, const Common::String &path, Graphics::Surface *&outSurface) const;
 	void freeTextboxSurfaces();
 	void freeTipsSurface();
+	void freeMenuSurfaces();
 	bool loadAnimation(ResourceManager &resources, const Common::String &path, Common::Array<AbmFrame> &frames) const;
 	bool decodeAnimationFrame(const byte *source, uint32 sourceSize, bool compressed, Common::Array<byte> &dest) const;
 	void blitTransparentBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y) const;
@@ -90,8 +93,10 @@ private:
 	IndexedBitmap _inventoryBitmap;
 	IndexedBitmap _logoBitmap;
 	IndexedBitmap _tipsBitmap;
-	
-    Graphics::Surface *_tipsSurface = nullptr;
+
+	Graphics::Surface *_inventorySurface = nullptr;
+	Graphics::Surface *_logoSurface = nullptr;
+	Graphics::Surface *_tipsSurface = nullptr;
 };
 
 } // End of namespace Harvester

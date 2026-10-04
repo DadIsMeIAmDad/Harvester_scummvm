@@ -102,15 +102,37 @@ bool Art::load(ResourceManager &resources) {
 	_textboxes.clear();
 	freeTextboxSurfaces();
 	freeTipsSurface();
+	freeMenuSurfaces();
 	_ammoIcons.clear();
 	_inventoryBitmap = IndexedBitmap();
 	_logoBitmap = IndexedBitmap();
 	_tipsBitmap = IndexedBitmap();
 
-	return loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette) &&
-	       loadAnimation(resources, "1:/GRAPHIC/OTHER/WAIT.ABM", _waitFrames) &&
-	       loadBitmap(resources, "1:/GRAPHIC/OTHER/INVENTRY.BM", _inventoryBitmap) &&
-	       loadBitmap(resources, "1:/GRAPHIC/OTHER/HARVLOGO.BM", _logoBitmap);
+	if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
+		return false;
+
+	if (!loadAnimation(resources, "1:/GRAPHIC/OTHER/WAIT.ABM", _waitFrames))
+		return false;
+
+	// Prefer true-color PNG versions of the menu graphics.
+	// Keep the original BM files as fallback.
+	if (!loadPngAsSurface(resources, "4:/GRAPHIC/OTHER/INVENTRY.png", _inventorySurface)) {
+		debugC(2, kDebugResources,
+			"Harvester: INVENTRY.png not found, falling back to INVENTRY.BM");
+
+		if (!loadBitmap(resources, "1:/GRAPHIC/OTHER/INVENTRY.BM", _inventoryBitmap))
+			return false;
+	}
+
+	if (!loadPngAsSurface(resources, "4:/GRAPHIC/OTHER/HARVLOGO.png", _logoSurface)) {
+		debugC(2, kDebugResources,
+			"Harvester: HARVLOGO.png not found, falling back to HARVLOGO.BM");
+
+		if (!loadBitmap(resources, "1:/GRAPHIC/OTHER/HARVLOGO.BM", _logoBitmap))
+			return false;
+	}
+
+	return true;
 }
 
 bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel) {
@@ -236,7 +258,19 @@ void Art::freeTipsSurface() {
 		_tipsSurface = nullptr;
 	}
 }
+void Art::freeMenuSurfaces() {
+	if (_inventorySurface) {
+		_inventorySurface->free();
+		delete _inventorySurface;
+		_inventorySurface = nullptr;
+	}
 
+	if (_logoSurface) {
+		_logoSurface->free();
+		delete _logoSurface;
+		_logoSurface = nullptr;
+	}
+}
 void Art::freeTextboxSurfaces() {
 	for (uint i = 0; i < _textboxSurfaces.size(); ++i) {
 		if (_textboxSurfaces[i]) {
