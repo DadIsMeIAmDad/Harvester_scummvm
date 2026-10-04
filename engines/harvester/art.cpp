@@ -155,8 +155,8 @@ bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPane
 		return textbox && textbox->isValid();
 	}
 
-	debugC(2, kDebugResources, "Harvester: quick tips panel '1:/GRAPHIC/OTHER/TIPS.BM'");
-	return loadBitmap(resources, "1:/GRAPHIC/OTHER/TIPS.BM", _tipsBitmap);
+	debugC(2, kDebugResources, "Harvester: quick tips panel '4:/GRAPHIC/OTHER/TIPS.png'");
+	return loadBitmap(resources, "4:/GRAPHIC/OTHER/TIPS.png", _tipsBitmap);
 }
 
 const IndexedBitmap *Art::getQuickTipsTextboxBitmap() const {
