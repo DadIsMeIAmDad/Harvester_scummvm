@@ -634,7 +634,7 @@ bool captureScreenBackdrop(const Graphics::Screen &screen, IndexedBitmap &bitmap
 
 static void drawShadowedString(Graphics::Screen &screen, const Graphics::Font &font, const Common::String &text,
 		int x, int y, int width, byte color, Graphics::TextAlign align = Graphics::kTextAlignLeft) {
-	//font.drawString(&screen, text, x + 1, y + 1, width, kShadowColor, align);
+	font.drawString(&screen, text, x + 1, y + 1, width, kShadowColor, align);
 	font.drawString(&screen, text, x, y, width, color, align);
 }
 
@@ -645,8 +645,7 @@ static void drawWrappedShadowedText(Graphics::Screen &screen, const Graphics::Fo
 
 	const int lineHeight = font.getFontHeight() + 2;
 	for (uint i = 0; i < lines.size(); ++i)
-		//drawShadowedString(screen, font, lines[i], x, y + i * lineHeight, width, color);
-		warning("Mark drawShadowedString NOW");
+		drawShadowedString(screen, font, lines[i], x, y + i * lineHeight, width, color);
 }
 
 static void drawPngWrappedShadowedText(Graphics::Screen &screen, const Graphics::Font &font,
@@ -1513,47 +1512,131 @@ bool Flow::loadDialogueSaveStateBlob(const Common::Array<byte> &blob, uint32 sav
 }
 
 Common::Error Flow::run() {
-	if (!ensureCursorEntity())
+	warning("HARVESTER FLOW: ENTER Flow::run()");
+
+	if (!ensureCursorEntity()) {
+		warning("HARVESTER FLOW FAILED: ensureCursorEntity()");
 		return Common::kReadingFailed;
+	}
+
+	warning("HARVESTER FLOW: ensureCursorEntity OK");
+
 	Common::Error passwordError = _menu.validateParentalPassword(*this);
-	if (passwordError.getCode() != Common::kNoError || _engine.shouldQuit())
+
+	if (passwordError.getCode() != Common::kNoError || _engine.shouldQuit()) {
+		warning(
+			"HARVESTER FLOW: validateParentalPassword FAILED code=%d quit=%d",
+			passwordError.getCode(),
+			_engine.shouldQuit()
+		);
 		return passwordError;
+	}
+
+	warning("HARVESTER FLOW: password check OK");
 
 	clearPendingMainMenuReturn();
 	clearPendingGameOverReturn();
 	clearPendingNewGameRestart();
 	clearPendingCloseupParentRestart();
 	resetRoomNpcDialogueState();
+
 	Common::Error error = Common::kNoError;
+
+	warning(
+		"HARVESTER FLOW: pendingSave=%d demo=%d",
+		_engine.hasPendingLoadedSaveRoomState(),
+		_engine.isDemo()
+	);
+
 	if (_engine.hasPendingLoadedSaveRoomState()) {
-		Common::String initialTarget = _engine.getPendingLoadedSaveRoomState().entranceName;
+
+		Common::String initialTarget =
+			_engine.getPendingLoadedSaveRoomState().entranceName;
+
 		if (initialTarget.empty())
-			initialTarget = _engine.getPendingLoadedSaveRoomState().roomName;
+			initialTarget =
+				_engine.getPendingLoadedSaveRoomState().roomName;
+
+		warning(
+			"HARVESTER FLOW: starting loaded room '%s'",
+			initialTarget.c_str()
+		);
+
 		error = runRoomLoop(initialTarget);
+
+		warning(
+			"HARVESTER FLOW: runRoomLoop(save) returned %d",
+			error.getCode()
+		);
+
 	} else {
+
+		warning("HARVESTER FLOW: normal startup path");
+
 		_engine.clearCurrentSaveRoomState();
 		_engine.clearPendingLoadedDialogueStateBlob();
 		_engine.getScript()->resetRuntimeState();
+
 		if (_engine.isDemo()) {
+			warning("HARVESTER FLOW: entering demo introduction");
+
 			error = runDemoIntroduction();
+
+			warning(
+				"HARVESTER FLOW: runDemoIntroduction returned %d",
+				error.getCode()
+			);
+
 			if (error.getCode() != Common::kNoError)
 				return error;
 		}
+
+		warning("HARVESTER FLOW: entering runQuickTips()");
+
 		error = runQuickTips();
+
+		warning(
+			"HARVESTER FLOW: runQuickTips returned %d",
+			error.getCode()
+		);
+
 		if (error.getCode() != Common::kNoError)
 			return error;
 
 		clearPendingMainMenuReturn();
+
 		_engine.getScript()->resetRuntimeState();
+
+		warning("HARVESTER FLOW: entering runRoomLoop(START)");
+
 		error = runRoomLoop("START");
+
+		warning(
+			"HARVESTER FLOW: runRoomLoop(START) returned %d",
+			error.getCode()
+		);
 	}
-	if (error.getCode() != Common::kNoError)
+
+	if (error.getCode() != Common::kNoError) {
+		warning(
+			"HARVESTER FLOW: RETURNING ERROR %d BEFORE MAIN MENU",
+			error.getCode()
+		);
 		return error;
-	if (!takePendingMainMenuReturn())
+	}
+
+	warning("HARVESTER FLOW: room loop completed");
+
+	if (!takePendingMainMenuReturn()) {
+		warning("HARVESTER FLOW: no pending main menu return");
 		return Common::kNoError;
+	}
+
+	warning("HARVESTER FLOW: ABOUT TO ENTER MAIN MENU");
 
 	_engine.stopMusic();
 	_engine.stopSound();
+
 	return runMainMenuStub();
 }
 
