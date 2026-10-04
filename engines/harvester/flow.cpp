@@ -620,6 +620,8 @@ static void blitTransparentBitmap(Graphics::Screen &screen, const IndexedBitmap 
 }
 
 bool captureScreenBackdrop(const Graphics::Screen &screen, IndexedBitmap &bitmap) {
+	if (screen.format.bytesPerPixel != 1)
+		return true;
 	if (screen.w <= 0 || screen.h <= 0 || screen.format.bytesPerPixel != 1)
 		return false;
 
