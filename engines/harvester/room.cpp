@@ -385,6 +385,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					currentRoomTarget, state, *_engine.getResources())
 				: !_engine.getScript()->resolveRoomSetupState(
 					currentRoomTarget, state, *_engine.getResources()))) {
+
+			warning(
+				"HARVESTER ROOM FAILED: resolveRoomSetupState target='%s' roomNameMode=%d",
+				currentRoomTarget.c_str(),
+				currentTargetIsRoomName
+			);
+
 			return Common::kReadingFailed;
 		} else {
 			shouldRunRoomEntryCommands = true;
@@ -407,12 +414,23 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		}
 
 		Common::Error transitionError = flow.beginRoomSetupTransition();
-		if (transitionError.getCode() != Common::kNoError)
+
+		if (transitionError.getCode() != Common::kNoError) {
+			warning(
+				"HARVESTER ROOM FAILED: beginRoomSetupTransition code=%d",
+				transitionError.getCode()
+			);
 			return transitionError;
+		}
 
 		RoomSceneResources scene;
-		if (!loadRoomSceneResources(state, *_engine.getResources(), scene))
+		if (!loadRoomSceneResources(state, *_engine.getResources(), scene)) {
+			warning(
+				"HARVESTER ROOM FAILED: loadRoomSceneResources room='%s'",
+				state.roomName.c_str()
+			);
 			return Common::kReadingFailed;
+		}
 
 		auto getActiveScreen = [&]() -> Graphics::Screen * {
 			return _engine.getScreen();
@@ -448,8 +466,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			return Common::kNoError;
 		EntityManager *entityManager = _engine.getRuntimeEntities();
 
-		if (!flow.populateRoomSceneEntities(scene.state, scene.sceneObjects, scene.sceneAnimations))
+		if (!flow.populateRoomSceneEntities(scene.state, scene.sceneObjects, scene.sceneAnimations)) {
+			warning(
+				"HARVESTER ROOM FAILED: populateRoomSceneEntities room='%s'",
+				scene.state.roomName.c_str()
+			);
 			return Common::kReadingFailed;
+		}
 		if (entityManager) {
 			for (const MonsterRecord &monster : scene.state.roomMonsters) {
 				Entity *entity = entityManager->findSceneEntityByName(monster.monsterName);
