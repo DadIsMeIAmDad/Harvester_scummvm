@@ -2453,6 +2453,13 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 		bool drawCursor, const Common::Array<Common::String> &menuItems) const {
 	warning("HARVESTER: USING renderMainMenuScreen");
 	Graphics::Screen *screen = _engine.getScreen();
+	warning(
+		"HARVESTER MENU SCREEN: %dx%d bpp=%u pitch=%d",
+		screen->w,
+		screen->h,
+		screen->format.bytesPerPixel,
+		screen->pitch
+	);
 	const Art *art = _engine.getArt();
 	const Graphics::Font *titleFont = FontMan.getFontByUsage(Graphics::FontManager::kBigGUIFont);
 	const Graphics::Font *bodyFont = FontMan.getFontByUsage(Graphics::FontManager::kGUIFont);
@@ -2467,6 +2474,13 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 	// Prefer true-color PNG inventory graphic.
 	// Prefer true-color PNG inventory graphic.
 	const Graphics::Surface *inventorySurface = art->getInventorySurface();
+	warning(
+		"HARVESTER INVENTORY PNG: %dx%d bpp=%u pitch=%d",
+		inventorySurface->w,
+		inventorySurface->h,
+		inventorySurface->format.bytesPerPixel,
+		inventorySurface->pitch
+	);
 	if (inventorySurface) {
 		screen->copyRectToSurface(
 			inventorySurface->getPixels(),
