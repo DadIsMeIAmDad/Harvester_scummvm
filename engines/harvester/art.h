@@ -68,6 +68,9 @@ public:
     const Graphics::Surface *getTextboxSurface(uint index) const {
 		return index < _textboxSurfaces.size() ? _textboxSurfaces[index] : nullptr;
 	}
+	const IndexedBitmap &getTipsBitmap() const { return _tipsBitmap; }
+    const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
+    const IndexedBitmap *getQuickTipsTextboxBitmap() const;
 private:
     bool loadPngAsIndexedBitmap(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) const;
 	bool loadPalette(ResourceManager &resources, const Common::String &path, byte *dest) const;
@@ -89,6 +92,7 @@ private:
 	IndexedBitmap _inventoryBitmap;
 	IndexedBitmap _logoBitmap;
 	IndexedBitmap _tipsBitmap;
+	
     Graphics::Surface *_tipsSurface = nullptr;
 };
 

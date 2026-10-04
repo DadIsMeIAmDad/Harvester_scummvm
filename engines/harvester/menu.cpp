@@ -816,7 +816,7 @@ bool resolveQuickTipsLayout(HarvesterEngine &engine, const MenuTextConfig &confi
 
 void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 		const QuickTipsLayout &layout, const Common::String &tipText) {
-	const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
+	//const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
 	Graphics::Screen *screen = engine.getScreen();
 	const Art *art = engine.getArt();
 	const Graphics::Font *font = FontMan.getFontByUsage(Graphics::FontManager::kGUIFont);
