@@ -2479,20 +2479,20 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 
 	byte displayPalette[256 * 3];
 	buildHarvesterDisplayPalette(art->getWaitPalette(), 1.0f, displayPalette);
-	screen->setPalette(displayPalette);
+	//screen->setPalette(displayPalette);
 	screen->fillRect(screen->getBounds(), 0);
 
 	// Prefer true-color PNG inventory graphic.
-	// Prefer true-color PNG inventory graphic.
 	const Graphics::Surface *inventorySurface = art->getInventorySurface();
-	warning(
-		"HARVESTER INVENTORY PNG: %dx%d bpp=%u pitch=%d",
-		inventorySurface->w,
-		inventorySurface->h,
-		inventorySurface->format.bytesPerPixel,
-		inventorySurface->pitch
-	);
+
 	if (inventorySurface) {
+		warning(
+			"HARVESTER INVENTORY PNG: %dx%d bpp=%u pitch=%d",
+			inventorySurface->w,
+			inventorySurface->h,
+			inventorySurface->format.bytesPerPixel,
+			inventorySurface->pitch
+		);
 		screen->copyRectToSurface(
 			inventorySurface->getPixels(),
 			inventorySurface->pitch,
@@ -2502,6 +2502,7 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 			inventorySurface->h
 		);
 	} else {
+		warning("ATTEMPTIN INVENTORY BLIT");
 		blitBitmap(*screen, art->getInventoryBitmap(), kInventoryX, kInventoryY);
 	}
 
