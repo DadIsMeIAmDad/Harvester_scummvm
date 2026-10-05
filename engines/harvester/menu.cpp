@@ -1309,7 +1309,7 @@ Common::Error MenuSystem::runRoomMenuStub(
 
 			bool confirmed = false;
 			Common::Error confirmError = runConfirmPrompt(
-				backdrop, nullptr, palette, paletteBrightness, flow, config.newGamePrompt, confirmed);
+				backdrop, backdropSurface, palette, paletteBrightness, flow, config.newGamePrompt, confirmed);
 			if (confirmError.getCode() != Common::kNoError)
 				return RoomMenuActivationResult(confirmError, false);
 			needsRedraw = true;
