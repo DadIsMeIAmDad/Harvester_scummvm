@@ -1929,7 +1929,7 @@ Common::Error MenuSystem::runConfirmPrompt(
 	confirmed = false;
 	flow.resetCursorAnimationSequence();
 	bool needsRedraw = true;
-	Graphics::FrameLimiter limiter(g_system, 60);
+	Graphics::FrameLimiter limiter(g_system, 120);
 
 	while (!_engine.shouldQuit()) {
 		const bool hoverYes = quitConfirmYesRect().contains(_mousePos);
