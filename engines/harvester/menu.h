@@ -116,8 +116,12 @@ private:
 		Flow &flow,
 		const Common::String &promptText,
 		bool &confirmed);
-	Common::Error runQuitGameConfirm(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, Flow &flow);
+	Common::Error runQuitGameConfirm(
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		Flow &flow);
 	Common::Error runPasswordPrompt(const IndexedBitmap &backdrop, const byte *palette,
 		float paletteBrightness, Flow &flow, bool drawLogo, Common::String &password,
 		bool &accepted) const;
