@@ -61,7 +61,6 @@ public:
 
 	const Graphics::Surface *getInventorySurface() const { return _inventorySurface; }
 	const Graphics::Surface *getLogoSurface() const { return _logoSurface; }
-	const Graphics::Surface *getLoadGameSurface() const { return _loadGameSurface; }
 
 	const IndexedBitmap &getTipsBitmap() const { return _tipsBitmap; }
 	const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
@@ -101,7 +100,6 @@ private:
 
 	Graphics::Surface *_inventorySurface = nullptr;
 	Graphics::Surface *_logoSurface = nullptr;
-	
 	Graphics::Surface *_tipsSurface = nullptr;
 };
 

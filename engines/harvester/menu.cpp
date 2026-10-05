@@ -755,7 +755,6 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine, const IndexedBitmap 
 	screen->update();
 }
 
-```cpp
 static void renderSaveGameMenuScreen(
 	HarvesterEngine &engine,
 	const IndexedBitmap &background,
