@@ -1994,8 +1994,15 @@ Common::Error MenuSystem::runConfirmPrompt(
 		if (EntityManager *entityManager = _engine.getRuntimeEntities())
 			(void)entityManager->syncCursorEntityPosition(_mousePos);
 
+		if (flow.tickRuntimeEntities())
+			needsRedraw = true;
+
 		limiter.delayBeforeSwap();
 		limiter.startFrame();
+		
+		
+		
+		
 	}
 
 	return Common::kNoError;
