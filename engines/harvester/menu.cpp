@@ -44,8 +44,6 @@
 #include "harvester/flow.h"
 #include "harvester/script.h"
 #include "harvester/text.h"
-#include "image/png.h"
-#include "graphics/surface.h"
 
 namespace Harvester {
 
@@ -68,43 +66,6 @@ static const byte kQuickTipActionColor = 0xc3;
 
 static const char *const kMenuPath = "MENU.INI";
 static const char *const kMenuSectionName = "menu";
-
-static bool loadMenuPngAsSurface(ResourceManager &resources,
-		const Common::String &path,
-		Graphics::Surface *&outSurface) {
-	outSurface = nullptr;
-
-	Common::Array<byte> data;
-	if (!resources.loadFile(path, data) || data.empty()) {
-		warning("Harvester: unable to load menu PNG '%s'", path.c_str());
-		return false;
-	}
-
-	Common::MemoryReadStream stream(data.data(), data.size());
-
-	Image::PNGDecoder decoder;
-	if (!decoder.loadStream(stream)) {
-		warning("Harvester: could not decode menu PNG '%s'", path.c_str());
-		return false;
-	}
-
-	const Graphics::Surface *surface = decoder.getSurface();
-	if (!surface || surface->w == 0 || surface->h == 0) {
-		warning("Harvester: menu PNG returned empty surface '%s'", path.c_str());
-		return false;
-	}
-
-	outSurface = new Graphics::Surface();
-	outSurface->copyFrom(*surface);
-
-	warning("Harvester: loaded menu PNG '%s' (%dx%d bpp=%u)",
-		path.c_str(),
-		surface->w,
-		surface->h,
-		surface->format.bytesPerPixel);
-
-	return true;
-}
 
 struct MenuWeekdayEntry {
 	const char *key;
@@ -755,39 +716,18 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine, const IndexedBitmap 
 	screen->update();
 }
 
-static void renderSaveGameMenuScreen(
-	HarvesterEngine &engine,
-	const IndexedBitmap &background,
-	const Graphics::Surface *backgroundSurface,
-	const byte *palette,
-	float paletteBrightness,
-	const Graphics::Font &selectedLabelFont,
-	const Graphics::Font &unselectedLabelFont,
-	const Graphics::Font &slotNameFont,
-	const Common::Array<Common::String> &slotTitles,
-	int activeSlot,
-	const Common::String &statusMessage,
-	int editingSlot = -1,
-	const Common::String *editingText = nullptr) {
-
+static void renderSaveGameMenuScreen(HarvesterEngine &engine, const IndexedBitmap &background,
+		const byte *palette, float paletteBrightness, const Graphics::Font &selectedLabelFont,
+		const Graphics::Font &unselectedLabelFont, const Graphics::Font &slotNameFont,
+		const Common::Array<Common::String> &slotTitles, int activeSlot,
+		const Common::String &statusMessage, int editingSlot = -1,
+		const Common::String *editingText = nullptr) {
 	Graphics::Screen *screen = engine.getScreen();
 	if (!screen)
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-
-	if (backgroundSurface) {
-		screen->copyRectToSurface(
-			backgroundSurface->getPixels(),
-			backgroundSurface->pitch,
-			0,
-			0,
-			backgroundSurface->w,
-			backgroundSurface->h
-		);
-	} else {
-		blitBitmap(*screen, background, 0, 0);
-	}
+	blitBitmap(*screen, background, 0, 0);
 
 	for (int i = 0; i < kSaveSlotCount; ++i) {
 		const Graphics::Font &labelFont = (i == activeSlot) ? selectedLabelFont : unselectedLabelFont;
@@ -1547,24 +1487,11 @@ Common::Error MenuSystem::runLoadGameMenu(const byte *palette, float paletteBrig
 		return Common::kReadingFailed;
 
 	IndexedBitmap background;
-	Graphics::Surface *backgroundSurface = nullptr;
 	byte loadPalette[256 * 3];
-
-	if (!loadPngAsSurface(*resources, kLoadGameBitmapPath, backgroundSurface) ||
+	if (!loadBitmapResource(*resources, kLoadGameBitmapPath, background) ||
 			!loadPaletteResource(*resources, kLoadGamePalettePath, loadPalette)) {
-		if (backgroundSurface) {
-			backgroundSurface->free();
-			delete backgroundSurface;
-			backgroundSurface = nullptr;
-		}
 		return Common::kReadingFailed;
 	}
-	
-	Graphics::Surface *backgroundSurface = nullptr;
-	const Art *art = _engine.getArt();
-
-	if (art)
-		backgroundSurface = const_cast<Graphics::Surface *>(art->getLoadGameSurface());
 
 	Common::Array<Common::String> slotTitles;
 	slotTitles.resize(kSaveSlotCount);
@@ -1617,19 +1544,8 @@ Common::Error MenuSystem::runLoadGameMenu(const byte *palette, float paletteBrig
 
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
-			renderSaveGameMenuScreen(
-				_engine,
-				background,
-				backgroundSurface,
-				loadPalette,
-				1.0f,
-				slotNameFont,
-				slotLabelFont,
-				slotNameFont,
-				slotTitles,
-				activeSlot,
-				statusMessage
-			);
+			renderSaveGameMenuScreen(_engine, background, loadPalette, 1.0f,
+				slotNameFont, slotLabelFont, slotNameFont, slotTitles, activeSlot, statusMessage);
 			needsRedraw = false;
 		}
 
