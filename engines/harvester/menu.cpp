@@ -753,8 +753,12 @@ static void renderSaveGameMenuScreen(HarvesterEngine &engine, const IndexedBitma
 	screen->update();
 }
 
-static void renderConfirmPromptScreen(HarvesterEngine &engine, const IndexedBitmap &backdrop,
-		const byte *palette, float paletteBrightness, const Graphics::Font &promptFont,
+static void renderConfirmPromptScreen(HarvesterEngine &engine,
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		const Graphics::Font &promptFont,
 		const Graphics::Font &yesFont, const Graphics::Font &noFont,
 		const IndexedBitmap &textbox, const Common::String &promptText,
 		const MenuTextConfig &config) {
@@ -764,7 +768,19 @@ static void renderConfirmPromptScreen(HarvesterEngine &engine, const IndexedBitm
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-	blitBitmap(*screen, backdrop, 0, 0);
+
+	if (backdropSurface) {
+		screen->copyRectToSurface(
+			backdropSurface->getPixels(),
+			backdropSurface->pitch,
+			0,
+			0,
+			backdropSurface->w,
+			backdropSurface->h
+		);
+	} else if (backdrop.isValid()) {
+		blitBitmap(*screen, backdrop, 0, 0);
+	}
 	blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
 	blitTransparentBitmap(*screen, textbox, kConfirmDialogX, kConfirmDialogY);
 	Common::Array<Common::String> promptLines;
@@ -1897,8 +1913,18 @@ Common::Error MenuSystem::runConfirmPrompt(
 				: static_cast<const Graphics::Font &>(choiceFont);
 			const Graphics::Font &noFont = hoverNo ? static_cast<const Graphics::Font &>(promptFont)
 				: static_cast<const Graphics::Font &>(choiceFont);
-			renderConfirmPromptScreen(_engine, backdrop, palette, paletteBrightness,
-				promptFont, yesFont, noFont, *textbox, promptText, config);
+			renderConfirmPromptScreen(
+				_engine,
+				backdrop,
+				backdropSurface,
+				palette,
+				paletteBrightness,
+				promptFont,
+				yesFont,
+				noFont,
+				*textbox,
+				promptText,
+				config);
 			needsRedraw = false;
 		}
 
