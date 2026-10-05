@@ -2911,14 +2911,9 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 	}
 	const Graphics::Surface *logoSurface = art->getLogoSurface();
 	if (logoSurface) {
-		screen->copyRectToSurface(
-			logoSurface->getPixels(),
-			logoSurface->pitch,
-			kLogoX,
-			kLogoY,
-			logoSurface->w,
-			logoSurface->h
-		);
+		screen->blitFrom(*logoSurface,
+			Common::Rect(0, 0, logoSurface->w, logoSurface->h),
+			Common::Point(kLogoX, kLogoY));
 	} else {
 		blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
 	}
