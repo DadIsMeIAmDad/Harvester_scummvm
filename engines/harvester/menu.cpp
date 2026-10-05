@@ -1230,7 +1230,8 @@ void MenuSystem::clearMainMenuBackdrop() {
 	_hasMainMenuBackdrop = false;
 }
 
-Common::Error MenuSystem::runRoomMenuStub(const IndexedBitmap &backdrop,
+Common::Error MenuSystem::runRoomMenuStub(
+		const IndexedBitmap &backdrop,
         const Graphics::Surface *backdropSurface,
         const byte *palette,
         float paletteBrightness,
