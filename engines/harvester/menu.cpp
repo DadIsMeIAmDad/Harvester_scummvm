@@ -1059,8 +1059,8 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 
 		if (selectedItem == kMainMenuItemOptions) {
 			IndexedBitmap menuBackdrop;
-			if (!captureMenuBackdrop(menuBackdrop))
-				return Common::kReadingFailed;
+			//if (!captureMenuBackdrop(menuBackdrop))
+				//return Common::kReadingFailed;
 			Common::Error optionsError = runOptionsMenu(menuBackdrop, menuPalette, 1.0f, flow);
 			needsRedraw = true;
 			return optionsError;
