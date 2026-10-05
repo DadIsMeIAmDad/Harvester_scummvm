@@ -717,6 +717,7 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine, const IndexedBitmap 
 }
 
 static void renderSaveGameMenuScreen(HarvesterEngine &engine, const IndexedBitmap &background,
+		const Graphics::Surface *backgroundSurface,
 		const byte *palette, float paletteBrightness, const Graphics::Font &selectedLabelFont,
 		const Graphics::Font &unselectedLabelFont, const Graphics::Font &slotNameFont,
 		const Common::Array<Common::String> &slotTitles, int activeSlot,
@@ -727,7 +728,19 @@ static void renderSaveGameMenuScreen(HarvesterEngine &engine, const IndexedBitma
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-	blitBitmap(*screen, background, 0, 0);
+
+	if (backgroundSurface) {
+		screen->copyRectToSurface(
+			backgroundSurface->getPixels(),
+			backgroundSurface->pitch,
+			0,
+			0,
+			backgroundSurface->w,
+			backgroundSurface->h
+		);
+	} else {
+		blitBitmap(*screen, background, 0, 0);
+	}
 
 	for (int i = 0; i < kSaveSlotCount; ++i) {
 		const Graphics::Font &labelFont = (i == activeSlot) ? selectedLabelFont : unselectedLabelFont;
@@ -1492,6 +1505,12 @@ Common::Error MenuSystem::runLoadGameMenu(const byte *palette, float paletteBrig
 			!loadPaletteResource(*resources, kLoadGamePalettePath, loadPalette)) {
 		return Common::kReadingFailed;
 	}
+	
+	Graphics::Surface *backgroundSurface = nullptr;
+	const Art *art = _engine.getArt();
+
+	if (art)
+		backgroundSurface = const_cast<Graphics::Surface *>(art->getLoadGameSurface());
 
 	Common::Array<Common::String> slotTitles;
 	slotTitles.resize(kSaveSlotCount);
