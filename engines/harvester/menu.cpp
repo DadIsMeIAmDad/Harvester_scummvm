@@ -2594,6 +2594,7 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 		return;
 
 	applyMenuPalette(*screen, _engine, palette, paletteBrightness);
+	warning("HARVESTER: MENU RESTORE surface=%p", (void *)_mainMenuBackdropSurface);
 	//blitBitmap(*screen, backdrop, 0, 0);
 	if (_mainMenuBackdropSurface) {
 		screen->copyRectToSurface(
