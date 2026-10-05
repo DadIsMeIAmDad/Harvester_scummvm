@@ -1035,7 +1035,7 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			bool confirmed = false;
 			Common::Error confirmError = runConfirmPrompt(
 				menuBackdrop,
-				backdropSurface,
+				nullptr,
 				menuPalette,
 				1.0f,
 				flow,
@@ -1973,14 +1973,18 @@ Common::Error MenuSystem::runConfirmPrompt(
 	return Common::kNoError;
 }
 
-Common::Error MenuSystem::runQuitGameConfirm(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, Flow &flow) {
+Common::Error MenuSystem::runQuitGameConfirm(
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		Flow &flow) {
 	const MenuTextConfig &config = flow._menuTextConfig;
 
 	bool confirmed = false;
 	Common::Error confirmError = runConfirmPrompt(
 		backdrop,
-		nullptr,
+		backdropSurface,
 		palette,
 		paletteBrightness,
 		flow,
