@@ -81,14 +81,14 @@ static const MenuWeekdayEntry kMenuWeekdays[] = {
 	{ "saturday", "Saturday" }
 };
 
-static const char *const kOptionsVolumeBitmapPath = "1:/GRAPHIC/OTHER/VOLUME.BM";
-static const char *const kOptionsIndicatorBitmapPath = "1:/GRAPHIC/OTHER/INDICATR.BM";
+static const char *const kOptionsVolumeBitmapPath = "4:/GRAPHIC/OTHER/VOLUME.png";
+static const char *const kOptionsIndicatorBitmapPath = "4:/GRAPHIC/OTHER/INDICATR.png";
 static const char *const kOptionsPreviewSoundPath = "1:/SOUND/EFFECTS/WHIP2.WAV";
-static const char *const kLoadGameBitmapPath = "1:/GRAPHIC/OTHER/LOADGAME.BM";
+static const char *const kLoadGameBitmapPath = "4:/GRAPHIC/OTHER/LOADGAME.png";
 static const char *const kLoadGamePalettePath = "1:/GRAPHIC/PAL/LOADGAME.PAL";
-static const char *const kSaveGameBitmapPath = "1:/GRAPHIC/OTHER/SAVEGAME.BM";
+static const char *const kSaveGameBitmapPath = "4:/GRAPHIC/OTHER/SAVEGAME.png";
 static const char *const kSaveGamePalettePath = "1:/GRAPHIC/PAL/SAVEGAME.PAL";
-static const char *const kGameOverBitmapPath = "1:/GRAPHIC/OTHER/GAMEOVER.BM";
+static const char *const kGameOverBitmapPath = "4:/GRAPHIC/OTHER/GAMEOVER.png";
 static const char *const kGameOverPalettePath = "1:/GRAPHIC/PAL/GAMEOVER.PAL";
 static const char *const kGameOverMusicPath = "SOUND/MUSIC/ANXIETY.CMP";
 
@@ -2437,8 +2437,8 @@ Common::Error MenuSystem::runHelpScreen(const byte *palette, float paletteBright
 	IndexedBitmap keysHelp;
 	byte mouseHelpPalette[256 * 3];
 	byte keysHelpPalette[256 * 3];
-	if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/MOUSHELP.BM", mouseHelp) ||
-			!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/KEYSHELP.BM", keysHelp) ||
+	if (!loadBitmapResource(*resources, "4:/GRAPHIC/OTHER/MOUSHELP.BM", mouseHelp) ||
+			!loadBitmapResource(*resources, "4:/GRAPHIC/OTHER/KEYSHELP.BM", keysHelp) ||
 			!loadPaletteResource(*resources, "1:/GRAPHIC/PAL/MOUSHELP.PAL", mouseHelpPalette) ||
 			!loadPaletteResource(*resources, "1:/GRAPHIC/PAL/KEYSHELP.PAL", keysHelpPalette)) {
 		return Common::kReadingFailed;
