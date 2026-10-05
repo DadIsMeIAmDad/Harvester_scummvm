@@ -1098,7 +1098,12 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			IndexedBitmap menuBackdrop;
 			if (!captureMenuBackdrop(menuBackdrop))
 				return Common::kReadingFailed;
-			Common::Error quitError = runQuitGameConfirm(menuBackdrop, menuPalette, 1.0f, flow);
+			runQuitGameConfirm(
+				backdrop,
+				nullptr,
+				palette,
+				paletteBrightness,
+				flow);
 			needsRedraw = true;
 			return quitError;
 		}
@@ -1344,7 +1349,12 @@ Common::Error MenuSystem::runRoomMenuStub(
 		}
 
 		if (selectedItem == kMainMenuItemQuitGame) {
-			Common::Error quitError = runQuitGameConfirm(backdrop, palette, paletteBrightness, flow);
+			Common::Error quitError = runQuitGameConfirm(
+				backdrop,
+				backdropSurface,
+				palette,
+				paletteBrightness,
+				flow);
 			if (quitError.getCode() != Common::kNoError)
 				return RoomMenuActivationResult(quitError, false);
 			needsRedraw = true;
