@@ -2584,8 +2584,8 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 	Graphics::Screen *screen = _engine.getScreen();
 
 	if (screen && screen->format.bytesPerPixel != 1 && !_mainMenuBackdropSurface) {
-		_mainMenuBackdropSurface = new Graphics::Surface();
-		_mainMenuBackdropSurface->copyFrom(*screen);
+		const_cast<MenuSystem *>(this)->_mainMenuBackdropSurface = new Graphics::Surface();
+		const_cast<MenuSystem *>(this)->_mainMenuBackdropSurface->copyFrom(*screen);
 
 		warning("HARVESTER: CAPTURED MENU SCREEN %dx%d bpp=%u",
 			_mainMenuBackdropSurface->w,
