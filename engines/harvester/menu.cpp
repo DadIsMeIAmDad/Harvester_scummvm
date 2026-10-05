@@ -769,7 +769,7 @@ static void renderSaveGameMenuScreen(
 	const Common::String &statusMessage,
 	int editingSlot = -1,
 	const Common::String *editingText = nullptr) {
-```
+
 	Graphics::Screen *screen = engine.getScreen();
 	if (!screen)
 		return;

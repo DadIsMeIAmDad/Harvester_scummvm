@@ -131,6 +131,11 @@ bool Art::load(ResourceManager &resources) {
 		if (!loadBitmap(resources, "1:/GRAPHIC/OTHER/HARVLOGO.BM", _logoBitmap))
 			return false;
 	}
+	
+	if (!loadPngAsSurface(resources, "4:/GRAPHIC/OTHER/LOADGAME.png", _loadGameSurface)) {
+    debugC(2, kDebugResources,
+        "Harvester: LOADGAME.png not found");
+}
 
 	return true;
 }
