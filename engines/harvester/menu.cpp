@@ -716,13 +716,19 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine, const IndexedBitmap 
 	screen->update();
 }
 
-static void renderSaveGameMenuScreen(HarvesterEngine &engine, const IndexedBitmap &background,
-		const Graphics::Surface *backgroundSurface,
-		const byte *palette, float paletteBrightness, const Graphics::Font &selectedLabelFont,
-		const Graphics::Font &unselectedLabelFont, const Graphics::Font &slotNameFont,
-		const Common::Array<Common::String> &slotTitles, int activeSlot,
-		const Common::String &statusMessage, int editingSlot = -1,
-		const Common::String *editingText = nullptr) {
+static void renderSaveGameMenuScreen(
+	_engine,
+	background,
+	nullptr,
+	loadPalette,
+	1.0f,
+	slotNameFont,
+	slotLabelFont,
+	slotNameFont,
+	slotTitles,
+	activeSlot,
+	statusMessage
+); {
 	Graphics::Screen *screen = engine.getScreen();
 	if (!screen)
 		return;
