@@ -760,7 +760,7 @@ static void renderConfirmPromptScreen(HarvesterEngine &engine,
 		float paletteBrightness,
 		const Graphics::Font &promptFont,
 		const Graphics::Font &yesFont, const Graphics::Font &noFont,
-		const IndexedBitmap &textbox, const Common::String &promptText,
+		const Graphics::Surface *textboxSurface, const Common::String &promptText,
 		const MenuTextConfig &config) {
 	Graphics::Screen *screen = engine.getScreen();
 	const Art *art = engine.getArt();
@@ -782,7 +782,16 @@ static void renderConfirmPromptScreen(HarvesterEngine &engine,
 		blitBitmap(*screen, backdrop, 0, 0);
 	}
 	blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
-	blitTransparentBitmap(*screen, textbox, kConfirmDialogX, kConfirmDialogY);
+	if (textboxSurface) {
+		screen->copyRectToSurface(
+			textboxSurface->getPixels(),
+			textboxSurface->pitch,
+			kConfirmDialogX,
+			kConfirmDialogY,
+			textboxSurface->w,
+			textboxSurface->h
+		);
+	}
 	Common::Array<Common::String> promptLines;
 	splitMenuConfigLines(promptText, promptLines);
 	for (uint i = 0; i < promptLines.size(); ++i) {
@@ -1912,10 +1921,11 @@ Common::Error MenuSystem::runConfirmPrompt(
     warning("HARVESTER CONFIRM: FONT FOR PROMT LOADED");
 	const MenuTextConfig &config = flow._menuTextConfig;
 	warning("HARVESTER CONFIRM: BEFORE getTextboxBitmap");
-	const IndexedBitmap *textbox = art->getTextboxBitmap(3);
-	if (!textbox || !textbox->isValid())
+	const Graphics::Surface *textboxSurface = art->getTextboxSurface(3);
+	if (!textboxSurface || !textboxSurface->getPixels())
 		return Common::kReadingFailed;
-    warning("HARVESTER CONFIRM: TEXBOX FOR PROMT LOADED");
+
+	warning("HARVESTER CONFIRM: TEXBOX SURFACE FOR PROMPT LOADED");
 	confirmed = false;
 	flow.resetCursorAnimationSequence();
 	bool needsRedraw = true;
@@ -1939,7 +1949,7 @@ Common::Error MenuSystem::runConfirmPrompt(
 				promptFont,
 				yesFont,
 				noFont,
-				*textbox,
+				textboxSurface,
 				promptText,
 				config);
 			needsRedraw = false;
