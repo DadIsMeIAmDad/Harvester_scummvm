@@ -4330,11 +4330,22 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					if (!activeScreen)
 						return Common::kNoError;
 					IndexedBitmap roomMenuBackdrop;
+					Graphics::Surface roomMenuBackdropSurface;
+
 					drawRoomScene(_engine, *activeScreen, scene, scene.targetPaletteBrightness);
+
 					if (!captureScreenBackdrop(*activeScreen, roomMenuBackdrop))
 						return Common::kReadingFailed;
+
+					if (activeScreen->format.bytesPerPixel != 1) {
+						roomMenuBackdropSurface.copyFrom(*activeScreen);
+					}
+
 					Common::Error menuError = flow.runRoomMenuStub(
-						roomMenuBackdrop, nullptr, scene.palette, scene.targetPaletteBrightness,
+						roomMenuBackdrop,
+						&roomMenuBackdropSurface,
+						scene.palette,
+						scene.targetPaletteBrightness,
 						scene.state.hasEntrance);
 					if (menuError.getCode() != Common::kNoError)
 						return menuError;
