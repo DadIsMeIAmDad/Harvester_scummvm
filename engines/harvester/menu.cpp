@@ -633,7 +633,7 @@ static void renderOptionsMenuScreen(HarvesterEngine &engine, const IndexedBitmap
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-	//blitBitmap(*screen, backdrop, 0, 0);
+	blitBitmap(*screen, backdrop, 0, 0);
 	blitTransparentBitmap(*screen, art.getLogoBitmap(), kLogoX, kLogoY);
 
 	const int lineHeight = getNativeRoomMenuLineHeight(selectedFont);
@@ -764,7 +764,7 @@ static void renderConfirmPromptScreen(HarvesterEngine &engine, const IndexedBitm
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-	//blitBitmap(*screen, backdrop, 0, 0);
+	blitBitmap(*screen, backdrop, 0, 0);
 	blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
 	blitTransparentBitmap(*screen, textbox, kConfirmDialogX, kConfirmDialogY);
 	Common::Array<Common::String> promptLines;
@@ -1074,8 +1074,8 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 
 		if (selectedItem == kMainMenuItemQuitGame) {
 			IndexedBitmap menuBackdrop;
-			if (!captureMenuBackdrop(menuBackdrop))
-				return Common::kReadingFailed;
+			//if (!captureMenuBackdrop(menuBackdrop))
+				//return Common::kReadingFailed;
 			Common::Error quitError = runQuitGameConfirm(menuBackdrop, menuPalette, 1.0f, flow);
 			needsRedraw = true;
 			return quitError;
