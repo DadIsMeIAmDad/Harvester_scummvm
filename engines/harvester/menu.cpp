@@ -633,7 +633,7 @@ static void renderOptionsMenuScreen(HarvesterEngine &engine, const IndexedBitmap
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-	blitBitmap(*screen, backdrop, 0, 0);
+	//blitBitmap(*screen, backdrop, 0, 0);
 	blitTransparentBitmap(*screen, art.getLogoBitmap(), kLogoX, kLogoY);
 
 	const int lineHeight = getNativeRoomMenuLineHeight(selectedFont);
@@ -764,7 +764,7 @@ static void renderConfirmPromptScreen(HarvesterEngine &engine, const IndexedBitm
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-	blitBitmap(*screen, backdrop, 0, 0);
+	//blitBitmap(*screen, backdrop, 0, 0);
 	blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
 	blitTransparentBitmap(*screen, textbox, kConfirmDialogX, kConfirmDialogY);
 	Common::Array<Common::String> promptLines;
