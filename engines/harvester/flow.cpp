@@ -1971,9 +1971,19 @@ Common::Error Flow::runMainMenuStub() {
 	return _menu.runMainMenuStub(*this);
 }
 
-Common::Error Flow::runRoomMenuStub(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, bool canSaveGame) {
-	return _menu.runRoomMenuStub(backdrop, palette, paletteBrightness, *this, canSaveGame);
+Common::Error Flow::runRoomMenuStub(const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		bool canSaveGame) {
+	return _menu.runRoomMenuStub(
+		backdrop,
+		backdropSurface,
+		palette,
+		paletteBrightness,
+		*this,
+		canSaveGame
+	);
 }
 
 Common::Error Flow::runRoomNpcDialogue(const IndexedBitmap &backdrop, const byte *palette,

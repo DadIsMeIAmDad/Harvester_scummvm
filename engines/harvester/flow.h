@@ -68,8 +68,11 @@ private:
 	Common::Error runDemoIntroduction();
 	Common::Error runDemoEnding();
 	Common::Error runMainMenuStub();
-	Common::Error runRoomMenuStub(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, bool canSaveGame);
+	Common::Error runRoomMenuStub(const IndexedBitmap &backdrop,
+        const Graphics::Surface *backdropSurface,
+        const byte *palette,
+        float paletteBrightness,
+        bool canSaveGame);
 	Common::Error runRoomNpcDialogue(const IndexedBitmap &backdrop, const byte *palette,
 		float paletteBrightness, const NpcRecord &npc, const Common::String &usedItemName);
 	Common::Error runTownMapSelector(const Common::String &mapEntryName, Common::String &destinationEntranceName);

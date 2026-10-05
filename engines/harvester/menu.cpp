@@ -1230,8 +1230,12 @@ void MenuSystem::clearMainMenuBackdrop() {
 	_hasMainMenuBackdrop = false;
 }
 
-Common::Error MenuSystem::runRoomMenuStub(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, Flow &flow, bool canSaveGame) {
+Common::Error MenuSystem::runRoomMenuStub(const IndexedBitmap &backdrop,
+        const Graphics::Surface *backdropSurface,
+        const byte *palette,
+        float paletteBrightness,
+        Flow &flow,
+        bool canSaveGame) {
 	Graphics::FrameLimiter limiter(g_system, 60);
 	Common::Array<Common::String> roomMenuItems;
 	buildDisplayMainMenuItems(_menuItems,
