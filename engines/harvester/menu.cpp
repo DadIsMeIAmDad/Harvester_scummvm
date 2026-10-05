@@ -1909,12 +1909,12 @@ Common::Error MenuSystem::runConfirmPrompt(
 	HarvesterCftFont choiceFont(*choiceFontResource);
 	if (!promptFont.isValid() || !choiceFont.isValid())
 		return Common::kReadingFailed;
-
+    warning("HARVESTER CONFIRM: FONT FOR PROMT LOADED");
 	const MenuTextConfig &config = flow._menuTextConfig;
 	const IndexedBitmap *textbox = art->getTextboxBitmap(3);
 	if (!textbox || !textbox->isValid())
 		return Common::kReadingFailed;
-
+    warning("HARVESTER CONFIRM: TEXBOX FOR PROMT LOADED");
 	confirmed = false;
 	flow.resetCursorAnimationSequence();
 	bool needsRedraw = true;
@@ -1928,6 +1928,7 @@ Common::Error MenuSystem::runConfirmPrompt(
 				: static_cast<const Graphics::Font &>(choiceFont);
 			const Graphics::Font &noFont = hoverNo ? static_cast<const Graphics::Font &>(promptFont)
 				: static_cast<const Graphics::Font &>(choiceFont);
+			warning("HARVESTER CONFIRM: BEFORE renderConfirmPromptScreen");
 			renderConfirmPromptScreen(
 				_engine,
 				backdrop,
@@ -1942,6 +1943,7 @@ Common::Error MenuSystem::runConfirmPrompt(
 				config);
 			needsRedraw = false;
 		}
+		warning("HARVESTER CONFIRM: AFTER renderConfirmPromptScreen");
 
 		Common::Event event;
 		while (g_system->getEventManager()->pollEvent(event)) {
