@@ -1914,8 +1914,7 @@ Common::Error MenuSystem::runConfirmPrompt(
 	warning("HARVESTER CONFIRM: BEFORE getTextboxBitmap");
 	const IndexedBitmap *textbox = art->getTextboxBitmap(3);
 	if (!textbox || !textbox->isValid())
-		//return Common::kReadingFailed;
-		warning("HARVESTER CONFIRM: Invalid Textbox Skipped");
+		return Common::kReadingFailed;
     warning("HARVESTER CONFIRM: TEXBOX FOR PROMT LOADED");
 	confirmed = false;
 	flow.resetCursorAnimationSequence();
