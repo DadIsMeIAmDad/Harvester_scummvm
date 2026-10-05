@@ -1462,7 +1462,12 @@ Common::Error MenuSystem::runRoomMenuStub(
 		}
 
 		if (selectedItem == kMainMenuItemOptions) {
-			Common::Error optionsError = runOptionsMenu(backdrop, palette, paletteBrightness, flow);
+			Common::Error optionsError = runOptionsMenu(
+				backdrop,
+				backdropSurface,   // pass the room menu's surface through
+				palette,
+				paletteBrightness,
+				flow);
 			if (optionsError.getCode() != Common::kNoError)
 				return RoomMenuActivationResult(optionsError, false);
 			needsRedraw = true;
