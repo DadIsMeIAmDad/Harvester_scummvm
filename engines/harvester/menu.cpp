@@ -1911,9 +1911,11 @@ Common::Error MenuSystem::runConfirmPrompt(
 		return Common::kReadingFailed;
     warning("HARVESTER CONFIRM: FONT FOR PROMT LOADED");
 	const MenuTextConfig &config = flow._menuTextConfig;
+	warning("HARVESTER CONFIRM: BEFORE getTextboxBitmap");
 	const IndexedBitmap *textbox = art->getTextboxBitmap(3);
 	if (!textbox || !textbox->isValid())
-		return Common::kReadingFailed;
+		//return Common::kReadingFailed;
+		warning("HARVESTER CONFIRM: Invalid Textbox Skipped");
     warning("HARVESTER CONFIRM: TEXBOX FOR PROMT LOADED");
 	confirmed = false;
 	flow.resetCursorAnimationSequence();
