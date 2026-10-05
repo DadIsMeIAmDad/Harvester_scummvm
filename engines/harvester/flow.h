@@ -73,7 +73,6 @@ private:
         const Graphics::Surface *backdropSurface,
         const byte *palette,
         float paletteBrightness,
-		this &this,
         bool canSaveGame);
 	Common::Error runRoomNpcDialogue(const IndexedBitmap &backdrop, const byte *palette,
 		float paletteBrightness, const NpcRecord &npc, const Common::String &usedItemName);
