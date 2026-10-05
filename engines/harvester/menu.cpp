@@ -44,6 +44,7 @@
 #include "harvester/flow.h"
 #include "harvester/script.h"
 #include "harvester/text.h"
+#include "image/png.h"
 
 namespace Harvester {
 
@@ -456,6 +457,28 @@ static bool loadPaletteResource(ResourceManager &resources, const Common::String
 	return true;
 }
 
+static bool loadPngAsMenuSurface(ResourceManager &resources, const Common::String &path,
+		Graphics::Surface *&outSurface) {
+	outSurface = nullptr;
+
+	Common::Array<byte> data;
+	if (!resources.loadFile(path, data) || data.empty())
+		return false;
+
+	Common::MemoryReadStream stream(data.data(), data.size());
+	Image::PNGDecoder decoder;
+	if (!decoder.loadStream(stream))
+		return false;
+
+	const Graphics::Surface *src = decoder.getSurface();
+	if (!src || src->w == 0 || src->h == 0)
+		return false;
+
+	outSurface = new Graphics::Surface();
+	outSurface->copyFrom(*src);
+	return true;
+}
+
 static void applyMenuPalette(Graphics::Screen &screen, const HarvesterEngine &engine,
 		const byte *palette, float brightness) {
 	if (!palette)
@@ -716,9 +739,13 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine, const IndexedBitmap 
 	screen->update();
 }
 
-static void renderSaveGameMenuScreen(HarvesterEngine &engine, const IndexedBitmap &background,
-		const byte *palette, float paletteBrightness, const Graphics::Font &selectedLabelFont,
-		const Graphics::Font &unselectedLabelFont, const Graphics::Font &slotNameFont,
+static void renderSaveGameMenuScreen(HarvesterEngine &engine,
+		const IndexedBitmap &background,
+		const Graphics::Surface *backgroundSurface,   // NEW
+		const byte *palette, float paletteBrightness,
+		const Graphics::Font &selectedLabelFont,
+		const Graphics::Font &unselectedLabelFont,
+		const Graphics::Font &slotNameFont,
 		const Common::Array<Common::String> &slotTitles, int activeSlot,
 		const Common::String &statusMessage, int editingSlot = -1,
 		const Common::String *editingText = nullptr) {
@@ -727,7 +754,18 @@ static void renderSaveGameMenuScreen(HarvesterEngine &engine, const IndexedBitma
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-	blitBitmap(*screen, background, 0, 0);
+
+	// Prefer true-color surface; fall back to indexed BM
+	if (backgroundSurface) {
+		screen->copyRectToSurface(
+			backgroundSurface->getPixels(),
+			backgroundSurface->pitch,
+			0, 0,
+			backgroundSurface->w,
+			backgroundSurface->h);
+	} else if (background.isValid()) {
+		blitBitmap(*screen, background, 0, 0);
+	}
 
 	for (int i = 0; i < kSaveSlotCount; ++i) {
 		const Graphics::Font &labelFont = (i == activeSlot) ? selectedLabelFont : unselectedLabelFont;
@@ -746,60 +784,6 @@ static void renderSaveGameMenuScreen(HarvesterEngine &engine, const IndexedBitma
 		drawShadowedString(*screen, slotNameFont, statusMessage, 20, kSaveStatusTextY,
 			screen->w - 40, kTextColorNormal, Graphics::kTextAlignCenter);
 	}
-
-	if (engine.getRuntimeEntities())
-		engine.getRuntimeEntities()->drawCursor(*screen);
-	screen->makeAllDirty();
-	screen->update();
-}
-
-static void renderConfirmPromptScreen(HarvesterEngine &engine,
-		const IndexedBitmap &backdrop,
-		const Graphics::Surface *backdropSurface,
-		const byte *palette,
-		float paletteBrightness,
-		const Graphics::Font &promptFont,
-		const Graphics::Font &yesFont, const Graphics::Font &noFont,
-		const Graphics::Surface *textboxSurface, const Common::String &promptText,
-		const MenuTextConfig &config) {
-	Graphics::Screen *screen = engine.getScreen();
-	const Art *art = engine.getArt();
-	if (!screen || !art)
-		return;
-
-	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-
-	if (backdropSurface) {
-		screen->copyRectToSurface(
-			backdropSurface->getPixels(),
-			backdropSurface->pitch,
-			0,
-			0,
-			backdropSurface->w,
-			backdropSurface->h
-		);
-	} else if (backdrop.isValid()) {
-		blitBitmap(*screen, backdrop, 0, 0);
-	}
-	blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
-	if (textboxSurface) {
-		screen->copyRectToSurface(
-			textboxSurface->getPixels(),
-			textboxSurface->pitch,
-			kConfirmDialogX,
-			kConfirmDialogY,
-			textboxSurface->w,
-			textboxSurface->h
-		);
-	}
-	Common::Array<Common::String> promptLines;
-	splitMenuConfigLines(promptText, promptLines);
-	for (uint i = 0; i < promptLines.size(); ++i) {
-		drawSinglePassString(*screen, promptFont, promptLines[i], kConfirmPromptTextX,
-			kConfirmPromptTextY + (int)i * (promptFont.getFontHeight() + 2));
-	}
-	drawSinglePassString(*screen, yesFont, config.yesLabel, kConfirmYesTextX, kConfirmChoiceTextY);
-	drawSinglePassString(*screen, noFont, config.noLabel, kConfirmNoTextX, kConfirmChoiceTextY);
 
 	if (engine.getRuntimeEntities())
 		engine.getRuntimeEntities()->drawCursor(*screen);
@@ -1487,10 +1471,15 @@ Common::Error MenuSystem::runLoadGameMenu(const byte *palette, float paletteBrig
 		return Common::kReadingFailed;
 
 	IndexedBitmap background;
-	byte loadPalette[256 * 3];
-	if (!loadBitmapResource(*resources, kLoadGameBitmapPath, background) ||
-			!loadPaletteResource(*resources, kLoadGamePalettePath, loadPalette)) {
-		return Common::kReadingFailed;
+	Graphics::Surface *backgroundSurface = nullptr;
+	byte loadPalette[256 * 3] = { 0 };
+
+	// Prefer PNG true-color surface; fall back to BM+PAL for 8-bit
+	if (!loadPngAsMenuSurface(*resources, kLoadGameBitmapPath, backgroundSurface)) {
+		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/LOADGAME.BM", background) ||
+				!loadPaletteResource(*resources, kLoadGamePalettePath, loadPalette)) {
+			return Common::kReadingFailed;
+		}
 	}
 
 	Common::Array<Common::String> slotTitles;
@@ -1544,7 +1533,7 @@ Common::Error MenuSystem::runLoadGameMenu(const byte *palette, float paletteBrig
 
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
-			renderSaveGameMenuScreen(_engine, background, loadPalette, 1.0f,
+			renderSaveGameMenuScreen(_engine, background, backgroundSurface, loadPalette, 1.0f,
 				slotNameFont, slotLabelFont, slotNameFont, slotTitles, activeSlot, statusMessage);
 			needsRedraw = false;
 		}
@@ -1622,6 +1611,10 @@ Common::Error MenuSystem::runLoadGameMenu(const byte *palette, float paletteBrig
 		limiter.startFrame();
 	}
 
+	if (backgroundSurface) {
+		backgroundSurface->free();
+		delete backgroundSurface;
+	}
 	return Common::kNoError;
 }
 
@@ -1645,10 +1638,14 @@ Common::Error MenuSystem::runSaveGameMenu(const byte *palette, float paletteBrig
 		return Common::kReadingFailed;
 
 	IndexedBitmap background;
-	byte savePalette[256 * 3];
-	if (!loadBitmapResource(*resources, kSaveGameBitmapPath, background) ||
-			!loadPaletteResource(*resources, kSaveGamePalettePath, savePalette)) {
-		return Common::kReadingFailed;
+	Graphics::Surface *backgroundSurface = nullptr;
+	byte savePalette[256 * 3] = { 0 };
+
+	if (!loadPngAsMenuSurface(*resources, kSaveGameBitmapPath, backgroundSurface)) {
+		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/SAVEGAME.BM", background) ||
+				!loadPaletteResource(*resources, kSaveGamePalettePath, savePalette)) {
+			return Common::kReadingFailed;
+		}
 	}
 
 	Common::Array<Common::String> slotTitles;
@@ -1683,7 +1680,7 @@ Common::Error MenuSystem::runSaveGameMenu(const byte *palette, float paletteBrig
 
 		while (!_engine.shouldQuit()) {
 			if (needsRedraw) {
-				renderSaveGameMenuScreen(_engine, background, savePalette, 1.0f,
+				renderSaveGameMenuScreen(_engine, background, backgroundsurface, savePalette, 1.0f,
 					slotNameFont, slotLabelFont, slotNameFont, slotTitles, slotIndex,
 					Common::String(), slotIndex, &editedTitle);
 				needsRedraw = false;
@@ -1770,7 +1767,7 @@ Common::Error MenuSystem::runSaveGameMenu(const byte *palette, float paletteBrig
 
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
-			renderSaveGameMenuScreen(_engine, background, savePalette, 1.0f,
+			renderSaveGameMenuScreen(_engine, background, backgroundsurface, savePalette, 1.0f,
 				slotNameFont, slotLabelFont, slotNameFont, slotTitles, activeSlot, statusMessage);
 			needsRedraw = false;
 		}
@@ -1854,7 +1851,10 @@ Common::Error MenuSystem::runSaveGameMenu(const byte *palette, float paletteBrig
 		limiter.delayBeforeSwap();
 		limiter.startFrame();
 	}
-
+	if (backgroundSurface) {
+		backgroundSurface->free();
+		delete backgroundSurface;
+	}
 	return Common::kNoError;
 }
 
