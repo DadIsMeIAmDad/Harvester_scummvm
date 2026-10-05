@@ -101,7 +101,7 @@ private:
 
 	Graphics::Surface *_inventorySurface = nullptr;
 	Graphics::Surface *_logoSurface = nullptr;
-	Graphics::Surface *_loadGameSurface = nullptr;
+	
 	Graphics::Surface *_tipsSurface = nullptr;
 };
 

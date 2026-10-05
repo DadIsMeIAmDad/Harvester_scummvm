@@ -131,23 +131,6 @@ bool Art::load(ResourceManager &resources) {
 		if (!loadBitmap(resources, "1:/GRAPHIC/OTHER/HARVLOGO.BM", _logoBitmap))
 			return false;
 	}
-	
-	if (!loadPngAsSurface(resources, "4:/GRAPHIC/OTHER/LOADGAME.png", _loadGameSurface)) {
-		debugC(2, kDebugResources,
-			"Harvester: LOADGAME.png not found");
-	}
-	if (!loadPngAsSurface(resources, "4:/GRAPHIC/OTHER/SAVEGAME.png", _saveGameSurface)) {
-		debugC(2, kDebugResources,
-			"Harvester: SAVEGAME.png not found");
-	}
-	if (!loadPngAsSurface(resources, "4:/GRAPHIC/OTHER/KEYSHELP.png", _keyhelpGameSurface)) {
-		debugC(2, kDebugResources,
-			"Harvester: KEYSHELP.png not found");
-	}
-	if (!loadPngAsSurface(resources, "4:/GRAPHIC/OTHER/MOUSHELP.png", _mousehelpGameSurface)) {
-		debugC(2, kDebugResources,
-			"Harvester: MOUSHELP.png not found");
-	}
 
 	return true;
 }
@@ -286,27 +269,6 @@ void Art::freeMenuSurfaces() {
 		_logoSurface->free();
 		delete _logoSurface;
 		_logoSurface = nullptr;
-	}
-	
-	if (_loadGameSurface) {
-		_loadGameSurface->free();
-		delete _loadGameSurface;
-		_loadGameSurface = nullptr;
-	}
-	if (_saveGameSurface) {
-		_saveGameSurface->free();
-		delete _saveGameSurface;
-		_saveGameSurface = nullptr;
-	}
-	if (_keyhelpGameSurface) {
-		_keyhelpGameSurface->free();
-		delete _keyhelpGameSurface;
-		_keyhelpGameSurface = nullptr;
-	}
-	if (_mousehelpGameSurface) {
-		_mousehelpGameSurface->free();
-		delete _mousehelpGameSurface;
-		_mousehelpGameSurface = nullptr;
 	}
 }
 void Art::freeTextboxSurfaces() {
