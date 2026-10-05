@@ -1279,6 +1279,17 @@ Common::Error MenuSystem::runRoomMenuStub(
 	Flow &flow,
 	bool canSaveGame) {
 	Graphics::FrameLimiter limiter(g_system, 60);
+	if (backdropSurface) {
+		if (!_mainMenuBackdropSurface)
+			_mainMenuBackdropSurface = new Graphics::Surface();
+
+		_mainMenuBackdropSurface->copyFrom(*backdropSurface);
+
+		warning("HARVESTER: UPDATED MENU BACKDROP %dx%d bpp=%u",
+			_mainMenuBackdropSurface->w,
+			_mainMenuBackdropSurface->h,
+			_mainMenuBackdropSurface->format.bytesPerPixel);
+	}
 	Common::Array<Common::String> roomMenuItems;
 	buildDisplayMainMenuItems(_menuItems,
 		canSaveGame && _engine.canSaveGameStateCurrently(),
@@ -1929,7 +1940,7 @@ Common::Error MenuSystem::runConfirmPrompt(
 	confirmed = false;
 	flow.resetCursorAnimationSequence();
 	bool needsRedraw = true;
-	Graphics::FrameLimiter limiter(g_system, 200);
+	Graphics::FrameLimiter limiter(g_system, 120);
 
 	while (!_engine.shouldQuit()) {
 		const bool hoverYes = quitConfirmYesRect().contains(_mousePos);
@@ -2669,8 +2680,8 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 		int selectedItem) const {
 	warning("HARVESTER: USING renderBackdropMenuScreen");
 	Graphics::Screen *screen = _engine.getScreen();
-
-	if (screen && screen->format.bytesPerPixel != 1) {
+    
+	if (screen && screen->format.bytesPerPixel != 1 && !_mainMenuBackdropSurface) {
 		const_cast<MenuSystem *>(this)->_mainMenuBackdropSurface = new Graphics::Surface();
 		const_cast<MenuSystem *>(this)->_mainMenuBackdropSurface->copyFrom(*screen);
 
