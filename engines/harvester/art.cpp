@@ -133,7 +133,7 @@ bool Art::load(ResourceManager &resources) {
 	}
 	
 	if (!loadPngAsSurface(resources, "4:/GRAPHIC/OTHER/LOADGAME.png", _loadGameSurface)) {
-    debugC(2, kDebugResources,
+		debugC(2, kDebugResources,
         "Harvester: LOADGAME.png not found");
 }
 
