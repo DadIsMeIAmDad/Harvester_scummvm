@@ -89,8 +89,13 @@ public:
 		const Common::Array<Common::String> &menuItems);
 
 	Common::Error runMainMenuStub(Flow &flow);
-	Common::Error runRoomMenuStub(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, Flow &flow, bool canSaveGame);
+	Common::Error runRoomMenuStub(
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		Flow &flow,
+		bool canSaveGame);
 	Common::Error validateParentalPassword(Flow &flow);
 
 private:
