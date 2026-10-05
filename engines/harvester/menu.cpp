@@ -1854,9 +1854,14 @@ Common::Error MenuSystem::restoreRoomBackdropAfterSave(const IndexedBitmap &back
 	return flow.fadeInRoomScene(palette, paletteBrightness);
 }
 
-Common::Error MenuSystem::runConfirmPrompt(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, Flow &flow, const Common::String &promptText,
-		bool &confirmed) {
+Common::Error MenuSystem::runConfirmPrompt(
+	const IndexedBitmap &backdrop,
+	const Graphics::Surface *backdropSurface,
+	const byte *palette,
+	float paletteBrightness,
+	Flow &flow,
+	const Common::String &promptText,
+	bool &confirmed) {
 	const Art *art = _engine.getArt();
 	const CftFontResource *promptFontResource = findStartupFontByName(_engine, "MEDFONT1");
 	const CftFontResource *choiceFontResource = findStartupFontByName(_engine, "MEDFONT2");
