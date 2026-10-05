@@ -2582,6 +2582,16 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 		int selectedItem) const {
 	warning("HARVESTER: USING renderBackdropMenuScreen");
 	Graphics::Screen *screen = _engine.getScreen();
+
+	if (screen && screen->format.bytesPerPixel != 1 && !_mainMenuBackdropSurface) {
+		_mainMenuBackdropSurface = new Graphics::Surface();
+		_mainMenuBackdropSurface->copyFrom(*screen);
+
+		warning("HARVESTER: CAPTURED MENU SCREEN %dx%d bpp=%u",
+			_mainMenuBackdropSurface->w,
+			_mainMenuBackdropSurface->h,
+			_mainMenuBackdropSurface->format.bytesPerPixel);
+	}
 	const Art *art = _engine.getArt();
 	const CftFontResource *selectedFontResource = findStartupFontByName(_engine, "HARVFONT");
 	const CftFontResource *unselectedFontResource = findStartupFontByName(_engine, "HARVFNT2");
