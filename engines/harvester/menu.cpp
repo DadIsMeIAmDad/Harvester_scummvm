@@ -2799,8 +2799,8 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 	if (!screen || !art || !titleFont || !bodyFont)
 		return;
 
-	//byte displayPalette[256 * 3];
-	//buildHarvesterDisplayPalette(art->getWaitPalette(), 1.0f, displayPalette);
+	byte displayPalette[256 * 3];
+	buildHarvesterDisplayPalette(art->getWaitPalette(), 1.0f, displayPalette);
 	//screen->setPalette(displayPalette);
 	screen->fillRect(screen->getBounds(), 0);
 

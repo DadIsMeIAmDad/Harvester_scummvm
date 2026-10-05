@@ -509,7 +509,15 @@ Common::Rect InventorySystem::getPanelBounds() const {
 	if (!art)
 		return Common::Rect();
 
+	if (const Graphics::Surface *panel = art->getInventorySurface()) {
+		return Common::Rect(kInventoryX, kInventoryY,
+			kInventoryX + panel->w, kInventoryY + panel->h);
+	}
+
 	const IndexedBitmap &bitmap = art->getInventoryBitmap();
+	if (!bitmap.isValid())
+		return Common::Rect();
+
 	return Common::Rect(kInventoryX, kInventoryY,
 		kInventoryX + (int)bitmap.width, kInventoryY + (int)bitmap.height);
 }
@@ -536,7 +544,14 @@ void InventorySystem::drawOverlay(Graphics::Screen &screen) const {
 	if (!art)
 		return;
 
-	blitBitmap(screen, art->getInventoryBitmap(), kInventoryX, kInventoryY);
+	// Prefer PNG panel with alpha (same as logo / Entity::draw)
+	if (const Graphics::Surface *panel = art->getInventorySurface()) {
+		screen.blitFrom(*panel,
+			Common::Rect(0, 0, panel->w, panel->h),
+			Common::Point(kInventoryX, kInventoryY));
+	} else {
+		blitBitmap(screen, art->getInventoryBitmap(), kInventoryX, kInventoryY);
+	}
 
 	for (const InventoryVisual &item : _items) {
 		if (!_selectedItemName.empty() && item.object.objectName.equalsIgnoreCase(_selectedItemName))
