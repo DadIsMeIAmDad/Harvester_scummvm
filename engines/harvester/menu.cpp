@@ -500,14 +500,28 @@ static void applyMenuPalette(Graphics::Screen &screen, const HarvesterEngine &en
 	screen.setPalette(displayPalette);
 }
 
-static void renderHelpScreen(HarvesterEngine &engine, const IndexedBitmap &bitmap, const byte *palette) {
+static void renderHelpScreen(HarvesterEngine &engine,
+		const IndexedBitmap &bitmap,
+		const Graphics::Surface *bitmapSurface,   // NEW
+		const byte *palette) {
 	Graphics::Screen *screen = engine.getScreen();
 	if (!screen)
 		return;
 
 	applyMenuPalette(*screen, engine, palette, 1.0f);
 	screen->fillRect(screen->getBounds(), 0);
-	blitBitmap(*screen, bitmap, 0, 0);
+
+	if (bitmapSurface) {
+		screen->copyRectToSurface(
+			bitmapSurface->getPixels(),
+			bitmapSurface->pitch,
+			0, 0,
+			bitmapSurface->w,
+			bitmapSurface->h);
+	} else if (bitmap.isValid()) {
+		blitBitmap(*screen, bitmap, 0, 0);
+	}
+
 	if (engine.getRuntimeEntities())
 		engine.getRuntimeEntities()->drawCursor(*screen);
 	screen->makeAllDirty();
@@ -2559,19 +2573,37 @@ Common::Error MenuSystem::runOptionsMenu(const IndexedBitmap &backdrop, const by
 }
 
 Common::Error MenuSystem::runHelpScreen(const byte *palette, float paletteBrightness, Flow &flow) {
+	(void)palette;
+	(void)paletteBrightness;
+
 	ResourceManager *resources = _engine.getResources();
 	if (!resources)
 		return Common::kReadingFailed;
 
 	IndexedBitmap mouseHelp;
 	IndexedBitmap keysHelp;
-	byte mouseHelpPalette[256 * 3];
-	byte keysHelpPalette[256 * 3];
-	if (!loadBitmapResource(*resources, "4:/GRAPHIC/OTHER/MOUSHELP.BM", mouseHelp) ||
-			!loadBitmapResource(*resources, "4:/GRAPHIC/OTHER/KEYSHELP.BM", keysHelp) ||
-			!loadPaletteResource(*resources, "1:/GRAPHIC/PAL/MOUSHELP.PAL", mouseHelpPalette) ||
-			!loadPaletteResource(*resources, "1:/GRAPHIC/PAL/KEYSHELP.PAL", keysHelpPalette)) {
-		return Common::kReadingFailed;
+	Graphics::Surface *mouseHelpSurface = nullptr;
+	Graphics::Surface *keysHelpSurface = nullptr;
+	byte mouseHelpPalette[256 * 3] = { 0 };
+	byte keysHelpPalette[256 * 3] = { 0 };
+
+	// Prefer PNG true-color; fall back to BM+PAL
+	if (!loadPngAsMenuSurface(*resources, "4:/GRAPHIC/OTHER/MOUSHELP.png", mouseHelpSurface)) {
+		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/MOUSHELP.BM", mouseHelp) ||
+				!loadPaletteResource(*resources, "1:/GRAPHIC/PAL/MOUSHELP.PAL", mouseHelpPalette)) {
+			return Common::kReadingFailed;
+		}
+	}
+
+	if (!loadPngAsMenuSurface(*resources, "4:/GRAPHIC/OTHER/KEYSHELP.png", keysHelpSurface)) {
+		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/KEYSHELP.BM", keysHelp) ||
+				!loadPaletteResource(*resources, "1:/GRAPHIC/PAL/KEYSHELP.PAL", keysHelpPalette)) {
+			if (mouseHelpSurface) {
+				mouseHelpSurface->free();
+				delete mouseHelpSurface;
+			}
+			return Common::kReadingFailed;
+		}
 	}
 
 	int page = 0;
@@ -2580,10 +2612,15 @@ Common::Error MenuSystem::runHelpScreen(const byte *palette, float paletteBright
 
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
-			renderHelpScreen(_engine, page == 0 ? mouseHelp : keysHelp,
-				page == 0 ? mouseHelpPalette : keysHelpPalette);
+			if (page == 0) {
+				renderHelpScreen(_engine, mouseHelp, mouseHelpSurface, mouseHelpPalette);
+			} else {
+				renderHelpScreen(_engine, keysHelp, keysHelpSurface, keysHelpPalette);
+			}
 			needsRedraw = false;
 		}
+
+		// ... existing event loop unchanged ...
 
 		Common::Event event;
 		while (g_system->getEventManager()->pollEvent(event)) {
@@ -2628,7 +2665,14 @@ Common::Error MenuSystem::runHelpScreen(const byte *palette, float paletteBright
 		limiter.delayBeforeSwap();
 		limiter.startFrame();
 	}
-
+	if (mouseHelpSurface) {
+		mouseHelpSurface->free();
+		delete mouseHelpSurface;
+	}
+	if (keysHelpSurface) {
+		keysHelpSurface->free();
+		delete keysHelpSurface;
+	}
 	return Common::kNoError;
 }
 
