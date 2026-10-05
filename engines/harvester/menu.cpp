@@ -1035,7 +1035,7 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			bool confirmed = false;
 			Common::Error confirmError = runConfirmPrompt(
 				menuBackdrop,
-				nullptr,
+				backdropSurface,
 				menuPalette,
 				1.0f,
 				flow,
