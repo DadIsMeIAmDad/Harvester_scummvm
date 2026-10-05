@@ -1018,7 +1018,13 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 
 			bool confirmed = false;
 			Common::Error confirmError = runConfirmPrompt(
-				menuBackdrop, menuPalette, 1.0f, flow, config.newGamePrompt, confirmed);
+				menuBackdrop,
+				nullptr,
+				menuPalette,
+				1.0f,
+				flow,
+				config.newGamePrompt,
+				confirmed);
 			if (confirmError.getCode() != Common::kNoError)
 				return confirmError;
 			needsRedraw = true;
@@ -1268,7 +1274,7 @@ Common::Error MenuSystem::runRoomMenuStub(
 
 			bool confirmed = false;
 			Common::Error confirmError = runConfirmPrompt(
-				backdrop, palette, paletteBrightness, flow, config.newGamePrompt, confirmed);
+				backdrop, nullptr, palette, paletteBrightness, flow, config.newGamePrompt, confirmed);
 			if (confirmError.getCode() != Common::kNoError)
 				return RoomMenuActivationResult(confirmError, false);
 			needsRedraw = true;
