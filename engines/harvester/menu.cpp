@@ -1098,14 +1098,19 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			IndexedBitmap menuBackdrop;
 			if (!captureMenuBackdrop(menuBackdrop))
 				return Common::kReadingFailed;
-			runQuitGameConfirm(
-				backdrop,
+
+			Common::Error quitError = runQuitGameConfirm(
+				menuBackdrop,
 				nullptr,
-				palette,
-				paletteBrightness,
+				menuPalette,
+				1.0f,
 				flow);
+
+			if (quitError.getCode() != Common::kNoError)
+				return quitError;
+
 			needsRedraw = true;
-			return quitError;
+			return Common::kNoError;
 		}
 
 		return Common::kNoError;
