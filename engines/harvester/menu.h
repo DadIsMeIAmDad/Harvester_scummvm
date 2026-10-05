@@ -108,8 +108,13 @@ private:
 		Flow &flow, bool &savedGame);
 	Common::Error restoreRoomBackdropAfterSave(const IndexedBitmap &backdrop, const byte *palette,
 		float paletteBrightness, Flow &flow) const;
-	Common::Error runConfirmPrompt(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, Flow &flow, const Common::String &promptText,
+	Common::Error runConfirmPrompt(
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		Flow &flow,
+		const Common::String &promptText,
 		bool &confirmed);
 	Common::Error runQuitGameConfirm(const IndexedBitmap &backdrop, const byte *palette,
 		float paletteBrightness, Flow &flow);

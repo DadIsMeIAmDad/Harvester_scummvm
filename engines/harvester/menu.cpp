@@ -1059,8 +1059,8 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 
 		if (selectedItem == kMainMenuItemOptions) {
 			IndexedBitmap menuBackdrop;
-			//if (!captureMenuBackdrop(menuBackdrop))
-				//return Common::kReadingFailed;
+			if (!captureMenuBackdrop(menuBackdrop))
+				return Common::kReadingFailed;
 			Common::Error optionsError = runOptionsMenu(menuBackdrop, menuPalette, 1.0f, flow);
 			needsRedraw = true;
 			return optionsError;
@@ -1074,8 +1074,8 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 
 		if (selectedItem == kMainMenuItemQuitGame) {
 			IndexedBitmap menuBackdrop;
-			//if (!captureMenuBackdrop(menuBackdrop))
-				//return Common::kReadingFailed;
+			if (!captureMenuBackdrop(menuBackdrop))
+				return Common::kReadingFailed;
 			Common::Error quitError = runQuitGameConfirm(menuBackdrop, menuPalette, 1.0f, flow);
 			needsRedraw = true;
 			return quitError;
@@ -1942,7 +1942,13 @@ Common::Error MenuSystem::runQuitGameConfirm(const IndexedBitmap &backdrop, cons
 
 	bool confirmed = false;
 	Common::Error confirmError = runConfirmPrompt(
-		backdrop, palette, paletteBrightness, flow, config.quitGamePrompt, confirmed);
+		backdrop,
+		nullptr,
+		palette,
+		paletteBrightness,
+		flow,
+		config.quitGamePrompt,
+		confirmed);
 	if (confirmError.getCode() != Common::kNoError)
 		return confirmError;
 	if (!confirmed)
