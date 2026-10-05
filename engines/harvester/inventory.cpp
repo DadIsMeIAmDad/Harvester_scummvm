@@ -172,11 +172,23 @@ static bool loadBitmapResource(ResourceManager &resources, const Common::String 
 	if (!resources.loadFile(path, data) || data.size() < 12)
 		return false;
 
+	// Reject PNG / non-BM payloads
+	if (data.size() >= 8 && data[0] == 0x89 && data[1] == 'P' && data[2] == 'N' && data[3] == 'G') {
+		warning("Harvester: inventory expected BM but got PNG '%s'", path.c_str());
+		return false;
+	}
+
 	bitmap = IndexedBitmap();
 	bitmap.width = READ_LE_UINT32(data.data());
 	bitmap.height = READ_LE_UINT32(data.data() + 4);
+
+	// Sanity: original game is low-res; anything huge is corrupt / wrong format
+	if (bitmap.width == 0 || bitmap.height == 0 ||
+			bitmap.width > 2048 || bitmap.height > 2048)
+		return false;
+
 	const uint32 pixelCount = bitmap.width * bitmap.height;
-	if (bitmap.width == 0 || bitmap.height == 0 || data.size() < 12 + pixelCount)
+	if (data.size() < 12 + pixelCount)
 		return false;
 
 	bitmap.pixels.resize(pixelCount);
@@ -290,6 +302,7 @@ bool InventorySystem::refresh() {
 		}
 
 		const Common::String spritePath = resolveSceneObjectSpritePath(inventoryObject);
+		warning("INV: loading sprite '%s' for '%s'", spritePath.c_str(), inventoryObject.objectName.c_str());
 		if (!spritePath.empty() && loadBitmap(spritePath, visual.bitmap)) {
 			visual.hasBitmap = true;
 			if (isStatusObject(inventoryObject)) {
