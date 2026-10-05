@@ -769,7 +769,9 @@ static void renderPasswordPromptScreen(HarvesterEngine &engine, const IndexedBit
 	screen->update();
 }
 
-static void renderQuickTipsOverlay(HarvesterEngine &engine, const IndexedBitmap &backdrop,
+static void renderQuickTipsOverlay(HarvesterEngine &engine,
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,   // NEW
 		const byte *palette, float paletteBrightness,
 		const MenuTextConfig &config, const QuickTipsLayout &layout,
 		const Common::String &tipText) {
@@ -779,8 +781,33 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine, const IndexedBitmap 
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-	blitBitmap(*screen, backdrop, 0, 0);
-	blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
+
+	// Full background first — kills mouse trails
+	if (backdropSurface) {
+		screen->copyRectToSurface(
+			backdropSurface->getPixels(),
+			backdropSurface->pitch,
+			0, 0,
+			backdropSurface->w,
+			backdropSurface->h);
+	} else if (backdrop.isValid()) {
+		blitBitmap(*screen, backdrop, 0, 0);
+	} else {
+		screen->fillRect(screen->getBounds(),
+			screen->format.bytesPerPixel == 1
+				? 0
+				: screen->format.RGBToColor(0, 0, 0));
+	}
+
+	// Logo (alpha path, same as options)
+	if (const Graphics::Surface *logo = art->getLogoSurface()) {
+		screen->blitFrom(*logo,
+			Common::Rect(0, 0, logo->w, logo->h),
+			Common::Point(kLogoX, kLogoY));
+	} else {
+		blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
+	}
+
 	drawQuickTipsPanel(engine, config, layout, tipText);
 
 	if (engine.getRuntimeEntities())
@@ -2462,7 +2489,10 @@ Common::Error MenuSystem::runOptionsMenu(
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
 			if (showingQuickTips) {
-				renderQuickTipsOverlay(_engine, backdrop, palette, paletteBrightness,
+				renderQuickTipsOverlay(_engine,
+					backdrop,
+					backdropSurface,   // same one passed into runOptionsMenu
+					palette, paletteBrightness,
 					config, quickTipsLayout, flow._quickTips[quickTipIndex]);
 			} else {
 				renderOptionsMenuScreen(_engine, backdrop, backdropSurface, palette, paletteBrightness,
@@ -2801,18 +2831,12 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 	// Prefer true-color PNG logo graphic.
 	const Graphics::Surface *logoSurface = art->getLogoSurface();
 	if (logoSurface) {
-		warning("LOADING LOGO PNG");
-		screen->copyRectToSurface(
-			logoSurface->getPixels(),
-			logoSurface->pitch,
-			kLogoX,
-			kLogoY,
-			logoSurface->w,
-			logoSurface->h
-		);
+		screen->blitFrom(*logoSurface,
+			Common::Rect(0, 0, logoSurface->w, logoSurface->h),
+			Common::Point(kLogoX, kLogoY));
 	} else {
-		warning("ATTEMPTING BLIT LOGO");
-		blitBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
+		blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
+		// or blitBitmap if the BM logo has no transparency
 	}
 
 	const Common::Rect panel(96, 96, 544, 432);
