@@ -181,7 +181,41 @@ private:
 	HarvesterEngine &_engine;
 	bool _paused = false;
 };
+static void blitSurfaceAt(Graphics::Screen &screen, const Graphics::Surface *surface, int x, int y) {
+	if (!surface || !surface->getPixels())
+		return;
 
+	int destX = x;
+	int destY = y;
+	int width = surface->w;
+	int height = surface->h;
+	int srcX = 0;
+	int srcY = 0;
+
+	if (destX < 0) {
+		srcX = -destX;
+		width += destX;
+		destX = 0;
+	}
+	if (destY < 0) {
+		srcY = -destY;
+		height += destY;
+		destY = 0;
+	}
+	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0)
+		return;
+
+	width = MIN(width, screen.w - destX);
+	height = MIN(height, screen.h - destY);
+	if (width <= 0 || height <= 0)
+		return;
+
+	screen.copyRectToSurface(
+		surface->getBasePtr(srcX, srcY),
+		surface->pitch,
+		destX, destY,
+		width, height);
+}
 static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y);
 static void blitSurface(Graphics::Screen &screen,
                         const Graphics::Surface *surface,
@@ -658,11 +692,17 @@ static void splitMenuConfigLines(const Common::String &text, Common::Array<Commo
 	lines.push_back(Common::move(currentLine));
 }
 
-static void renderOptionsMenuScreen(HarvesterEngine &engine, const IndexedBitmap &backdrop,
+static void renderOptionsMenuScreen(HarvesterEngine &engine,
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,   // NEW
 		const byte *palette, float paletteBrightness,
 		const Graphics::Font &selectedFont, const Graphics::Font &unselectedFont,
 		const Art &art, const MenuTextConfig &config,
-		const IndexedBitmap &volumeBar, const IndexedBitmap &indicator, int selectedItem,
+		const IndexedBitmap &volumeBar,
+		const Graphics::Surface *volumeBarSurface,  // NEW
+		const IndexedBitmap &indicator,
+		const Graphics::Surface *indicatorSurface,  // NEW
+		int selectedItem,
 		bool drawCursor = true) {
 	Graphics::Screen *screen = engine.getScreen();
 	Script *script = engine.getScript();
@@ -670,8 +710,25 @@ static void renderOptionsMenuScreen(HarvesterEngine &engine, const IndexedBitmap
 		return;
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
-	blitBitmap(*screen, backdrop, 0, 0);
-	blitTransparentBitmap(*screen, art.getLogoBitmap(), kLogoX, kLogoY);
+
+	// Backdrop: prefer captured true-color surface
+	if (backdropSurface) {
+		screen->copyRectToSurface(
+			backdropSurface->getPixels(),
+			backdropSurface->pitch,
+			0, 0,
+			backdropSurface->w,
+			backdropSurface->h);
+	} else if (backdrop.isValid()) {
+		blitBitmap(*screen, backdrop, 0, 0);
+	}
+
+	// Logo: prefer PNG surface from Art
+	if (const Graphics::Surface *logo = art.getLogoSurface()) {
+		blitSurfaceAt(*screen, logo, kLogoX, kLogoY);
+	} else {
+		blitTransparentBitmap(*screen, art.getLogoBitmap(), kLogoX, kLogoY);
+	}
 
 	const int lineHeight = getNativeRoomMenuLineHeight(selectedFont);
 	for (int i = 0; i < (int)config.optionItems.size(); ++i) {
@@ -683,11 +740,13 @@ static void renderOptionsMenuScreen(HarvesterEngine &engine, const IndexedBitmap
 		font.drawString(screen, label, x, y, width, 0);
 	}
 
-	// Native run_main_menu spawns the option text entities before adding the
-	// VOLUME/INDICATR bitmap entities, so the bars clip the trailing overlap on
-	// the first three rows instead of the text painting over them.
-	for (int i = 0; i < 3; ++i)
-		blitTransparentBitmap(*screen, volumeBar, kOptionsVolumeBitmapX, kOptionsVolumeBitmapY + i * lineHeight);
+	for (int i = 0; i < 3; ++i) {
+		const int barY = kOptionsVolumeBitmapY + i * lineHeight;
+		if (volumeBarSurface)
+			blitSurfaceAt(*screen, volumeBarSurface, kOptionsVolumeBitmapX, barY);
+		else
+			blitTransparentBitmap(*screen, volumeBar, kOptionsVolumeBitmapX, barY);
+	}
 
 	const int levels[3] = {
 		script->getFxVolumeLevel(),
@@ -695,8 +754,12 @@ static void renderOptionsMenuScreen(HarvesterEngine &engine, const IndexedBitmap
 		script->getGammaLevel()
 	};
 	for (int i = 0; i < 3; ++i) {
-		blitTransparentBitmap(*screen, indicator, kOptionsSliderMinX + levels[i] * kOptionsSliderStep,
-			kOptionsIndicatorY + i * lineHeight);
+		const int indX = kOptionsSliderMinX + levels[i] * kOptionsSliderStep;
+		const int indY = kOptionsIndicatorY + i * lineHeight;
+		if (indicatorSurface)
+			blitSurfaceAt(*screen, indicatorSurface, indX, indY);
+		else
+			blitTransparentBitmap(*screen, indicator, indX, indY);
 	}
 
 	if (drawCursor && engine.getRuntimeEntities())
@@ -1144,8 +1207,13 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			IndexedBitmap menuBackdrop;
 			if (!captureMenuBackdrop(menuBackdrop))
 				warning("Background Skipped In Options");
-				//return Common::kReadingFailed;
-			Common::Error optionsError = runOptionsMenu(menuBackdrop, menuPalette, 1.0f, flow);
+				return Common::kReadingFailed;
+			Common::Error optionsError = runOptionsMenu(
+				menuBackdrop,
+				_mainMenuBackdropSurface,   // may be nullptr in 8-bit mode — OK
+				menuPalette,
+				1.0f,
+				flow);
 			needsRedraw = true;
 			return optionsError;
 		}
@@ -2237,8 +2305,12 @@ Common::Error MenuSystem::validateParentalPassword(Flow &flow) {
 	return Common::kNoError;
 }
 
-Common::Error MenuSystem::runOptionsMenu(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, Flow &flow) {
+Common::Error MenuSystem::runOptionsMenu(
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		Flow &flow) {
 	const Art *art = _engine.getArt();
 	Script *script = _engine.getScript();
 	ResourceManager *resources = _engine.getResources();
@@ -2256,9 +2328,21 @@ Common::Error MenuSystem::runOptionsMenu(const IndexedBitmap &backdrop, const by
 
 	IndexedBitmap volumeBar;
 	IndexedBitmap indicator;
-	if (!loadBitmapResource(*resources, kOptionsVolumeBitmapPath, volumeBar) ||
-			!loadBitmapResource(*resources, kOptionsIndicatorBitmapPath, indicator)) {
-		return Common::kReadingFailed;
+	Graphics::Surface *volumeBarSurface = nullptr;
+	Graphics::Surface *indicatorSurface = nullptr;
+
+	if (!loadPngAsMenuSurface(*resources, kOptionsVolumeBitmapPath, volumeBarSurface)) {
+		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/VOLUME.BM", volumeBar))
+			return Common::kReadingFailed;
+	}
+	if (!loadPngAsMenuSurface(*resources, kOptionsIndicatorBitmapPath, indicatorSurface)) {
+		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/INDICATR.BM", indicator)) {
+			if (volumeBarSurface) {
+				volumeBarSurface->free();
+				delete volumeBarSurface;
+			}
+			return Common::kReadingFailed;
+		}
 	}
 
 	const int lineHeight = getNativeRoomMenuLineHeight(selectedFont);
@@ -2403,8 +2487,9 @@ Common::Error MenuSystem::runOptionsMenu(const IndexedBitmap &backdrop, const by
 				renderQuickTipsOverlay(_engine, backdrop, palette, paletteBrightness,
 					config, quickTipsLayout, flow._quickTips[quickTipIndex]);
 			} else {
-				renderOptionsMenuScreen(_engine, backdrop, palette, paletteBrightness,
-					selectedFont, unselectedFont, *art, config, volumeBar, indicator, selectedItem);
+				renderOptionsMenuScreen(_engine, backdrop, backdropSurface, palette, paletteBrightness,
+					selectedFont, unselectedFont, *art, config,
+					volumeBar, volumeBarSurface, indicator, indicatorSurface, selectedItem);
 			}
 			needsRedraw = false;
 		}
@@ -2569,7 +2654,14 @@ Common::Error MenuSystem::runOptionsMenu(const IndexedBitmap &backdrop, const by
 		limiter.delayBeforeSwap();
 		limiter.startFrame();
 	}
-
+	if (volumeBarSurface) {
+		volumeBarSurface->free();
+		delete volumeBarSurface;
+	}
+	if (indicatorSurface) {
+		indicatorSurface->free();
+		delete indicatorSurface;
+	}
 	return Common::kNoError;
 }
 
