@@ -185,36 +185,9 @@ static void blitSurfaceAt(Graphics::Screen &screen, const Graphics::Surface *sur
 	if (!surface || !surface->getPixels())
 		return;
 
-	int destX = x;
-	int destY = y;
-	int width = surface->w;
-	int height = surface->h;
-	int srcX = 0;
-	int srcY = 0;
-
-	if (destX < 0) {
-		srcX = -destX;
-		width += destX;
-		destX = 0;
-	}
-	if (destY < 0) {
-		srcY = -destY;
-		height += destY;
-		destY = 0;
-	}
-	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0)
-		return;
-
-	width = MIN(width, screen.w - destX);
-	height = MIN(height, screen.h - destY);
-	if (width <= 0 || height <= 0)
-		return;
-
-	screen.copyRectToSurface(
-		surface->getBasePtr(srcX, srcY),
-		surface->pitch,
-		destX, destY,
-		width, height);
+	screen.blitFrom(*surface,
+		Common::Rect(0, 0, surface->w, surface->h),
+		Common::Point(x, y));
 }
 static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y);
 static void blitSurface(Graphics::Screen &screen,
