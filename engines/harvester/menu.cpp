@@ -44,6 +44,8 @@
 #include "harvester/flow.h"
 #include "harvester/script.h"
 #include "harvester/text.h"
+#include "image/png.h"
+#include "graphics/surface.h"
 
 namespace Harvester {
 
@@ -66,6 +68,43 @@ static const byte kQuickTipActionColor = 0xc3;
 
 static const char *const kMenuPath = "MENU.INI";
 static const char *const kMenuSectionName = "menu";
+
+static bool loadMenuPngAsSurface(ResourceManager &resources,
+		const Common::String &path,
+		Graphics::Surface *&outSurface) {
+	outSurface = nullptr;
+
+	Common::Array<byte> data;
+	if (!resources.loadFile(path, data) || data.empty()) {
+		warning("Harvester: unable to load menu PNG '%s'", path.c_str());
+		return false;
+	}
+
+	Common::MemoryReadStream stream(data.data(), data.size());
+
+	Image::PNGDecoder decoder;
+	if (!decoder.loadStream(stream)) {
+		warning("Harvester: could not decode menu PNG '%s'", path.c_str());
+		return false;
+	}
+
+	const Graphics::Surface *surface = decoder.getSurface();
+	if (!surface || surface->w == 0 || surface->h == 0) {
+		warning("Harvester: menu PNG returned empty surface '%s'", path.c_str());
+		return false;
+	}
+
+	outSurface = new Graphics::Surface();
+	outSurface->copyFrom(*surface);
+
+	warning("Harvester: loaded menu PNG '%s' (%dx%d bpp=%u)",
+		path.c_str(),
+		surface->w,
+		surface->h,
+		surface->format.bytesPerPixel);
+
+	return true;
+}
 
 struct MenuWeekdayEntry {
 	const char *key;
@@ -1509,9 +1548,16 @@ Common::Error MenuSystem::runLoadGameMenu(const byte *palette, float paletteBrig
 		return Common::kReadingFailed;
 
 	IndexedBitmap background;
+	Graphics::Surface *backgroundSurface = nullptr;
 	byte loadPalette[256 * 3];
-	if (!loadBitmapResource(*resources, kLoadGameBitmapPath, background) ||
+
+	if (!loadPngAsSurface(*resources, kLoadGameBitmapPath, backgroundSurface) ||
 			!loadPaletteResource(*resources, kLoadGamePalettePath, loadPalette)) {
+		if (backgroundSurface) {
+			backgroundSurface->free();
+			delete backgroundSurface;
+			backgroundSurface = nullptr;
+		}
 		return Common::kReadingFailed;
 	}
 	
@@ -1572,8 +1618,19 @@ Common::Error MenuSystem::runLoadGameMenu(const byte *palette, float paletteBrig
 
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
-			renderSaveGameMenuScreen(_engine, background, loadPalette, 1.0f,
-				slotNameFont, slotLabelFont, slotNameFont, slotTitles, activeSlot, statusMessage);
+			renderSaveGameMenuScreen(
+				_engine,
+				background,
+				backgroundSurface,
+				loadPalette,
+				1.0f,
+				slotNameFont,
+				slotLabelFont,
+				slotNameFont,
+				slotTitles,
+				activeSlot,
+				statusMessage
+			);
 			needsRedraw = false;
 		}
 
