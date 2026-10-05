@@ -791,6 +791,60 @@ static void renderSaveGameMenuScreen(HarvesterEngine &engine,
 	screen->update();
 }
 
+static void renderConfirmPromptScreen(HarvesterEngine &engine,
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		const Graphics::Font &promptFont,
+		const Graphics::Font &yesFont, const Graphics::Font &noFont,
+		const Graphics::Surface *textboxSurface, const Common::String &promptText,
+		const MenuTextConfig &config) {
+	Graphics::Screen *screen = engine.getScreen();
+	const Art *art = engine.getArt();
+	if (!screen || !art)
+		return;
+
+	applyMenuPalette(*screen, engine, palette, paletteBrightness);
+
+	if (backdropSurface) {
+		screen->copyRectToSurface(
+			backdropSurface->getPixels(),
+			backdropSurface->pitch,
+			0,
+			0,
+			backdropSurface->w,
+			backdropSurface->h
+		);
+	} else if (backdrop.isValid()) {
+		blitBitmap(*screen, backdrop, 0, 0);
+	}
+	blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
+	if (textboxSurface) {
+		screen->copyRectToSurface(
+			textboxSurface->getPixels(),
+			textboxSurface->pitch,
+			kConfirmDialogX,
+			kConfirmDialogY,
+			textboxSurface->w,
+			textboxSurface->h
+		);
+	}
+	Common::Array<Common::String> promptLines;
+	splitMenuConfigLines(promptText, promptLines);
+	for (uint i = 0; i < promptLines.size(); ++i) {
+		drawSinglePassString(*screen, promptFont, promptLines[i], kConfirmPromptTextX,
+			kConfirmPromptTextY + (int)i * (promptFont.getFontHeight() + 2));
+	}
+	drawSinglePassString(*screen, yesFont, config.yesLabel, kConfirmYesTextX, kConfirmChoiceTextY);
+	drawSinglePassString(*screen, noFont, config.noLabel, kConfirmNoTextX, kConfirmChoiceTextY);
+
+	if (engine.getRuntimeEntities())
+		engine.getRuntimeEntities()->drawCursor(*screen);
+	screen->makeAllDirty();
+	screen->update();
+}
+
 static int getNativeRoomMenuLineHeight(const Graphics::Font &selectedFont) {
 	return selectedFont.getFontHeight() + 2;
 }
@@ -1680,7 +1734,7 @@ Common::Error MenuSystem::runSaveGameMenu(const byte *palette, float paletteBrig
 
 		while (!_engine.shouldQuit()) {
 			if (needsRedraw) {
-				renderSaveGameMenuScreen(_engine, background, backgroundsurface, savePalette, 1.0f,
+				renderSaveGameMenuScreen(_engine, background, backgroundSurface, savePalette, 1.0f,
 					slotNameFont, slotLabelFont, slotNameFont, slotTitles, slotIndex,
 					Common::String(), slotIndex, &editedTitle);
 				needsRedraw = false;
@@ -1767,7 +1821,7 @@ Common::Error MenuSystem::runSaveGameMenu(const byte *palette, float paletteBrig
 
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
-			renderSaveGameMenuScreen(_engine, background, backgroundsurface, savePalette, 1.0f,
+			renderSaveGameMenuScreen(_engine, background, backgroundSurface, savePalette, 1.0f,
 				slotNameFont, slotLabelFont, slotNameFont, slotTitles, activeSlot, statusMessage);
 			needsRedraw = false;
 		}
