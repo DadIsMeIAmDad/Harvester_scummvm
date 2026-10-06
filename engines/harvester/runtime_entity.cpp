@@ -919,7 +919,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 		bool anchorRight = false;
 		bool anchorLeft = false;
 
-		if (_name == "PCMOM" ||
+		if (_name == "MOM" ||
 				_name == "HANK" ||
 				_name == "BILLY") {
 
