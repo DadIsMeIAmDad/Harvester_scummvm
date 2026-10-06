@@ -334,10 +334,7 @@ static void freeInventoryVisual(InventoryVisual &visual) {
 bool InventorySystem::refresh() {
 	for (InventoryVisual &item : _items)
 		freeInventoryVisual(item);
-		_items.clear();
-		// ... rest unchanged until sprite load ...
-	}
-
+	_items.clear();
 
 	Script *script = _engine.getScript();
 	ResourceManager *resources = _engine.getResources();
