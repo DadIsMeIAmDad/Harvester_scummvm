@@ -196,28 +196,7 @@ static bool loadBitmapResource(ResourceManager &resources, const Common::String 
 	return true;
 }
 
-static bool loadPngResource(ResourceManager &resources, const Common::String &path,
-		Graphics::Surface *&outSurface) {
-	outSurface = nullptr;
-	Common::SeekableReadStream *stream = resources.openFile(path);
-	if (!stream)
-		return false;
 
-	Image::PNGDecoder decoder;
-	if (!decoder.loadStream(*stream)) {
-		delete stream;
-		return false;
-	}
-	delete stream;
-
-	const Graphics::Surface *src = decoder.getSurface();
-	if (!src)
-		return false;
-
-	outSurface = new Graphics::Surface();
-	outSurface->copyFrom(*src);
-	return true;
-}
 
 static bool loadPngResource(ResourceManager &resources, const Common::String &path,
 		Graphics::Surface *&outSurface) {
@@ -634,22 +613,7 @@ Common::Rect InventorySystem::getPanelBounds() const {
 		kInventoryX + (int)bitmap.width, kInventoryY + (int)bitmap.height);
 }
 
-void InventorySystem::drawSelectedDragItem(Graphics::Screen &screen, const Common::Point &point) const {
-	if (_selectedItemName.empty())
-		return;
 
-	for (const InventoryVisual &item : _items) {
-		if (!item.object.objectName.equalsIgnoreCase(_selectedItemName))
-			continue;
-		if (!item.hasBitmap || !item.bitmap.isValid())
-			return;
-
-		const int drawX = point.x - (int)item.bitmap.width / 2;
-		const int drawY = point.y - (int)item.bitmap.height / 2;
-		blitBitmap(screen, item.bitmap, drawX, drawY);
-		return;
-	}
-}
 
 void InventorySystem::drawSelectedDragItem(Graphics::Screen &screen, const Common::Point &point) const {
 	if (_selectedItemName.empty())
