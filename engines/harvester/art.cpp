@@ -89,10 +89,10 @@ static const char *const kTextboxPaths[] = {
 };
 
 static const char *const kAmmoIconPaths[] = {
-	"1:/GRAPHIC/ROOMOBJ/BULLET.BM",
-	"1:/GRAPHIC/OTHER/SHOTSHEL.BM",
-	"1:/GRAPHIC/ROOMOBJ/NAIL.BM",
-	"1:/GRAPHIC/ROOMOBJ/GASCAN.BM"
+	"4:/GRAPHIC/ROOMOBJ/BULLET.png",
+	"4:/GRAPHIC/OTHER/SHOTSHEL.png",
+	"4:/GRAPHIC/ROOMOBJ/NAIL.png",
+	"4:/GRAPHIC/ROOMOBJ/GASCAN.png"
 };
 
 } // End of anonymous namespace
