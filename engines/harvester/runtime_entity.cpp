@@ -870,13 +870,14 @@ void Entity::resumeTimerCountdown(uint32 now) {
 	_timerPauseTick = 0;
 }
 
+```cpp
 void Entity::draw(Graphics::Screen &screen) const {
 	if (!_visible || !_drawEnabled)
 		return;
 
 	const Common::Point drawOrigin = getDrawOrigin();
 
-	// Prefer original (unscaled) frames
+	// Prefer original (unscaled) PNG frames
 	const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
 
 	if (!_basePngFrames.empty())
@@ -895,7 +896,10 @@ void Entity::draw(Graphics::Screen &screen) const {
 		if (!src)
 			return;
 
+		// -------------------------------------------------
 		// First frame establishes the fixed anchor.
+		// -------------------------------------------------
+
 		const Graphics::Surface *anchorFrame =
 			!_basePngFrames.empty()
 				? _basePngFrames[0]
@@ -919,12 +923,17 @@ void Entity::draw(Graphics::Screen &screen) const {
 		bool anchorRight = false;
 		bool anchorLeft = false;
 
+		// Entities whose PNG frames should stay aligned
+		// to the TOP-RIGHT corner of frame 0.
 		if (_name == "MOM" ||
 				_name == "HANK" ||
 				_name == "BILLY") {
 
 			anchorRight = true;
 		}
+
+		// Entities whose PNG frames should stay aligned
+		// to the TOP-LEFT corner of frame 0.
 		else if (_name == "BOOKSHELF" ||
 				_name == "DOOR" ||
 				_name == "TABLE") {
@@ -933,36 +942,33 @@ void Entity::draw(Graphics::Screen &screen) const {
 		}
 
 		// -------------------------------------------------
-		// Calculate draw position.
+		// Calculate final PNG draw position.
 		// -------------------------------------------------
 
 		int x = drawOrigin.x;
 		int y = drawOrigin.y;
 
 		if (anchorRight) {
-			// TOP-RIGHT anchored to first frame.
+			// TOP-RIGHT of first frame.
 			x = drawOrigin.x + anchorWidth - drawnWidth;
 			y = drawOrigin.y;
 		}
 		else if (anchorLeft) {
-			// TOP-LEFT anchored to first frame.
+			// TOP-LEFT of first frame.
 			x = drawOrigin.x;
 			y = drawOrigin.y;
 		}
 
 		// -------------------------------------------------
-		// Draw the PNG.
+		// Draw PNG frame.
 		// -------------------------------------------------
 
 		if (fabsf(_depthScale - 1.0f) < 0.001f) {
-
 			screen.blitFrom(
 				*src,
 				Common::Rect(0, 0, src->w, src->h),
 				Common::Point(x, y));
-
 		} else {
-
 			const int sw = scaleDimension(src->w, _depthScale);
 			const int sh = scaleDimension(src->h, _depthScale);
 
@@ -980,17 +986,29 @@ void Entity::draw(Graphics::Screen &screen) const {
 		return;
 	}
 
+	// -------------------------------------------------
 	// Single PNG surface
+	// -------------------------------------------------
+
 	if (_pngSurface) {
 		screen.blitFrom(
 			*_pngSurface,
-			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
-			Common::Point(drawOrigin.x, drawOrigin.y));
+			Common::Rect(
+				0,
+				0,
+				_pngSurface->w,
+				_pngSurface->h),
+			Common::Point(
+				drawOrigin.x,
+				drawOrigin.y));
 
 		return;
 	}
 
+	// -------------------------------------------------
 	// Classic ABM
+	// -------------------------------------------------
+
 	if (_currentFrame < 0)
 		return;
 
@@ -1001,6 +1019,8 @@ void Entity::draw(Graphics::Screen &screen) const {
 		drawOrigin.x,
 		drawOrigin.y);
 }
+```
+
 
 Common::Rect Entity::getFrameRect() const {
 	const Common::Point drawOrigin = getDrawOrigin();
