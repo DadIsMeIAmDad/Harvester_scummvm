@@ -757,15 +757,15 @@ Common::Point Entity::getDrawOrigin() const {
 			_screenBaseY + frame.yOffset);
 	}
 
-	// PNG frames do not use the ABM offset system.
-	// Keep the logical/world position unchanged.
+	// PNG frames use the logical/world position plus
+	// PNG-only visual anchor offsets.
 	if (!_pngFrames.empty() &&
 			_currentFrame >= 0 &&
 			(uint)_currentFrame < _pngFrames.size()) {
 
 		return Common::Point(
-			_screenBaseX,
-			_screenBaseY);
+			_screenBaseX + _pngAnchorX,
+			_screenBaseY + _pngAnchorY);
 	}
 
 	return Common::Point(

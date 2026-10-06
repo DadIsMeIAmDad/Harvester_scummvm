@@ -137,6 +137,19 @@ public:
 	bool measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transparentPixels,
 		uint32 &preservedPixels) const;
 
+	void setPngAnchor(int x, int y) {
+		_pngAnchorX = x;
+		_pngAnchorY = y;
+	}
+
+	int getPngAnchorX() const {
+		return _pngAnchorX;
+	}
+
+	int getPngAnchorY() const {
+		return _pngAnchorY;
+	}
+
 private:
 	Common::Point getDrawOrigin() const;
 	Common::Rect getFrameRect() const;
@@ -163,6 +176,8 @@ private:
 	float _z = 0.0f;
 	int _screenBaseX = 0;
 	int _screenBaseY = 0;
+	int _pngAnchorX = 0;
+	int _pngAnchorY = 0;
 	int _currentFrame = -1;
 	int _firstFrame = -1;
 	int _lastFrame = -1;
