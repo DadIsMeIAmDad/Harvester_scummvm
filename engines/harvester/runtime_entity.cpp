@@ -745,32 +745,10 @@ bool Entity::tickVisualState(uint32 now) {
 }
 
 Common::Point Entity::getDrawOrigin() const {
-	if (!_frames.empty() &&
-			_currentFrame >= 0 &&
-			(uint)_currentFrame < _frames.size()) {
-
+	if (!_frames.empty() && _currentFrame >= 0 && (uint)_currentFrame < _frames.size()) {
 		const AbmFrame &frame = _frames[(uint)_currentFrame];
-
-		return Common::Point(
-			_screenBaseX + frame.xOffset,
-			_screenBaseY + frame.yOffset);
+		return Common::Point(_screenBaseX + frame.xOffset, _screenBaseY + frame.yOffset);
 	}
-
-	if (!_pngFrames.empty() &&
-			_currentFrame >= 0 &&
-			(uint)_currentFrame < _pngFrames.size() &&
-			_pngFrames[(uint)_currentFrame]) {
-
-		const Graphics::Surface *frame = _pngFrames[(uint)_currentFrame];
-
-		const int drawnHeight =
-			scaleDimension(frame->h, _depthScale);
-
-		return Common::Point(
-			_screenBaseX,
-			_screenBaseY - drawnHeight);
-	}
-
 	return Common::Point(_screenBaseX, _screenBaseY);
 }
 
