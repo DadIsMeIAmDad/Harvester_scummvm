@@ -945,6 +945,46 @@ void Entity::draw(Graphics::Screen &screen) const {
         drawOrigin.x, drawOrigin.y);
 }
 
+Common::Rect Entity::getFrameRect() const {
+	const Common::Point drawOrigin = getDrawOrigin();
+
+	if (!_pngFrames.empty()) {
+		int w = _boundsWidth;
+		int h = _boundsHeight;
+		if (_currentFrame >= 0 && (uint)_currentFrame < _pngFrames.size() &&
+			_pngFrames[_currentFrame]) {
+			w = _pngFrames[_currentFrame]->w;
+			h = _pngFrames[_currentFrame]->h;
+		}
+		return Common::Rect(drawOrigin.x, drawOrigin.y,
+			drawOrigin.x + w, drawOrigin.y + h);
+	}
+
+	if (_pngSurface) {
+		return Common::Rect(
+			drawOrigin.x,
+			drawOrigin.y,
+			drawOrigin.x + _pngSurface->w,
+			drawOrigin.y + _pngSurface->h);
+	}
+
+	if (!_frames.empty() && _currentFrame >= 0 &&
+			(uint)_currentFrame < _frames.size()) {
+		const AbmFrame &frame = _frames[(uint)_currentFrame];
+		return Common::Rect(
+			drawOrigin.x,
+			drawOrigin.y,
+			drawOrigin.x + frame.width,
+			drawOrigin.y + frame.height);
+	}
+
+	return Common::Rect(
+		drawOrigin.x,
+		drawOrigin.y,
+		drawOrigin.x + _boundsWidth,
+		drawOrigin.y + _boundsHeight);
+}
+
 bool Entity::hasOpaqueFrame() const {
 	if (!_pngFrames.empty()) {
 		return _currentFrame >= 0 &&
