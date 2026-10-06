@@ -870,14 +870,14 @@ void Entity::resumeTimerCountdown(uint32 now) {
 	_timerPauseTick = 0;
 }
 
-```cpp
 void Entity::draw(Graphics::Screen &screen) const {
+
 	if (!_visible || !_drawEnabled)
 		return;
 
 	const Common::Point drawOrigin = getDrawOrigin();
 
-	// Prefer original (unscaled) PNG frames
+	// Prefer original (unscaled) frames
 	const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
 	if (!_basePngFrames.empty())
 		sourceFrames = &_basePngFrames;
@@ -893,69 +893,43 @@ void Entity::draw(Graphics::Screen &screen) const {
 		if (!src)
 			return;
 
-		// Use the FIRST frame as the fixed anchor canvas.
-		const Graphics::Surface *anchorFrame =
-			!_basePngFrames.empty()
-				? _basePngFrames[0]
-				: (*sourceFrames)[0];
-
-		const int anchorWidth = anchorFrame
-			? scaleDimension(anchorFrame->w, _depthScale)
-			: scaleDimension(src->w, _depthScale);
-
-		const int drawnWidth = scaleDimension(src->w, _depthScale);
-		const int drawnHeight = scaleDimension(src->h, _depthScale);
-
-		// Anchor every frame to the TOP-RIGHT corner
-		// of the first frame.
-		const int x = drawOrigin.x + anchorWidth - drawnWidth;
-		const int y = drawOrigin.y;
-
 		if (fabsf(_depthScale - 1.0f) < 0.001f) {
-			screen.blitFrom(
-				*src,
+			// identity scale – direct blit
+			screen.blitFrom(*src,
 				Common::Rect(0, 0, src->w, src->h),
-				Common::Point(x, y));
+				Common::Point(drawOrigin.x, drawOrigin.y));
 		} else {
+			// scale only this one frame
 			const int sw = scaleDimension(src->w, _depthScale);
 			const int sh = scaleDimension(src->h, _depthScale);
 
 			Graphics::Surface scaled;
 			scaleSurfaceNearest(*src, scaled, sw, sh);
 
-			screen.blitFrom(
-				scaled,
+			screen.blitFrom(scaled,
 				Common::Rect(0, 0, scaled.w, scaled.h),
-				Common::Point(x, y));
+				Common::Point(drawOrigin.x, drawOrigin.y));
 
 			scaled.free();
 		}
-
 		return;
 	}
 
-	// Single PNG surface
+	// single PNG surface
 	if (_pngSurface) {
-		screen.blitFrom(
-			*_pngSurface,
+		screen.blitFrom(*_pngSurface,
 			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
 			Common::Point(drawOrigin.x, drawOrigin.y));
 		return;
 	}
 
-	// Classic ABM
+	// classic ABM
 	if (_currentFrame < 0)
 		return;
 
-	blitAnimationFrame(
-		screen,
-		_frames,
-		_currentFrame,
-		drawOrigin.x,
-		drawOrigin.y);
+	blitAnimationFrame(screen, _frames, _currentFrame,
+		drawOrigin.x, drawOrigin.y);
 }
-```
-
 
 Common::Rect Entity::getFrameRect() const {
 	const Common::Point drawOrigin = getDrawOrigin();
