@@ -424,28 +424,20 @@ void Entity::setAnimationRate(int rate) {
 
 void Entity::setAnimationEnabled(bool enabled) {
 	const bool wasEnabled = _animationEnabled;
-
 	_animationEnabled =
 		enabled &&
 		(!_frames.empty() || !_pngFrames.empty()) &&
 		_currentFrame >= 0;
 
-	if (_classId == kRuntimeEntityClassNpc) {
-		warning(
-			"HARVESTER NPC ANIMATION: '%s' "
-			"requested=%d animation=%d->%d "
-			"frame=%d range=%d..%d visible=%d drawEnabled=%d "
-			"png=%d",
+	if (wasEnabled != _animationEnabled && _classId == kRuntimeEntityClassNpc) {
+		debugC(2, kDebugPlayer,
+			"Harvester: npc animation enabled npc='%s' enabled=%d->%d frame=%d range=%d..%d",
 			_name.c_str(),
-			enabled,
 			wasEnabled,
 			_animationEnabled,
 			_currentFrame,
 			_firstFrame,
-			_lastFrame,
-			_visible,
-			_drawEnabled,
-			(int)_pngFrames.size());
+			_lastFrame);
 	}
 }
 
@@ -745,32 +737,11 @@ bool Entity::tickVisualState(uint32 now) {
 }
 
 Common::Point Entity::getDrawOrigin() const {
-	// Original ABM frames have their own per-frame offsets.
-	if (!_frames.empty() &&
-			_currentFrame >= 0 &&
-			(uint)_currentFrame < _frames.size()) {
-
+	if (!_frames.empty() && _currentFrame >= 0 && (uint)_currentFrame < _frames.size()) {
 		const AbmFrame &frame = _frames[(uint)_currentFrame];
-
-		return Common::Point(
-			_screenBaseX + frame.xOffset,
-			_screenBaseY + frame.yOffset);
+		return Common::Point(_screenBaseX + frame.xOffset, _screenBaseY + frame.yOffset);
 	}
-
-	// PNG frames use the logical/world position plus
-	// PNG-only visual anchor offsets.
-	if (!_pngFrames.empty() &&
-			_currentFrame >= 0 &&
-			(uint)_currentFrame < _pngFrames.size()) {
-
-		return Common::Point(
-			_screenBaseX + _pngAnchorX,
-			_screenBaseY + _pngAnchorY);
-	}
-
-	return Common::Point(
-		_screenBaseX,
-		_screenBaseY);
+	return Common::Point(_screenBaseX, _screenBaseY);
 }
 
 Common::Rect Entity::getScreenRect() const {
@@ -871,78 +842,63 @@ void Entity::resumeTimerCountdown(uint32 now) {
 }
 
 void Entity::draw(Graphics::Screen &screen) const {
-    if (!_visible || !_drawEnabled)
-        return;
+	if (!_visible || !_drawEnabled)
+		return;
 
-    const Common::Point drawOrigin = getDrawOrigin();
+	const Common::Point drawOrigin = getDrawOrigin();
 
-    // Prefer original (unscaled) frames
-    const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
-    if (!_basePngFrames.empty())
-        sourceFrames = &_basePngFrames;
-    else if (!_pngFrames.empty())
-        sourceFrames = &_pngFrames;
+	// Prefer original (unscaled) frames
+	const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
+	if (!_basePngFrames.empty())
+		sourceFrames = &_basePngFrames;
+	else if (!_pngFrames.empty())
+		sourceFrames = &_pngFrames;
 
-    if (sourceFrames && !sourceFrames->empty()) {
-        int frameIndex = _currentFrame;
-        if (frameIndex < 0 || frameIndex >= (int)sourceFrames->size())
-            frameIndex = 0;
+	if (sourceFrames && !sourceFrames->empty()) {
+		int frameIndex = _currentFrame;
+		if (frameIndex < 0 || frameIndex >= (int)sourceFrames->size())
+			frameIndex = 0;
 
-        const Graphics::Surface *src = (*sourceFrames)[frameIndex];
-        if (!src)
-            return;
+		const Graphics::Surface *src = (*sourceFrames)[frameIndex];
+		if (!src)
+			return;
 
-        // Anchor every frame to the bottom-right corner of the first base frame.
-        const Graphics::Surface *anchorFrame =
-            !_basePngFrames.empty() ? _basePngFrames[0] : (*sourceFrames)[0];
+		if (fabsf(_depthScale - 1.0f) < 0.001f) {
+			// identity scale – direct blit
+			screen.blitFrom(*src,
+				Common::Rect(0, 0, src->w, src->h),
+				Common::Point(drawOrigin.x, drawOrigin.y));
+		} else {
+			// scale only this one frame
+			const int sw = scaleDimension(src->w, _depthScale);
+			const int sh = scaleDimension(src->h, _depthScale);
 
-        const int anchorWidth = anchorFrame
-            ? scaleDimension(anchorFrame->w, _depthScale)
-            : scaleDimension(src->w, _depthScale);
-        const int anchorHeight = anchorFrame
-            ? scaleDimension(anchorFrame->h, _depthScale)
-            : scaleDimension(src->h, _depthScale);
+			Graphics::Surface scaled;
+			scaleSurfaceNearest(*src, scaled, sw, sh);
 
-        const int drawnWidth = scaleDimension(src->w, _depthScale);
-        const int drawnHeight = scaleDimension(src->h, _depthScale);
+			screen.blitFrom(scaled,
+				Common::Rect(0, 0, scaled.w, scaled.h),
+				Common::Point(drawOrigin.x, drawOrigin.y));
 
-        const int x = drawOrigin.x + anchorWidth - drawnWidth;
-        const int y = drawOrigin.y + anchorHeight - drawnHeight;
+			scaled.free();
+		}
+		return;
+	}
 
-        if (fabsf(_depthScale - 1.0f) < 0.001f) {
-            screen.blitFrom(*src,
-                Common::Rect(0, 0, src->w, src->h),
-                Common::Point(x, y));
-        } else {
-            const int sw = scaleDimension(src->w, _depthScale);
-            const int sh = scaleDimension(src->h, _depthScale);
+	// single PNG surface
+	if (_pngSurface) {
+		screen.blitFrom(*_pngSurface,
+			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
+			Common::Point(drawOrigin.x, drawOrigin.y));
+		return;
+	}
 
-            Graphics::Surface scaled;
-            scaleSurfaceNearest(*src, scaled, sw, sh);
+	// classic ABM
+	if (_currentFrame < 0)
+		return;
 
-            screen.blitFrom(scaled,
-                Common::Rect(0, 0, scaled.w, scaled.h),
-                Common::Point(x, y));
-
-            scaled.free();
-        }
-        return;
-    }
-
-    // Single PNG surface
-    if (_pngSurface) {
-        screen.blitFrom(*_pngSurface,
-            Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
-            Common::Point(drawOrigin.x, drawOrigin.y));
-        return;
-    }
-
-    // Classic ABM
-    if (_currentFrame < 0)
-        return;
-
-    blitAnimationFrame(screen, _frames, _currentFrame,
-        drawOrigin.x, drawOrigin.y);
+	blitAnimationFrame(screen, _frames, _currentFrame,
+		drawOrigin.x, drawOrigin.y);
 }
 
 Common::Rect Entity::getFrameRect() const {
