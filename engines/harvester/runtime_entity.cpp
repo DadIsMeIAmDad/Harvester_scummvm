@@ -850,6 +850,24 @@ void Entity::resumeTimerCountdown(uint32 now) {
 }
 
 void Entity::draw(Graphics::Screen &screen) const {
+
+	if (_classId == kRuntimeEntityClassNpc &&
+			_name.equalsIgnoreCase("MOM")) {
+		warning(
+			"HARVESTER MOM DRAW: frame=%d range=%d..%d "
+			"anim=%d visible=%d drawEnabled=%d "
+			"pos=%d,%d png=%d",
+			_currentFrame,
+			_firstFrame,
+			_lastFrame,
+			_animationEnabled,
+			_visible,
+			_drawEnabled,
+			_screenBaseX,
+			_screenBaseY,
+			(int)_pngFrames.size());
+	}
+
 	if (!_visible || !_drawEnabled)
 		return;
 
