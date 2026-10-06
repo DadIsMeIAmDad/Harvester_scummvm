@@ -272,18 +272,27 @@ static void drawCombatLoadoutResourceIcons(Graphics::Screen &screen, const Art &
 	if (!resolveCombatLoadoutHudInfo(loadout, info))
 		return;
 
-	const Common::Array<IndexedBitmap> &ammoIcons = art.getAmmoIcons();
+	const Common::Array<Graphics::Surface *> &ammoIcons = art.getAmmoIcons();
 	if (info.iconIndex >= ammoIcons.size())
 		return;
 
-	const IndexedBitmap &icon = ammoIcons[info.iconIndex];
-	if (!icon.isValid())
+	const Graphics::Surface *icon = ammoIcons[info.iconIndex];
+	if (!icon)
 		return;
 
-	const int iconCount = CLIP<int>(script.getPlayerCombatResourceCount(loadout), 0, info.maxVisibleCount);
-	for (int i = 0; i < iconCount; ++i)
-		blitBitmap(screen, icon, kNativeCombatResourceIconsX + i * kNativeCombatResourceIconSpacing,
-			kNativeCombatResourceIconsY);
+	const int iconCount = CLIP<int>(
+		script.getPlayerCombatResourceCount(loadout),
+		0,
+		info.maxVisibleCount);
+
+	for (int i = 0; i < iconCount; ++i) {
+		const int x = kNativeCombatResourceIconsX +
+			i * kNativeCombatResourceIconSpacing;
+
+		const int y = kNativeCombatResourceIconsY;
+
+		screen.blitFrom(*icon, x, y);
+	}
 }
 
 static byte findNearestPaletteColor(const byte *palette, byte red, byte green, byte blue) {
