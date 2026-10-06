@@ -928,7 +928,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 		// Entities whose PNG frames should stay aligned
 		// to the TOP-RIGHT corner of frame 0.
-		if (_name == "PCMOM" ||
+		if (_name == "MOM" ||
 				_name == "HANK" ||
 				_name == "BILLY") {
 
