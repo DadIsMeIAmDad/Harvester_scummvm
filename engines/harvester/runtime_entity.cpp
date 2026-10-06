@@ -894,12 +894,12 @@ void Entity::draw(Graphics::Screen &screen) const {
 			return;
 
 		if (fabsf(_depthScale - 1.0f) < 0.001f) {
-			// identity scale – direct blit
 			screen.blitFrom(*src,
 				Common::Rect(0, 0, src->w, src->h),
-				Common::Point(drawOrigin.x, drawOrigin.y));
+				Common::Point(
+					drawOrigin.x - src->w,
+					drawOrigin.y - src->h));
 		} else {
-			// scale only this one frame
 			const int sw = scaleDimension(src->w, _depthScale);
 			const int sh = scaleDimension(src->h, _depthScale);
 
@@ -908,7 +908,9 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 			screen.blitFrom(scaled,
 				Common::Rect(0, 0, scaled.w, scaled.h),
-				Common::Point(drawOrigin.x, drawOrigin.y));
+				Common::Point(
+					drawOrigin.x - scaled.w,
+					drawOrigin.y - scaled.h));
 
 			scaled.free();
 		}
