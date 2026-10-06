@@ -162,8 +162,12 @@ bool Art::loadQuickTipsResources(ResourceManager &resources, bool useTextboxPane
 	}
 
 	_ammoIcons.resize(ARRAYSIZE(kAmmoIconPaths));
+
+	for (uint i = 0; i < _ammoIcons.size(); ++i)
+		_ammoIcons[i] = nullptr;
+
 	for (uint i = 0; i < _ammoIcons.size(); ++i) {
-		if (!loadBitmap(resources, kAmmoIconPaths[i], _ammoIcons[i]))
+		if (!loadPngAsSurface(resources, kAmmoIconPaths[i], _ammoIcons[i]))
 			return false;
 	}
 
@@ -270,7 +274,17 @@ void Art::freeMenuSurfaces() {
 		delete _logoSurface;
 		_logoSurface = nullptr;
 	}
-}
+	
+	for (uint i = 0; i < _ammoIcons.size(); ++i) {
+		if (_ammoIcons[i]) {
+			_ammoIcons[i]->free();
+			delete _ammoIcons[i];
+			_ammoIcons[i] = nullptr;
+		}
+	}
+
+	_ammoIcons.clear();
+	}
 void Art::freeTextboxSurfaces() {
 	for (uint i = 0; i < _textboxSurfaces.size(); ++i) {
 		if (_textboxSurfaces[i]) {
