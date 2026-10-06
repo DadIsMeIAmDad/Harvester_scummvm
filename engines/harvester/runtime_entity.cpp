@@ -909,8 +909,8 @@ void Entity::draw(Graphics::Screen &screen) const {
 			screen.blitFrom(scaled,
 				Common::Rect(0, 0, scaled.w, scaled.h),
 				Common::Point(
-					drawOrigin.x + scaled.w,
-					drawOrigin.y + scaled.h));
+					drawOrigin.x,
+					drawOrigin.y));
 
 			scaled.free();
 		}
