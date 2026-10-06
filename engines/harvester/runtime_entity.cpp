@@ -897,8 +897,8 @@ void Entity::draw(Graphics::Screen &screen) const {
 			screen.blitFrom(*src,
 				Common::Rect(0, 0, src->w, src->h),
 				Common::Point(
-					drawOrigin.x + src->w,
-					drawOrigin.y + src->h));
+					drawOrigin.x,
+					drawOrigin.y));
 		} else {
 			const int sw = scaleDimension(src->w, _depthScale);
 			const int sh = scaleDimension(src->h, _depthScale);
