@@ -291,7 +291,9 @@ static void drawCombatLoadoutResourceIcons(Graphics::Screen &screen, const Art &
 
 		const int y = kNativeCombatResourceIconsY;
 
-		screen.blitFrom(*icon, x, y);
+		screen.blitFrom(*icon,
+			Common::Rect(0, 0, icon->w, icon->h),
+			Common::Point(x, y));
 	}
 }
 
