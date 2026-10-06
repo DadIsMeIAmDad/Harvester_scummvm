@@ -892,21 +892,27 @@ void Entity::draw(Graphics::Screen &screen) const {
         if (!src)
             return;
 
-        // Use the first base frame's bottom as the fixed floor anchor.
+        // Anchor every frame to the bottom-right corner of the first base frame.
         const Graphics::Surface *anchorFrame =
             !_basePngFrames.empty() ? _basePngFrames[0] : (*sourceFrames)[0];
 
+        const int anchorWidth = anchorFrame
+            ? scaleDimension(anchorFrame->w, _depthScale)
+            : scaleDimension(src->w, _depthScale);
         const int anchorHeight = anchorFrame
             ? scaleDimension(anchorFrame->h, _depthScale)
             : scaleDimension(src->h, _depthScale);
 
+        const int drawnWidth = scaleDimension(src->w, _depthScale);
         const int drawnHeight = scaleDimension(src->h, _depthScale);
+
+        const int x = drawOrigin.x + anchorWidth - drawnWidth;
         const int y = drawOrigin.y + anchorHeight - drawnHeight;
 
         if (fabsf(_depthScale - 1.0f) < 0.001f) {
             screen.blitFrom(*src,
                 Common::Rect(0, 0, src->w, src->h),
-                Common::Point(drawOrigin.x, y));
+                Common::Point(x, y));
         } else {
             const int sw = scaleDimension(src->w, _depthScale);
             const int sh = scaleDimension(src->h, _depthScale);
@@ -916,7 +922,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 
             screen.blitFrom(scaled,
                 Common::Rect(0, 0, scaled.w, scaled.h),
-                Common::Point(drawOrigin.x, y));
+                Common::Point(x, y));
 
             scaled.free();
         }
@@ -937,46 +943,6 @@ void Entity::draw(Graphics::Screen &screen) const {
 
     blitAnimationFrame(screen, _frames, _currentFrame,
         drawOrigin.x, drawOrigin.y);
-}
-
-Common::Rect Entity::getFrameRect() const {
-	const Common::Point drawOrigin = getDrawOrigin();
-
-	if (!_pngFrames.empty()) {
-		int w = _boundsWidth;
-		int h = _boundsHeight;
-		if (_currentFrame >= 0 && (uint)_currentFrame < _pngFrames.size() &&
-			_pngFrames[_currentFrame]) {
-			w = _pngFrames[_currentFrame]->w;
-			h = _pngFrames[_currentFrame]->h;
-		}
-		return Common::Rect(drawOrigin.x, drawOrigin.y,
-			drawOrigin.x + w, drawOrigin.y + h);
-	}
-
-	if (_pngSurface) {
-		return Common::Rect(
-			drawOrigin.x,
-			drawOrigin.y,
-			drawOrigin.x + _pngSurface->w,
-			drawOrigin.y + _pngSurface->h);
-	}
-
-	if (!_frames.empty() && _currentFrame >= 0 &&
-			(uint)_currentFrame < _frames.size()) {
-		const AbmFrame &frame = _frames[(uint)_currentFrame];
-		return Common::Rect(
-			drawOrigin.x,
-			drawOrigin.y,
-			drawOrigin.x + frame.width,
-			drawOrigin.y + frame.height);
-	}
-
-	return Common::Rect(
-		drawOrigin.x,
-		drawOrigin.y,
-		drawOrigin.x + _boundsWidth,
-		drawOrigin.y + _boundsHeight);
 }
 
 bool Entity::hasOpaqueFrame() const {
