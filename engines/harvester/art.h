@@ -21,7 +21,7 @@
 
 #ifndef HARVESTER_ART_H
 #define HARVESTER_ART_H
-
+#include "graphics/surface.h"
 #include "common/array.h"
 
 namespace Graphics {
@@ -65,7 +65,9 @@ public:
 	const IndexedBitmap &getTipsBitmap() const { return _tipsBitmap; }
 	const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
 	const IndexedBitmap *getQuickTipsTextboxBitmap() const;
-	const Common::Array<IndexedBitmap> &getAmmoIcons() const { return _ammoIcons; }
+	const Common::Array<Graphics::Surface *> &getAmmoIcons() const {
+		return _ammoIcons;
+	}
 
 	const IndexedBitmap *getTextboxBitmap(uint index) const {
 		return index < _textboxes.size() ? &_textboxes[index] : nullptr;
@@ -93,7 +95,7 @@ private:
 	Common::Array<AbmFrame> _waitFrames;
 	Common::Array<IndexedBitmap> _textboxes;
 	Common::Array<Graphics::Surface *> _textboxSurfaces;
-	Common::Array<IndexedBitmap> _ammoIcons;
+	Common::Array<Graphics::Surface *> _ammoIcons;
 	IndexedBitmap _inventoryBitmap;
 	IndexedBitmap _logoBitmap;
 	IndexedBitmap _tipsBitmap;
