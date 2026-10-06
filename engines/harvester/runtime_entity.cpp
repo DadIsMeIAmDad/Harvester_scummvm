@@ -870,7 +870,10 @@ void Entity::resumeTimerCountdown(uint32 now) {
 	_timerPauseTick = 0;
 }
 
-```cpp
+
+
+
+
 void Entity::draw(Graphics::Screen &screen) const {
 	if (!_visible || !_drawEnabled)
 		return;
@@ -925,7 +928,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 		// Entities whose PNG frames should stay aligned
 		// to the TOP-RIGHT corner of frame 0.
-		if (_name == "MOM" ||
+		if (_name == "PCMOM" ||
 				_name == "HANK" ||
 				_name == "BILLY") {
 
@@ -1019,7 +1022,11 @@ void Entity::draw(Graphics::Screen &screen) const {
 		drawOrigin.x,
 		drawOrigin.y);
 }
-```
+
+
+
+
+
 
 
 Common::Rect Entity::getFrameRect() const {
