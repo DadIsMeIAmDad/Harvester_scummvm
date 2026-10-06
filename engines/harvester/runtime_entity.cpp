@@ -871,64 +871,72 @@ void Entity::resumeTimerCountdown(uint32 now) {
 }
 
 void Entity::draw(Graphics::Screen &screen) const {
+    if (!_visible || !_drawEnabled)
+        return;
 
-	if (!_visible || !_drawEnabled)
-		return;
+    const Common::Point drawOrigin = getDrawOrigin();
 
-	const Common::Point drawOrigin = getDrawOrigin();
+    // Prefer original (unscaled) frames
+    const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
+    if (!_basePngFrames.empty())
+        sourceFrames = &_basePngFrames;
+    else if (!_pngFrames.empty())
+        sourceFrames = &_pngFrames;
 
-	// Prefer original (unscaled) frames
-	const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
-	if (!_basePngFrames.empty())
-		sourceFrames = &_basePngFrames;
-	else if (!_pngFrames.empty())
-		sourceFrames = &_pngFrames;
+    if (sourceFrames && !sourceFrames->empty()) {
+        int frameIndex = _currentFrame;
+        if (frameIndex < 0 || frameIndex >= (int)sourceFrames->size())
+            frameIndex = 0;
 
-	if (sourceFrames && !sourceFrames->empty()) {
-		int frameIndex = _currentFrame;
-		if (frameIndex < 0 || frameIndex >= (int)sourceFrames->size())
-			frameIndex = 0;
+        const Graphics::Surface *src = (*sourceFrames)[frameIndex];
+        if (!src)
+            return;
 
-		const Graphics::Surface *src = (*sourceFrames)[frameIndex];
-		if (!src)
-			return;
+        // Use the first base frame's bottom as the fixed floor anchor.
+        const Graphics::Surface *anchorFrame =
+            !_basePngFrames.empty() ? _basePngFrames[0] : (*sourceFrames)[0];
 
-		if (fabsf(_depthScale - 1.0f) < 0.001f) {
-			// identity scale – direct blit
-			screen.blitFrom(*src,
-				Common::Rect(0, 0, src->w, src->h),
-				Common::Point(drawOrigin.x, drawOrigin.y));
-		} else {
-			// scale only this one frame
-			const int sw = scaleDimension(src->w, _depthScale);
-			const int sh = scaleDimension(src->h, _depthScale);
+        const int anchorHeight = anchorFrame
+            ? scaleDimension(anchorFrame->h, _depthScale)
+            : scaleDimension(src->h, _depthScale);
 
-			Graphics::Surface scaled;
-			scaleSurfaceNearest(*src, scaled, sw, sh);
+        const int drawnHeight = scaleDimension(src->h, _depthScale);
+        const int y = drawOrigin.y + anchorHeight - drawnHeight;
 
-			screen.blitFrom(scaled,
-				Common::Rect(0, 0, scaled.w, scaled.h),
-				Common::Point(drawOrigin.x, drawOrigin.y));
+        if (fabsf(_depthScale - 1.0f) < 0.001f) {
+            screen.blitFrom(*src,
+                Common::Rect(0, 0, src->w, src->h),
+                Common::Point(drawOrigin.x, y));
+        } else {
+            const int sw = scaleDimension(src->w, _depthScale);
+            const int sh = scaleDimension(src->h, _depthScale);
 
-			scaled.free();
-		}
-		return;
-	}
+            Graphics::Surface scaled;
+            scaleSurfaceNearest(*src, scaled, sw, sh);
 
-	// single PNG surface
-	if (_pngSurface) {
-		screen.blitFrom(*_pngSurface,
-			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
-			Common::Point(drawOrigin.x, drawOrigin.y));
-		return;
-	}
+            screen.blitFrom(scaled,
+                Common::Rect(0, 0, scaled.w, scaled.h),
+                Common::Point(drawOrigin.x, y));
 
-	// classic ABM
-	if (_currentFrame < 0)
-		return;
+            scaled.free();
+        }
+        return;
+    }
 
-	blitAnimationFrame(screen, _frames, _currentFrame,
-		drawOrigin.x, drawOrigin.y);
+    // Single PNG surface
+    if (_pngSurface) {
+        screen.blitFrom(*_pngSurface,
+            Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
+            Common::Point(drawOrigin.x, drawOrigin.y));
+        return;
+    }
+
+    // Classic ABM
+    if (_currentFrame < 0)
+        return;
+
+    blitAnimationFrame(screen, _frames, _currentFrame,
+        drawOrigin.x, drawOrigin.y);
 }
 
 Common::Rect Entity::getFrameRect() const {
