@@ -613,7 +613,33 @@ Common::Rect InventorySystem::getPanelBounds() const {
 		kInventoryX + (int)bitmap.width, kInventoryY + (int)bitmap.height);
 }
 
+void InventorySystem::drawOverlay(Graphics::Screen &screen) const {
+	const Art *art = _engine.getArt();
+	if (!art)
+		return;
 
+	if (const Graphics::Surface *panel = art->getInventorySurface()) {
+		screen.blitFrom(*panel,
+			Common::Rect(0, 0, panel->w, panel->h),
+			Common::Point(kInventoryX, kInventoryY));
+	} else {
+		blitBitmap(screen, art->getInventoryBitmap(), kInventoryX, kInventoryY);
+	}
+
+	for (const InventoryVisual &item : _items) {
+		if (!_selectedItemName.empty() &&
+				item.object.objectName.equalsIgnoreCase(_selectedItemName))
+			continue;
+
+		if (item.hasSurface && item.surface) {
+			screen.blitFrom(*item.surface,
+				Common::Rect(0, 0, item.surface->w, item.surface->h),
+				Common::Point(item.object.currentX, item.object.currentY));
+		} else if (item.hasBitmap && item.bitmap.isValid()) {
+			blitBitmap(screen, item.bitmap, item.object.currentX, item.object.currentY);
+		}
+	}
+}
 
 void InventorySystem::drawSelectedDragItem(Graphics::Screen &screen, const Common::Point &point) const {
 	if (_selectedItemName.empty())
