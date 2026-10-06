@@ -744,33 +744,136 @@ bool Entity::tickVisualState(uint32 now) {
 	return true;
 }
 
-Common::Point Entity::getDrawOrigin() const {
-	// Original ABM frames have their own per-frame offsets.
-	if (!_frames.empty() &&
-			_currentFrame >= 0 &&
-			(uint)_currentFrame < _frames.size()) {
+void Entity::draw(Graphics::Screen &screen) const {
+	if (!_visible || !_drawEnabled)
+		return;
 
-		const AbmFrame &frame = _frames[(uint)_currentFrame];
+	const Common::Point drawOrigin = getDrawOrigin();
 
-		return Common::Point(
-			_screenBaseX + frame.xOffset,
-			_screenBaseY + frame.yOffset);
+	// Prefer original (unscaled) frames
+	const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
+
+	if (!_basePngFrames.empty())
+		sourceFrames = &_basePngFrames;
+	else if (!_pngFrames.empty())
+		sourceFrames = &_pngFrames;
+
+	if (sourceFrames && !sourceFrames->empty()) {
+		int frameIndex = _currentFrame;
+
+		if (frameIndex < 0 || frameIndex >= (int)sourceFrames->size())
+			frameIndex = 0;
+
+		const Graphics::Surface *src = (*sourceFrames)[frameIndex];
+
+		if (!src)
+			return;
+
+		// First frame establishes the fixed anchor.
+		const Graphics::Surface *anchorFrame =
+			!_basePngFrames.empty()
+				? _basePngFrames[0]
+				: (*sourceFrames)[0];
+
+		const int anchorWidth = anchorFrame
+			? scaleDimension(anchorFrame->w, _depthScale)
+			: scaleDimension(src->w, _depthScale);
+
+		const int anchorHeight = anchorFrame
+			? scaleDimension(anchorFrame->h, _depthScale)
+			: scaleDimension(src->h, _depthScale);
+
+		const int drawnWidth = scaleDimension(src->w, _depthScale);
+		const int drawnHeight = scaleDimension(src->h, _depthScale);
+
+		// -------------------------------------------------
+		// Decide how this entity should be anchored.
+		// -------------------------------------------------
+
+		bool anchorRight = false;
+		bool anchorLeft = false;
+
+		if (_name == "MOM" ||
+				_name == "HANK" ||
+				_name == "BILLY") {
+
+			anchorRight = true;
+		}
+		else if (_name == "BOOKSHELF" ||
+				_name == "DOOR" ||
+				_name == "TABLE") {
+
+			anchorLeft = true;
+		}
+
+		// -------------------------------------------------
+		// Calculate draw position.
+		// -------------------------------------------------
+
+		int x = drawOrigin.x;
+		int y = drawOrigin.y;
+
+		if (anchorRight) {
+			// TOP-RIGHT anchored to first frame.
+			x = drawOrigin.x + anchorWidth - drawnWidth;
+			y = drawOrigin.y;
+		}
+		else if (anchorLeft) {
+			// TOP-LEFT anchored to first frame.
+			x = drawOrigin.x;
+			y = drawOrigin.y;
+		}
+
+		// -------------------------------------------------
+		// Draw the PNG.
+		// -------------------------------------------------
+
+		if (fabsf(_depthScale - 1.0f) < 0.001f) {
+
+			screen.blitFrom(
+				*src,
+				Common::Rect(0, 0, src->w, src->h),
+				Common::Point(x, y));
+
+		} else {
+
+			const int sw = scaleDimension(src->w, _depthScale);
+			const int sh = scaleDimension(src->h, _depthScale);
+
+			Graphics::Surface scaled;
+			scaleSurfaceNearest(*src, scaled, sw, sh);
+
+			screen.blitFrom(
+				scaled,
+				Common::Rect(0, 0, scaled.w, scaled.h),
+				Common::Point(x, y));
+
+			scaled.free();
+		}
+
+		return;
 	}
 
-	// PNG frames use the logical/world position plus
-	// PNG-only visual anchor offsets.
-	if (!_pngFrames.empty() &&
-			_currentFrame >= 0 &&
-			(uint)_currentFrame < _pngFrames.size()) {
+	// Single PNG surface
+	if (_pngSurface) {
+		screen.blitFrom(
+			*_pngSurface,
+			Common::Rect(0, 0, _pngSurface->w, _pngSurface->h),
+			Common::Point(drawOrigin.x, drawOrigin.y));
 
-		return Common::Point(
-			_screenBaseX + _pngAnchorX,
-			_screenBaseY + _pngAnchorY);
+		return;
 	}
 
-	return Common::Point(
-		_screenBaseX,
-		_screenBaseY);
+	// Classic ABM
+	if (_currentFrame < 0)
+		return;
+
+	blitAnimationFrame(
+		screen,
+		_frames,
+		_currentFrame,
+		drawOrigin.x,
+		drawOrigin.y);
 }
 
 Common::Rect Entity::getScreenRect() const {
