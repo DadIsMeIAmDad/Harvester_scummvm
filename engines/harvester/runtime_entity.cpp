@@ -745,10 +745,32 @@ bool Entity::tickVisualState(uint32 now) {
 }
 
 Common::Point Entity::getDrawOrigin() const {
-	if (!_frames.empty() && _currentFrame >= 0 && (uint)_currentFrame < _frames.size()) {
+	if (!_frames.empty() &&
+			_currentFrame >= 0 &&
+			(uint)_currentFrame < _frames.size()) {
+
 		const AbmFrame &frame = _frames[(uint)_currentFrame];
-		return Common::Point(_screenBaseX + frame.xOffset, _screenBaseY + frame.yOffset);
+
+		return Common::Point(
+			_screenBaseX + frame.xOffset,
+			_screenBaseY + frame.yOffset);
 	}
+
+	if (!_pngFrames.empty() &&
+			_currentFrame >= 0 &&
+			(uint)_currentFrame < _pngFrames.size() &&
+			_pngFrames[(uint)_currentFrame]) {
+
+		const Graphics::Surface *frame = _pngFrames[(uint)_currentFrame];
+
+		const int drawnHeight =
+			scaleDimension(frame->h, _depthScale);
+
+		return Common::Point(
+			_screenBaseX,
+			_screenBaseY - drawnHeight);
+	}
+
 	return Common::Point(_screenBaseX, _screenBaseY);
 }
 
@@ -850,23 +872,6 @@ void Entity::resumeTimerCountdown(uint32 now) {
 }
 
 void Entity::draw(Graphics::Screen &screen) const {
-
-	if (_classId == kRuntimeEntityClassNpc &&
-			_name.equalsIgnoreCase("MOM")) {
-		warning(
-			"HARVESTER MOM DRAW: frame=%d range=%d..%d "
-			"anim=%d visible=%d drawEnabled=%d "
-			"pos=%d,%d png=%d",
-			_currentFrame,
-			_firstFrame,
-			_lastFrame,
-			_animationEnabled,
-			_visible,
-			_drawEnabled,
-			_screenBaseX,
-			_screenBaseY,
-			(int)_pngFrames.size());
-	}
 
 	if (!_visible || !_drawEnabled)
 		return;
