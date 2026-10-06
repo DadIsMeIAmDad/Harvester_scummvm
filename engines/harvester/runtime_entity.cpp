@@ -745,11 +745,32 @@ bool Entity::tickVisualState(uint32 now) {
 }
 
 Common::Point Entity::getDrawOrigin() const {
-	if (!_frames.empty() && _currentFrame >= 0 && (uint)_currentFrame < _frames.size()) {
+	// Original ABM frames have their own per-frame offsets.
+	if (!_frames.empty() &&
+			_currentFrame >= 0 &&
+			(uint)_currentFrame < _frames.size()) {
+
 		const AbmFrame &frame = _frames[(uint)_currentFrame];
-		return Common::Point(_screenBaseX + frame.xOffset, _screenBaseY + frame.yOffset);
+
+		return Common::Point(
+			_screenBaseX + frame.xOffset,
+			_screenBaseY + frame.yOffset);
 	}
-	return Common::Point(_screenBaseX, _screenBaseY);
+
+	// PNG frames do not use the ABM offset system.
+	// Keep the logical/world position unchanged.
+	if (!_pngFrames.empty() &&
+			_currentFrame >= 0 &&
+			(uint)_currentFrame < _pngFrames.size()) {
+
+		return Common::Point(
+			_screenBaseX,
+			_screenBaseY);
+	}
+
+	return Common::Point(
+		_screenBaseX,
+		_screenBaseY);
 }
 
 Common::Rect Entity::getScreenRect() const {
