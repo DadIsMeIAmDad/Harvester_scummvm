@@ -424,20 +424,28 @@ void Entity::setAnimationRate(int rate) {
 
 void Entity::setAnimationEnabled(bool enabled) {
 	const bool wasEnabled = _animationEnabled;
+
 	_animationEnabled =
 		enabled &&
 		(!_frames.empty() || !_pngFrames.empty()) &&
 		_currentFrame >= 0;
 
-	if (wasEnabled != _animationEnabled && _classId == kRuntimeEntityClassNpc) {
-		debugC(2, kDebugPlayer,
-			"Harvester: npc animation enabled npc='%s' enabled=%d->%d frame=%d range=%d..%d",
+	if (_classId == kRuntimeEntityClassNpc) {
+		warning(
+			"HARVESTER NPC ANIMATION: '%s' "
+			"requested=%d animation=%d->%d "
+			"frame=%d range=%d..%d visible=%d drawEnabled=%d "
+			"png=%d",
 			_name.c_str(),
+			enabled,
 			wasEnabled,
 			_animationEnabled,
 			_currentFrame,
 			_firstFrame,
-			_lastFrame);
+			_lastFrame,
+			_visible,
+			_drawEnabled,
+			(int)_pngFrames.size());
 	}
 }
 
@@ -942,7 +950,15 @@ Common::Rect Entity::getFrameRect() const {
 }
 
 bool Entity::hasOpaqueFrame() const {
-	return !_frames.empty() && _currentFrame >= 0 && (uint)_currentFrame < _frames.size();
+	if (!_pngFrames.empty()) {
+		return _currentFrame >= 0 &&
+			(uint)_currentFrame < _pngFrames.size() &&
+			_pngFrames[(uint)_currentFrame] != nullptr;
+	}
+
+	return !_frames.empty() &&
+		_currentFrame >= 0 &&
+		(uint)_currentFrame < _frames.size();
 }
 
 bool Entity::isOpaqueAt(const Common::Point &point) const {
@@ -953,13 +969,41 @@ bool Entity::isOpaqueAt(const Common::Point &point) const {
 	if (!bounds.contains(point))
 		return false;
 
-	const AbmFrame &frame = _frames[(uint)_currentFrame];
 	const int relativeX = point.x - bounds.left;
 	const int relativeY = point.y - bounds.top;
-	if (relativeX < 0 || relativeY < 0 || relativeX >= (int)frame.width || relativeY >= (int)frame.height)
+
+	if (_pngFrames.size() > 0) {
+		const Graphics::Surface *frame = _pngFrames[(uint)_currentFrame];
+		if (!frame)
+			return false;
+
+		if (relativeX < 0 || relativeY < 0 ||
+				relativeX >= frame->w || relativeY >= frame->h)
+			return false;
+
+		const uint32 pixel = frame->getPixel(relativeX, relativeY);
+
+		// PNG frames are true-color. Treat alpha 0 as transparent.
+		if (frame->format.bytesPerPixel == 4) {
+			const byte *pixelBytes =
+				(const byte *)frame->getBasePtr(relativeX, relativeY);
+
+			const uint32 alpha = pixelBytes[frame->format.aShift / 8];
+			return alpha != 0;
+		}
+
+		return true;
+	}
+
+	const AbmFrame &frame = _frames[(uint)_currentFrame];
+
+	if (relativeX < 0 || relativeY < 0 ||
+			relativeX >= (int)frame.width ||
+			relativeY >= (int)frame.height)
 		return false;
 
-	return frame.pixels[(uint)relativeY * frame.width + (uint)relativeX] != 0;
+	return frame.pixels[(uint)relativeY * frame.width +
+		(uint)relativeX] != 0;
 }
 
 bool Entity::hitTest(const Common::Point &point) const {
