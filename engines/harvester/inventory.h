@@ -42,8 +42,10 @@ struct MenuTextConfig;
 struct InventoryVisual {
 	ObjectRecord object;
 	IndexedBitmap bitmap;
+	Graphics::Surface *surface = nullptr;
 	Common::Rect bounds;
 	bool hasBitmap = false;
+	bool hasSurface = false;
 };
 
 struct InventorySecondaryAction {
