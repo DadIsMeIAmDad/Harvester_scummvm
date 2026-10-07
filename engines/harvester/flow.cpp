@@ -1986,11 +1986,23 @@ Common::Error Flow::runRoomMenuStub(const IndexedBitmap &backdrop,
 	);
 }
 
-Common::Error Flow::runRoomNpcDialogue(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, const NpcRecord &npc, const Common::String &usedItemName) {
+Common::Error Flow::runRoomNpcDialogue(
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *dialogueBackdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		const NpcRecord &npc,
+		const Common::String &usedItemName) {
 	_queuedDialogueInteraction = InteractionResult();
 	_hasQueuedDialogueInteraction = false;
-	return _dialogue.runRoomNpcDialogue(backdrop, palette, paletteBrightness, npc, usedItemName, *this);
+	return _dialogue.runRoomNpcDialogue(
+		backdrop,
+		dialogueBackdropSurface,
+		palette,
+		paletteBrightness,
+		npc,
+		usedItemName,
+		*this);
 }
 
 Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
