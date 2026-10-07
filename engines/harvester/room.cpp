@@ -3784,8 +3784,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 						Common::Point(surfaceDrawX, surfaceDrawY));
 
 				} else if (carriedRoomItemBitmap.isValid()) {
+					const int bitmapDrawX =
+						_mousePos.x - carriedRoomItemBitmap.width / 2;
+					const int bitmapDrawY =
+						_mousePos.y - carriedRoomItemBitmap.height / 2;
+
 					blitBitmap(*activeScreen, carriedRoomItemBitmap,
-						drawX, drawY);
+						bitmapDrawX, bitmapDrawY);
 				}
 			}
 
