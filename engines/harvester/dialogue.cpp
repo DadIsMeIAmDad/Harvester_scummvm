@@ -1103,8 +1103,8 @@ private:
 			blitTransparentBitmap(*activeScreen, _leftHeadBitmap, kDialogueLeftHeadX, kDialogueHeadY);
 		if (_rightHeadVisible && _rightHeadBitmap.isValid())
 			blitTransparentBitmap(*activeScreen, _rightHeadBitmap, kDialogueRightHeadX, kDialogueHeadY);
-		if (overlayBitmap && overlayBitmap->isValid())
-			blitTransparentBitmap(*activeScreen, *overlayBitmap, kDialogueOverlayX, kDialogueOverlayY);
+		if (textboxBitmap && textboxBitmap->isValid())
+			blitTransparentBitmap(*activeScreen, *textboxBitmap, kDialogueOverlayX, kDialogueOverlayY);
 
 		if (subtitleLines) {
 			if (_subtitleFontUsesCft) {
@@ -1271,8 +1271,8 @@ private:
 			blitTransparentBitmap(*activeScreen, _leftHeadBitmap, kDialogueLeftHeadX, kDialogueHeadY);
 		if (_rightHeadVisible && _rightHeadBitmap.isValid())
 			blitTransparentBitmap(*activeScreen, _rightHeadBitmap, kDialogueRightHeadX, kDialogueHeadY);
-		if (textboxBitmap && textboxBitmap->isValid())
-			blitTransparentBitmap(*activeScreen, *textboxBitmap, kDialogueOverlayX, kDialogueOverlayY);
+		if (textboxSurface && textboxSurface->isValid())
+			blitTransparentBitmap(*activeScreen, *textboxSurface, kDialogueOverlayX, kDialogueOverlayY);
 
 		const Common::String &title = _menuTextConfig.dialogueResponsesLabel;
 		const Graphics::Font &titleFont = *_highlightFont;
@@ -1334,7 +1334,7 @@ private:
 			optionTexts.push_back(option.text);
 		logDialogueMenuItems("Response menu", responseLineIndex, responseLine, optionTexts);
 
-		const IndexedBitmap *textboxBitmap = _art->getTextboxBitmap(resolveDialogueResponseTextboxIndex(totalRows));
+		const IndexedBitmap *textboxSurface = _art->gettextboxSurface(resolveDialogueResponseTextboxIndex(totalRows));
 		Common::Error releaseError = waitForPointerRelease();
 		if (releaseError.getCode() != Common::kNoError)
 			return releaseError;
@@ -1342,7 +1342,7 @@ private:
 		Graphics::FrameLimiter limiter(g_system, 60);
 		for (;;) {
 			const int hoveredOptionIndex = getResponseMenuItemAt(options, totalRows, _mousePos);
-			drawDialogueResponseMenu(textboxBitmap, options, hoveredOptionIndex);
+			drawDialogueResponseMenu(textboxSurface, options, hoveredOptionIndex);
 
 			Common::Event event;
 			while (g_system->getEventManager()->pollEvent(event)) {
