@@ -1103,8 +1103,11 @@ private:
 			blitTransparentBitmap(*activeScreen, _leftHeadBitmap, kDialogueLeftHeadX, kDialogueHeadY);
 		if (_rightHeadVisible && _rightHeadBitmap.isValid())
 			blitTransparentBitmap(*activeScreen, _rightHeadBitmap, kDialogueRightHeadX, kDialogueHeadY);
-		if (textboxBitmap && textboxBitmap->isValid())
-			blitTransparentBitmap(*activeScreen, *textboxBitmap, kDialogueOverlayX, kDialogueOverlayY);
+		if (textboxSurface) {
+			activeScreen->blitFrom(*textboxSurface,
+				Common::Rect(0, 0, textboxSurface->w, textboxSurface->h),
+				Common::Point(kDialogueOverlayX, kDialogueOverlayY));
+		}
 
 		if (subtitleLines) {
 			if (_subtitleFontUsesCft) {
@@ -1271,8 +1274,11 @@ private:
 			blitTransparentBitmap(*activeScreen, _leftHeadBitmap, kDialogueLeftHeadX, kDialogueHeadY);
 		if (_rightHeadVisible && _rightHeadBitmap.isValid())
 			blitTransparentBitmap(*activeScreen, _rightHeadBitmap, kDialogueRightHeadX, kDialogueHeadY);
-		if (textboxSurface && textboxSurface->isValid())
-			blitTransparentBitmap(*activeScreen, *textboxSurface, kDialogueOverlayX, kDialogueOverlayY);
+		if (textboxSurface) {
+			activeScreen->blitFrom(*textboxSurface,
+				Common::Rect(0, 0, textboxSurface->w, textboxSurface->h),
+				Common::Point(kDialogueOverlayX, kDialogueOverlayY));
+		}
 
 		const Common::String &title = _menuTextConfig.dialogueResponsesLabel;
 		const Graphics::Font &titleFont = *_highlightFont;
@@ -1334,7 +1340,8 @@ private:
 			optionTexts.push_back(option.text);
 		logDialogueMenuItems("Response menu", responseLineIndex, responseLine, optionTexts);
 
-		const IndexedBitmap *textboxSurface = _art->gettextboxSurface(resolveDialogueResponseTextboxIndex(totalRows));
+		const Graphics::Surface *textboxSurface =
+			_art->getTextboxSurface(resolveDialogueResponseTextboxIndex(totalRows));
 		Common::Error releaseError = waitForPointerRelease();
 		if (releaseError.getCode() != Common::kNoError)
 			return releaseError;
