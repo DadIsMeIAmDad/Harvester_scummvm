@@ -182,6 +182,28 @@ static bool loadBitmapResource(ResourceManager &resources, const Common::String 
 	return true;
 }
 
+static bool loadPngResource(ResourceManager &resources,
+		const Common::String &path,
+		Graphics::Surface &outSurface) {
+	Common::SeekableReadStream *stream = resources.openFile(path);
+	if (!stream)
+		return false;
+
+	Image::PNGDecoder decoder;
+	if (!decoder.loadStream(*stream)) {
+		delete stream;
+		return false;
+	}
+	delete stream;
+
+	const Graphics::Surface *src = decoder.getSurface();
+	if (!src)
+		return false;
+
+	outSurface.copyFrom(*src);
+	return true;
+}
+
 static bool loadPaletteResource(ResourceManager &resources, const Common::String &path, byte *palette) {
 	Common::Array<byte> data;
 	if (!resources.loadFile(path, data) || data.size() < 256 * 3)
