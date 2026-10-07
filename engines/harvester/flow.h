@@ -75,7 +75,7 @@ private:
         float paletteBrightness,
         bool canSaveGame);
 	Common::Error runRoomNpcDialogue(
-		IndexedBitmap &dialogueBackdrop,
+		const IndexedBitmap &dialogueBackdrop,
 		const Graphics::Surface *dialogueBackdropSurface,
 		const byte *palette,
 		float paletteBrightness,
