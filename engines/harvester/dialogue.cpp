@@ -566,16 +566,18 @@ public:
 
 		const char *keywordBitmapPath = _menuTextConfig.hasDialogueKeywordLabel()
 			? kDialogueLocalizedKeywordBitmapPath : kDialogueKeywordBitmapPath;
-		if (!loadBitmapResource(*resources, keywordBitmapPath, _keywordBitmap)) {
-			warning("DIALOGUE KEYWORD BITMAP FAILED: %s", keywordBitmapPath);
-			return;
+
+		const Common::String keywordPngPath =
+			Common::String(keywordBitmapPath).replace(".BM", ".png");
+
+		if (!loadDialogueHeadPngResource(*resources, keywordPngPath, _keywordSurface)) {
+			if (!loadBitmapResource(*resources, keywordBitmapPath, _keywordBitmap))
+				return;
 		}
-		debug("DIALOGUE KEYWORD BITMAP LOADED: %s %dx%d",
-				keywordBitmapPath, _keywordBitmap.width, _keywordBitmap.height);
 
 		debugC(2, kDebugDialogue,
 			"Harvester: dialogue keyword panel='%s' title='%s' other='%s' responses='%s'",
-			keywordBitmapPath, _menuTextConfig.dialogueKeywordLabel.c_str(),
+			keywordPngPath.c_str(), _menuTextConfig.dialogueKeywordLabel.c_str(),
 			_menuTextConfig.dialogueOtherLabel.c_str(),
 			_menuTextConfig.dialogueResponsesLabel.c_str());
 
@@ -1578,6 +1580,7 @@ private:
 	bool _menuFontUsesCft;
 	bool _highlightFontUsesCft;
 	IndexedBitmap _keywordBitmap;
+	Graphics::Surface _keywordSurface;
 	Common::String _genericByeTopic;
 	IndexedBitmap _leftHeadBitmap;
 	IndexedBitmap _rightHeadBitmap;
