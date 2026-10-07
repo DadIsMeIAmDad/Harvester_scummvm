@@ -3961,6 +3961,11 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					break;
 				}
 				if (hasCarriedRoomItem()) {
+					debugC(1, kDebugInventory,
+						"Harvester: ROOM CARRY CLICK item='%s' object='%s' npc='%s'",
+						carriedRoomItemName.c_str(),
+						clickHoverState.object ? clickHoverState.object->objectName.c_str() : "",
+						clickHoverState.npc ? clickHoverState.npc->npcName.c_str() : "");
 					if (!stowCarriedRoomItemToInventory())
 						return Common::kReadingFailed;
 					needsRedraw = true;
