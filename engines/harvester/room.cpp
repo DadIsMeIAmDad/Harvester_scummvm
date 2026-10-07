@@ -90,16 +90,7 @@ static void debugLogInventoryClick(const char *buttonLabel, const Common::Point 
 		return;
 	}
 
-	debugC(1, kDebugInventory,
-		"Harvester: inventory %s click at (%d,%d) object='%s' sprite='%s' alt='%s' action='%s' owner='%s' text='%s' bounds=(%d,%d)-(%d,%d) exit=%d status=%d",
-		buttonLabel, point.x, point.y, inventoryHover->object.objectName.c_str(),
-		inventoryHover->object.spritePath.c_str(), inventoryHover->object.altSpritePath.c_str(),
-		inventoryHover->object.actionTag.c_str(), inventoryHover->object.currentOwnerOrRoom.c_str(),
-		inventoryHover->object.inventoryTextKey.c_str(), inventoryHover->bounds.left,
-		inventoryHover->bounds.top, inventoryHover->bounds.right, inventoryHover->bounds.bottom,
-		InventorySystem::isExitObject(inventoryHover->object),
-		InventorySystem::isStatusObject(inventoryHover->object));
-}
+
 
 static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y) {
 	if (!bitmap.isValid())
