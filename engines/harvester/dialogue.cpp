@@ -1145,6 +1145,7 @@ private:
 
 			debug("HEAD PNG: %s %dx%d", headId.c_str(),
 				updatedSurface.w, updatedSurface.h);
+			debug("DIALOGUE HEAD PNG PATH: %s", pngPath.c_str());
 			
 			targetSurface->free();
 
@@ -1155,6 +1156,7 @@ private:
 		} else {
 		    debug("Harvester: unable to load dialogue head for '%s %dx%d", headId.c_str(),
 				updatedSurface.w, updatedSurface.h);
+				debug("Harvester: unable to load dialogue head for PNG PATH: %s", pngPath.c_str());
 			warning("Harvester: unable to load dialogue head for '%s'", headId.c_str());
 		}
 	}
