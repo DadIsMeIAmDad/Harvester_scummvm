@@ -3692,7 +3692,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				? RoomHoverState()
 				: resolveRoomHoverState(_engine, scene.state, scene.sceneObjects, scene.state.roomNpcs,
 					scene.sceneRegions, _mousePos, flow._menuTextConfig, &flow._dialogue);
-			if (!suppressHover && inventorySelectionActive && !hoverState.npc) {
+			if (!suppressHover && activeCarry && !hoverState.npc) {
 				if (ObjectRecord *selectedTarget = findSelectedInventoryRoomTarget(_mousePos))
 					hoverState.object = selectedTarget;
 			}
