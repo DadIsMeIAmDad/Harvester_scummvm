@@ -21,7 +21,7 @@
 
 #ifndef HARVESTER_FLOW_H
 #define HARVESTER_FLOW_H
-
+#include "graphics/surface.h"
 #include "common/array.h"
 #include "common/error.h"
 #include "common/rect.h"
@@ -74,8 +74,15 @@ private:
         const byte *palette,
         float paletteBrightness,
         bool canSaveGame);
-	Common::Error runRoomNpcDialogue(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, const NpcRecord &npc, const Common::String &usedItemName);
+	Common::Error runRoomNpcDialogue(
+		IndexedBitmap &dialogueBackdrop,
+		const Graphics::Surface *dialogueBackdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		const NpcRecord &npc,
+		const Common::String &usedItemName);
+
+
 	Common::Error runTownMapSelector(const Common::String &mapEntryName, Common::String &destinationEntranceName);
 	Common::Error runRoomLoop(const Common::String &entranceName);
 	Common::Error resolveRoomTransitionTarget(const Common::String &targetName, Common::String &resolvedTargetName);
