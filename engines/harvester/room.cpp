@@ -90,7 +90,16 @@ static void debugLogInventoryClick(const char *buttonLabel, const Common::Point 
 		return;
 	}
 
-
+	debugC(1, kDebugInventory,
+		"Harvester: inventory %s click at (%d,%d) object='%s' sprite='%s' alt='%s' action='%s' owner='%s' text='%s' bounds=(%d,%d)-(%d,%d) exit=%d status=%d",
+		buttonLabel, point.x, point.y, inventoryHover->object.objectName.c_str(),
+		inventoryHover->object.spritePath.c_str(), inventoryHover->object.altSpritePath.c_str(),
+		inventoryHover->object.actionTag.c_str(), inventoryHover->object.currentOwnerOrRoom.c_str(),
+		inventoryHover->object.inventoryTextKey.c_str(), inventoryHover->bounds.left,
+		inventoryHover->bounds.top, inventoryHover->bounds.right, inventoryHover->bounds.bottom,
+		InventorySystem::isExitObject(inventoryHover->object),
+		InventorySystem::isStatusObject(inventoryHover->object));
+}
 
 static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y) {
 	if (!bitmap.isValid())
@@ -3963,15 +3972,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					break;
 				}
 
-				debugC(1, kDebugInventory,
-					"Harvester: CLICK STATE inventorySelection=%d roomCarry=%d target=%s",
-					_inventory.hasSelection() ? 1 : 0,
-					hasCarriedRoomItem() ? 1 : 0,
-					clickHoverState.object
-						? clickHoverState.object->objectName.c_str()
-						: "<none>");
-
-
 				if (hasCarriedRoomItem()) {
 					if (!stowCarriedRoomItemToInventory())
 						return Common::kReadingFailed;
@@ -4063,12 +4063,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							needsRedraw = true;
 							break;
 						}
-
-						debugC(1, kDebugInventory,
-							"Harvester: BEFORE INVENTORY BRANCH inventorySelection=%d roomCarry=%d",
-							_inventory.hasSelection() ? 1 : 0,
-							hasCarriedRoomItem() ? 1 : 0);
-
 
 						if (!inventoryHover->object.objectName.equalsIgnoreCase(_inventory.getSelectedItemName())) {
 							debugC(1, kDebugInventory,
