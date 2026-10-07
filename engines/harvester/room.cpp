@@ -1573,21 +1573,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return false;
 			return _inventory.open();
 		};
-		auto captureDialogueBackdrop = [&](IndexedBitmap &dialogueBackdrop,
-				Graphics::Surface &dialogueBackdropSurface) {
+		auto captureDialogueBackdrop = [&](IndexedBitmap &dialogueBackdrop) {
 			Graphics::Screen *activeScreen = getActiveScreen();
 			if (!activeScreen)
 				return false;
 
 			drawRoomScene(_engine, *activeScreen, scene, scene.targetPaletteBrightness);
-
-			if (!captureScreenBackdrop(*activeScreen, dialogueBackdrop))
-				return false;
-
-			if (activeScreen->format.bytesPerPixel != 1)
-				dialogueBackdropSurface.copyFrom(*activeScreen);
-
-			return true;
+			return captureScreenBackdrop(*activeScreen, dialogueBackdrop);
 		};
 		auto showCdChangePrompt = [&](int discNumber) -> Common::Error {
 			if (discNumber <= 0)
