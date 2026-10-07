@@ -301,23 +301,39 @@ static bool loadBitmapResource(ResourceManager &resources, const Common::String 
 static bool loadDialogueHeadPngResource(ResourceManager &resources,
 		const Common::String &path,
 		Graphics::Surface &surface) {
+
 	Common::SeekableReadStream *stream = resources.openFile(path);
-	if (!stream)
+	if (!stream) {
+		debug("HEAD PNG: FAILED OPEN: %s", path.c_str());
 		return false;
+	}
+
+	debug("HEAD PNG: OPENED: %s", path.c_str());
 
 	Image::PNGDecoder decoder;
 	if (!decoder.loadStream(*stream)) {
+		debug("HEAD PNG: DECODER FAILED: %s", path.c_str());
 		delete stream;
 		return false;
 	}
+
+	debug("HEAD PNG: DECODER OK: %s", path.c_str());
 
 	const Graphics::Surface *decoded = decoder.getSurface();
+
 	if (!decoded || decoded->w <= 0 || decoded->h <= 0) {
+		debug("HEAD PNG: INVALID SURFACE: %s", path.c_str());
 		delete stream;
 		return false;
 	}
 
+	debug("HEAD PNG: DECODED %s %dx%d",
+			path.c_str(), decoded->w, decoded->h);
+
 	surface.copyFrom(*decoded);
+
+	debug("HEAD PNG: COPIED %s %dx%d",
+			path.c_str(), surface.w, surface.h);
 
 	delete stream;
 	return true;
