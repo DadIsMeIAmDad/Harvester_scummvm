@@ -1090,7 +1090,7 @@ private:
 		}
 	}
 
-	void drawDialogueOverlay(const IndexedBitmap *overlayBitmap,
+	void drawDialogueOverlay(const Graphics::Surface *textboxSurface,
 			const Common::Array<Common::String> *subtitleLines, const Common::Array<Common::String> *topics,
 			int hoveredTopicIndex, bool hoverOther, const Common::String *textEntryValue) {
 		Graphics::Screen *activeScreen = getActiveScreen();
@@ -1259,7 +1259,7 @@ private:
 		return -1;
 	}
 
-	void drawDialogueResponseMenu(const IndexedBitmap *textboxBitmap,
+	void drawDialogueResponseMenu(const Graphics::Surface *textboxSurface,
 			const Common::Array<DialogueResponseOptionLayout> &options, int hoveredOptionIndex) {
 		Graphics::Screen *activeScreen = getActiveScreen();
 		if (!activeScreen)
