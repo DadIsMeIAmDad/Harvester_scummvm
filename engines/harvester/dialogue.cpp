@@ -1204,24 +1204,30 @@ private:
 
 
 		if (_leftHeadVisible) {
+			debug("DRAW LEFT HEAD: %dx%d at %d,%d",
+					_leftHeadSurface.w, _leftHeadSurface.h,
+					kDialogueLeftHeadX, kDialogueHeadY);
+
 			if (_leftHeadSurface.w > 0 && _leftHeadSurface.h > 0) {
 				activeScreen->blitFrom(_leftHeadSurface,
-					Common::Rect(0, 0, _leftHeadSurface.w, _leftHeadSurface.h),
+					Common::Rect(0, 0,
+						_leftHeadSurface.w,
+						_leftHeadSurface.h),
 					Common::Point(kDialogueLeftHeadX, kDialogueHeadY));
-			} else if (_leftHeadBitmap.isValid()) {
-				blitTransparentBitmap(*activeScreen, _leftHeadBitmap,
-					kDialogueLeftHeadX, kDialogueHeadY);
 			}
 		}
 
 		if (_rightHeadVisible) {
+			debug("DRAW RIGHT HEAD: %dx%d at %d,%d",
+					_rightHeadSurface.w, _rightHeadSurface.h,
+					kDialogueRightHeadX, kDialogueHeadY);
+
 			if (_rightHeadSurface.w > 0 && _rightHeadSurface.h > 0) {
 				activeScreen->blitFrom(_rightHeadSurface,
-					Common::Rect(0, 0, _rightHeadSurface.w, _rightHeadSurface.h),
+					Common::Rect(0, 0,
+						_rightHeadSurface.w,
+						_rightHeadSurface.h),
 					Common::Point(kDialogueRightHeadX, kDialogueHeadY));
-			} else if (_rightHeadBitmap.isValid()) {
-				blitTransparentBitmap(*activeScreen, _rightHeadBitmap,
-					kDialogueRightHeadX, kDialogueHeadY);
 			}
 		}
 			
