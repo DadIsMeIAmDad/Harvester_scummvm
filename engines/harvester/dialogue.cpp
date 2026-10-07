@@ -1102,13 +1102,22 @@ public:
 			return;
 
 		ensureSpeakerPortrait(speakerId, headVariant);
+	
+
 		if (speakerId.equalsIgnoreCase("PC")) {
 			_leftHeadVisible = false;
-			_rightHeadVisible = _rightHeadBitmap.isValid();
+			_rightHeadVisible =
+				(_rightHeadSurface.w > 0 && _rightHeadSurface.h > 0) ||
+				_rightHeadBitmap.isValid();
 		} else {
-			_leftHeadVisible = _leftHeadBitmap.isValid();
+			_leftHeadVisible =
+				(_leftHeadSurface.w > 0 && _leftHeadSurface.h > 0) ||
+				_leftHeadBitmap.isValid();
 			_rightHeadVisible = false;
 		}
+
+
+
 	}
 
 private:
