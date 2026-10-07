@@ -600,8 +600,11 @@ public:
 	}
 
 	bool isValid() const {
-		return _script && _text && _art && _fallbackFont && _backdrop.isValid() &&
-			_palette && _keywordBitmap.isValid();
+		return _script && _text && _art && _fallbackFont &&
+			(_dialogueBackdropSurface || _backdrop.isValid()) &&
+			_palette &&
+			((_keywordSurface.w > 0 && _keywordSurface.h > 0) ||
+				_keywordBitmap.isValid());
 	}
 
 	const Common::String &getGenericByeTopic() const {
