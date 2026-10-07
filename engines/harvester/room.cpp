@@ -3378,6 +3378,15 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			}
 		}
 
+		debugC(1, kDebugInventory,
+			"Harvester: begin carry object='%s' path='%s' surface=%dx%d bm=%ux%u",
+			object.objectName.c_str(),
+			spritePath.c_str(),
+			carriedRoomItemSurface.w,
+			carriedRoomItemSurface.h,
+			carriedRoomItemBitmap.width,
+			carriedRoomItemBitmap.height);
+
 		script->setRuntimeObjectVisible(object.currentOwnerOrRoom, object.objectName, false);
 		hideSceneObject(object.objectName, nullptr);
 		removeSceneEntityByName(object.objectName);
