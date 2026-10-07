@@ -806,7 +806,7 @@ public:
 		for (;;) {
 			const int hoveredTopicIndex = editingOther ? -1 : getDialogueMenuItemAt(*_menuFont, topics.size(), _mousePos);
 			const bool hoverOther = !editingOther && isDialogueOtherHit(_mousePos);
-			drawDialogueOverlay(&_keywordBitmap, nullptr, &topics, hoveredTopicIndex, hoverOther,
+			drawDialogueOverlay(nullptr, nullptr, &topics, hoveredTopicIndex, hoverOther,
 				editingOther ? &typedTopic : nullptr);
 
 			Common::Event event;
