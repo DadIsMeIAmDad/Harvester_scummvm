@@ -440,8 +440,11 @@ static Common::String buildDialogueHeadId(const Common::String &speakerId, int h
 	return Common::String::format("%s%d", speakerId.c_str(), headVariant);
 }
 
-static bool loadDialogueHeadBitmap(HarvesterEngine &engine, const Common::String &speakerId, int headVariant,
-		IndexedBitmap &bitmap) {
+static bool loadDialogueHeadBitmap(HarvesterEngine &engine,
+		const Common::String &speakerId,
+		int headVariant,
+		IndexedBitmap &bitmap,
+		Graphics::Surface &surface) {
 	Script *script = engine.getScript();
 	ResourceManager *resources = engine.getResources();
 	if (!script || !resources || speakerId.empty())
@@ -452,7 +455,12 @@ static bool loadDialogueHeadBitmap(HarvesterEngine &engine, const Common::String
 	if (!head)
 		return false;
 
-	return loadBitmapResource(*resources, head->portraitPath + ".png", bitmap);
+	const Common::String pngPath = head->portraitPath + ".png";
+
+	if (loadDialogueHeadPngResource(*resources, pngPath, surface))
+		return true;
+
+	return loadBitmapResource(*resources, pngPath, bitmap);
 }
 
 static Common::String buildDialogueVoicePath(const Script &script, int wavId) {
@@ -1488,6 +1496,8 @@ private:
 	Common::String _genericByeTopic;
 	IndexedBitmap _leftHeadBitmap;
 	IndexedBitmap _rightHeadBitmap;
+	Graphics::Surface _leftHeadSurface;
+	Graphics::Surface _rightHeadSurface;
 	Common::String _leftHeadSpeakerId;
 	Common::String _rightHeadSpeakerId;
 	bool _leftHeadVisible;
