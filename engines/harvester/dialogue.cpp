@@ -1463,7 +1463,7 @@ private:
 		const Graphics::Font &titleFont = *_highlightFont;
 		const bool titleUsesCft = _highlightFontUsesCft;
 		const int titleWidth = titleFont.getStringWidth(title);
-		const int titleX = kDialogueSubtitleTextX + MAX<int>(0, (kDialogueSubtitleTextWidth - titleWidth) / 2);
+		const int titleX = kDialogueSubtitleTextX + MAX<int>(0, (kDialogueSubtitleTextWidth - titleWidth) / 2) - 10;
 		drawFontString(titleFont, titleUsesCft, title, titleX, 11, titleWidth, kTextColorNormal);
 
 		const int lineHeight = getDialogueTextLineHeight(*_menuFont);
