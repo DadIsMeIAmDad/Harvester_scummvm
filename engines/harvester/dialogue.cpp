@@ -457,7 +457,7 @@ static bool loadDialogueHeadBitmap(HarvesterEngine &engine,
 		return false;
 
 	const Common::String pngPath = head->portraitPath + ".png";
-
+	debug("DIALOGUE HEAD PNG PATH: %s", pngPath.c_str());
 	if (loadDialogueHeadPngResource(*resources, pngPath, surface))
 		return true;
 
