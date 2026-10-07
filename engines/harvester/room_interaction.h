@@ -21,7 +21,7 @@
 
 #ifndef HARVESTER_ROOM_INTERACTION_H
 #define HARVESTER_ROOM_INTERACTION_H
-
+#include "graphics/surface.h"
 #include "common/error.h"
 #include "harvester/room_support.h"
 #include "harvester/saveload.h"

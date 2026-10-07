@@ -1818,7 +1818,9 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			}
 
 			IndexedBitmap backdrop;
-			if (!captureDialogueBackdrop(backdrop))
+			Graphics::Surface dialogueBackdropSurface;
+
+			if (!captureDialogueBackdrop(backdrop, dialogueBackdropSurface))
 				return Common::kReadingFailed;
 
 			Graphics::FrameLimiter limiter(g_system, 60);

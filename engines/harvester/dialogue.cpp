@@ -426,7 +426,7 @@ static bool loadDialogueHeadBitmap(HarvesterEngine &engine, const Common::String
 	if (!head)
 		return false;
 
-	return loadBitmapResource(*resources, head->portraitPath + ".BM", bitmap);
+	return loadBitmapResource(*resources, head->portraitPath + ".png", bitmap);
 }
 
 static Common::String buildDialogueVoicePath(const Script &script, int wavId) {
