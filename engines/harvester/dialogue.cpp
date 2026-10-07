@@ -480,7 +480,8 @@ public:
 		  _highlightFontUsesCft(false), _leftHeadVisible(false),
 		  _rightHeadVisible(false) {
 		ResourceManager *resources = _engine.getResources();
-		if (!_script || !_text || !_art || !_fallbackFont || !_backdrop.isValid() ||
+		if (!_script || !_text || !_art || !_fallbackFont ||
+				(!_dialogueBackdropSurface && !_backdrop.isValid()) ||
 				!_palette || !resources) {
 			return;
 		}
