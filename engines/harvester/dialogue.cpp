@@ -1100,8 +1100,21 @@ private:
 		if (!activeScreen)
 			return;
 
-		setScaledPalette(*activeScreen, _palette, _paletteBrightness);
-		blitBitmap(*activeScreen, _backdrop, 0, 0);
+		if (_dialogueBackdropSurface) {
+			activeScreen->blitFrom(*_dialogueBackdropSurface,
+				Common::Rect(0, 0,
+					_dialogueBackdropSurface->w,
+					_dialogueBackdropSurface->h),
+				Common::Point(0, 0));
+		} else {
+			setScaledPalette(*activeScreen, _palette, _paletteBrightness);
+			blitBitmap(*activeScreen, _backdrop, 0, 0);
+		}
+
+
+
+
+
 		if (_leftHeadVisible && _leftHeadBitmap.isValid())
 			blitTransparentBitmap(*activeScreen, _leftHeadBitmap, kDialogueLeftHeadX, kDialogueHeadY);
 		if (_rightHeadVisible && _rightHeadBitmap.isValid())
