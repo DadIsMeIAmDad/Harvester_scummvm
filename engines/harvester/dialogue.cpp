@@ -306,13 +306,13 @@ static bool loadDialogueHeadPngResource(ResourceManager &resources,
 		return false;
 
 	Image::PNGDecoder decoder;
-	if (!decoder.loadStream(stream)) {
+	if (!decoder.loadStream(*stream)) {
 		delete stream;
 		return false;
 	}
 
 	const Graphics::Surface *decoded = decoder.getSurface();
-	if (!decoded || !decoded->pixels || decoded->w <= 0 || decoded->h <= 0) {
+	if (!decoded || decoded->w <= 0 || decoded->h <= 0) {
 		delete stream;
 		return false;
 	}
