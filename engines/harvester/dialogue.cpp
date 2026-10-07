@@ -1176,10 +1176,31 @@ private:
 
 
 
-		if (_leftHeadVisible && _leftHeadBitmap.isValid())
-			blitTransparentBitmap(*activeScreen, _leftHeadBitmap, kDialogueLeftHeadX, kDialogueHeadY);
-		if (_rightHeadVisible && _rightHeadBitmap.isValid())
-			blitTransparentBitmap(*activeScreen, _rightHeadBitmap, kDialogueRightHeadX, kDialogueHeadY);
+		if (_leftHeadVisible) {
+			if (_leftHeadSurface.w > 0 && _leftHeadSurface.h > 0) {
+				activeScreen->blitFrom(_leftHeadSurface,
+					Common::Rect(0, 0, _leftHeadSurface.w, _leftHeadSurface.h),
+					Common::Point(kDialogueLeftHeadX, kDialogueHeadY));
+			} else if (_leftHeadBitmap.isValid()) {
+				blitTransparentBitmap(*activeScreen, _leftHeadBitmap,
+					kDialogueLeftHeadX, kDialogueHeadY);
+			}
+		}
+
+		if (_rightHeadVisible) {
+			if (_rightHeadSurface.w > 0 && _rightHeadSurface.h > 0) {
+				activeScreen->blitFrom(_rightHeadSurface,
+					Common::Rect(0, 0, _rightHeadSurface.w, _rightHeadSurface.h),
+					Common::Point(kDialogueRightHeadX, kDialogueHeadY));
+			} else if (_rightHeadBitmap.isValid()) {
+				blitTransparentBitmap(*activeScreen, _rightHeadBitmap,
+					kDialogueRightHeadX, kDialogueHeadY);
+			}
+		}
+			
+
+
+
 		if (textboxSurface) {
 			activeScreen->blitFrom(*textboxSurface,
 				Common::Rect(0, 0, textboxSurface->w, textboxSurface->h),
