@@ -1528,8 +1528,13 @@ void DialogueSystem::syncRuntimeSaveState(Common::Serializer &s) {
 	}
 }
 
-Common::Error DialogueSystem::runRoomNpcDialogue(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, const NpcRecord &npc, const Common::String &usedItemName,
+Common::Error DialogueSystem::runRoomNpcDialogue(
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *dialogueBackdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		const NpcRecord &npc,
+		const Common::String &usedItemName,
 		Flow &flow) {
 	Script *script = _engine.getScript();
 	Text *text = _engine.getText();
