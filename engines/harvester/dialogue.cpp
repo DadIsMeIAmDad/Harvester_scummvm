@@ -143,9 +143,9 @@ static const int kDialogueOtherEndY = 193;
 static const int kDialogueKeywordTitleYOffset = 4;
 static const int kDialogueGenericByeResponseIndex = 13;
 static const char *const kCdChangePromptPalettePath = "1:/GRAPHIC/PAL/CD1.PAL";
-static const char *const kDialogueKeywordBitmapPath = "1:/GRAPHIC/OTHER/KEYWORD.BM";
-static const char *const kDialogueLocalizedKeywordBitmapPath = "GRAPHIC/OTHER/KEYWORD.BM";
-static const char *const kDialogueGameOverBitmapPath = "1:/GRAPHIC/OTHER/GAMEOVER.BM";
+static const char *const kDialogueKeywordBitmapPath = "4:/GRAPHIC/OTHER/KEYWORD.png";
+static const char *const kDialogueLocalizedKeywordBitmapPath = "GRAPHIC/OTHER/KEYWORD.png";
+static const char *const kDialogueGameOverBitmapPath = "4:/GRAPHIC/OTHER/GAMEOVER.png";
 static const char *const kDialogueGameOverPalettePath = "1:/GRAPHIC/PAL/GAMEOVER.PAL";
 static const char *const kDialogueGameOverMusicPath = "SOUND/MUSIC/ANXIETY.CMP";
 
@@ -568,11 +568,10 @@ public:
 			? kDialogueLocalizedKeywordBitmapPath : kDialogueKeywordBitmapPath;
 		if (!loadBitmapResource(*resources, keywordBitmapPath, _keywordBitmap)) {
 			warning("DIALOGUE KEYWORD BITMAP FAILED: %s", keywordBitmapPath);
-			//return;
+			return;
 		}
 		debug("DIALOGUE KEYWORD BITMAP LOADED: %s %dx%d",
 				keywordBitmapPath, _keywordBitmap.width, _keywordBitmap.height);
-
 
 		debugC(2, kDebugDialogue,
 			"Harvester: dialogue keyword panel='%s' title='%s' other='%s' responses='%s'",
