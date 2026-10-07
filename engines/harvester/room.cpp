@@ -20,7 +20,7 @@
  */
 
 #include "harvester/room.h"
-
+#include "image/png.h"
 #include "common/algorithm.h"
 #include "common/endian.h"
 #include "common/events.h"
