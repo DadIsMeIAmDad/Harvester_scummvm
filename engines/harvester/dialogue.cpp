@@ -567,17 +567,15 @@ public:
 		const char *keywordBitmapPath = _menuTextConfig.hasDialogueKeywordLabel()
 			? kDialogueLocalizedKeywordBitmapPath : kDialogueKeywordBitmapPath;
 
-		Common::String keywordPngPath = keywordBitmapPath;
-		keywordPngPath.replace(".BM", ".png");
+		const char *keywordPngPath = _menuTextConfig.hasDialogueKeywordLabel()
+			? kDialogueLocalizedKeywordBitmapPath : kDialogueKeywordBitmapPath;
 
-		if (!loadDialogueHeadPngResource(*resources, keywordPngPath, _keywordSurface)) {
-			if (!loadBitmapResource(*resources, keywordBitmapPath, _keywordBitmap))
-				return;
-		}
+		if (!loadDialogueHeadPngResource(*resources, keywordPngPath, _keywordSurface))
+			return;
 
 		debugC(2, kDebugDialogue,
 			"Harvester: dialogue keyword panel='%s' title='%s' other='%s' responses='%s'",
-			keywordPngPath.c_str(), _menuTextConfig.dialogueKeywordLabel.c_str(),
+			keywordPngPath, _menuTextConfig.dialogueKeywordLabel.c_str(),
 			_menuTextConfig.dialogueOtherLabel.c_str(),
 			_menuTextConfig.dialogueResponsesLabel.c_str());
 
