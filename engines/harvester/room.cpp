@@ -556,6 +556,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			carriedRoomItemName.clear();
 			carriedRoomItemLabel.clear();
 			carriedRoomItemBitmap = IndexedBitmap();
+			carriedRoomItemSurface.free();
 		};
 		auto queueCombatLoadoutStatusMessage = [&](const Common::String &message) {
 			if (message.empty()) {
