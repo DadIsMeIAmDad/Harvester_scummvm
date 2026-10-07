@@ -464,11 +464,14 @@ public:
 	};
 
 	RoomNpcDialogueSession(HarvesterEngine &engine, Common::Point &mousePos, Flow &flow,
-			const IndexedBitmap &backdrop, const byte *palette, float paletteBrightness,
-			const NpcRecord &npc)
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *dialogueBackdropSurface,
+		const byte *palette, float paletteBrightness,
+		const NpcRecord &npc)
 		: _engine(engine), _mousePos(mousePos), _flow(flow),
 		  _menuTextConfig(DialogueFlowAccess::getMenuTextConfig(flow)), _backdrop(backdrop),
-		  _palette(palette), _paletteBrightness(paletteBrightness), _npc(npc),
+		_dialogueBackdropSurface(dialogueBackdropSurface),
+		_palette(palette), _paletteBrightness(paletteBrightness), _npc(npc),
 		  _script(engine.getScript()), _text(engine.getText()), _art(engine.getArt()),
 		  _entityManager(engine.getRuntimeEntities()),
 		  _fallbackFont(FontMan.getFontByUsage(Graphics::FontManager::kGUIFont)),
@@ -1412,6 +1415,7 @@ private:
 	Flow &_flow;
 	const MenuTextConfig &_menuTextConfig;
 	const IndexedBitmap &_backdrop;
+	const Graphics::Surface *_dialogueBackdropSurface;
 	const byte *_palette;
 	const float _paletteBrightness;
 	const NpcRecord &_npc;
