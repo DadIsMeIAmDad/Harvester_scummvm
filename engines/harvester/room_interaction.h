@@ -41,7 +41,8 @@ public:
 	virtual bool refreshCurrentScene(bool preservePlayerPlacement) = 0;
 	virtual bool applyCurrentRoomRuntimeMutationsInPlace(bool preservePaletteState) = 0;
 	virtual void syncGlobalTimerEntities(const Common::Array<TimerRecord> &previousTimerRecords) = 0;
-	virtual bool captureDialogueBackdrop(IndexedBitmap &dialogueBackdrop) = 0;
+	virtual bool captureDialogueBackdrop(IndexedBitmap &dialogueBackdrop,
+		Graphics::Surface &dialogueBackdropSurface) = 0;
 	virtual Common::Error showCdChangePrompt(int discNumber) = 0;
 	virtual Common::Error runRoomExitCommands() = 0;
 	virtual Common::Error applyLightingCommand(StartupLightingCommand lightingCommand) = 0;
