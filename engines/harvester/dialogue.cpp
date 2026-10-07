@@ -558,10 +558,18 @@ public:
 
 		_leftHeadSpeakerId = buildDialogueHeadId(_npc.npcName, 0);
 		_rightHeadSpeakerId = buildDialogueHeadId("PC", 0);
-		(void)loadDialogueHeadBitmap(_engine, _npc.npcName, 0, _leftHeadBitmap, _leftHeadBitmap);
-		(void)loadDialogueHeadBitmap(_engine, "PC", 0, _rightHeadBitmap, _rightHeadBitmap);
-		_leftHeadVisible = _leftHeadBitmap.isValid();
-		_rightHeadVisible = _rightHeadBitmap.isValid();
+
+		(void)loadDialogueHeadBitmap(_engine, _npc.npcName, 0,
+				_leftHeadBitmap, _leftHeadSurface);
+
+		(void)loadDialogueHeadBitmap(_engine, "PC", 0,
+				_rightHeadBitmap, _rightHeadSurface);
+
+		_leftHeadVisible = (_leftHeadSurface.w > 0 && _leftHeadSurface.h > 0) ||
+				_leftHeadBitmap.isValid();
+
+		_rightHeadVisible = (_rightHeadSurface.w > 0 && _rightHeadSurface.h > 0) ||
+				_rightHeadBitmap.isValid();
 	}
 
 	bool isValid() const {
@@ -1134,7 +1142,7 @@ private:
 		if (loadDialogueHeadBitmap(_engine, speakerId, headVariant,
 				updatedBitmap, updatedSurface)) {
 
-			targetBitmap->free();
+			
 			targetSurface->free();
 
 			*targetBitmap = Common::move(updatedBitmap);
