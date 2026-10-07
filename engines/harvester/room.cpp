@@ -3424,10 +3424,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		return Common::kNoError;
 	};
 	auto handleInventoryTargetInteraction = [&](const ObjectRecord &target) -> Common::Error {
-		if (!_inventory.hasSelection())
+		const bool inventoryCarry = _inventory.hasSelection();
+		const bool roomCarry = hasCarriedRoomItem();
+
+		if (!inventoryCarry && !roomCarry)
 			return Common::kNoError;
 
-		const Common::String selectedItemName = _inventory.getSelectedItemName();
+		const Common::String selectedItemName =
+		inventoryCarry ? _inventory.getSelectedItemName() : carriedRoomItemName;
 		InteractionResult interaction;
 		const bool handled = _engine.getScript()->resolveUseItemInteraction(
 			selectedItemName, target, interaction, scene.state.roomName);
@@ -3446,7 +3450,8 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		// Flow shares one inventory system across nested room loops. Clear the held item
 		// before entering a closeup so it is not still carried while the child room loop
 		// is active.
-		if (!interaction.nextRoomName.empty() &&
+		if (inventoryCarry &&
+				!interaction.nextRoomName.empty() &&
 				roomTransition != kStartupRoomTransitionChangeRoom)
 			_inventory.clearSelection();
 
@@ -3455,7 +3460,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			interactionProcessor.handleInteractionResult(interaction, didTransition, selectedItemName);
 		if (interactionError.getCode() != Common::kNoError)
 			return interactionError;
-		_inventory.clearSelection();
+
+		if (inventoryCarry)
+			_inventory.clearSelection();
+		else if (roomCarry)
+			clearCarriedRoomItem();
+
+
+
 		if (flow.hasPendingMainMenuReturn())
 			return Common::kNoError;
 		if (!_inventory.refresh())
