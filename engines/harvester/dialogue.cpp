@@ -453,6 +453,7 @@ static bool loadDialogueHeadBitmap(HarvesterEngine &engine,
 	const Common::String headId = buildDialogueHeadId(speakerId, headVariant);
 	const HeadRecord *head = script->findHeadRecord(headId);
 	if (!head)
+		warning("NO HEAD RECORD");
 		return false;
 
 	const Common::String pngPath = head->portraitPath + ".png";
@@ -1142,6 +1143,8 @@ private:
 		if (loadDialogueHeadBitmap(_engine, speakerId, headVariant,
 				updatedBitmap, updatedSurface)) {
 
+			debug("HEAD PNG: %s %dx%d", headId.c_str(),
+				updatedSurface.w, updatedSurface.h);
 			
 			targetSurface->free();
 
