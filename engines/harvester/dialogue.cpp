@@ -1240,6 +1240,16 @@ private:
 		}
 			
 
+		if (topics) {
+			if (_keywordSurface.w > 0 && _keywordSurface.h > 0) {
+				activeScreen->blitFrom(_keywordSurface,
+					Common::Rect(0, 0, _keywordSurface.w, _keywordSurface.h),
+					Common::Point(kDialogueOverlayX, kDialogueOverlayY));
+			} else if (_keywordBitmap.isValid()) {
+				blitTransparentBitmap(*activeScreen, _keywordBitmap,
+					kDialogueOverlayX, kDialogueOverlayY);
+			}
+		}
 
 
 		if (textboxSurface) {
@@ -1267,8 +1277,17 @@ private:
 			if (_menuTextConfig.hasDialogueKeywordLabel()) {
 				const Common::String &title = _menuTextConfig.dialogueKeywordLabel;
 				const int titleWidth = _highlightFont->getStringWidth(title);
+
+
+				const int keywordWidth = (_keywordSurface.w > 0)
+					? _keywordSurface.w
+					: (int)_keywordBitmap.width;
+		
 				const int titleX = kDialogueOverlayX +
-					MAX<int>(0, ((int)_keywordBitmap.width - titleWidth) / 2);
+					MAX<int>(0, (keywordWidth - titleWidth) / 2);
+
+
+
 				drawFontString(*_highlightFont, _highlightFontUsesCft, title, titleX,
 					kDialogueOverlayY + kDialogueKeywordTitleYOffset, titleWidth,
 					kTextColorNormal);
