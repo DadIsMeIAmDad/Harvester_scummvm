@@ -3347,8 +3347,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		carriedRoomItemName = object.objectName;
 		carriedRoomItemLabel = script->resolveObjectLabel(object);
 		const Common::String spritePath = resolveCarriedObjectSpritePath(object);
-		if (!spritePath.empty())
-			loadBitmapResource(*resources, spritePath, carriedRoomItemBitmap);
+
+		if (!spritePath.empty()) {
+			if (spritePath.hasSuffixIgnoreCase(".png")) {
+				(void)loadPngResource(*resources, spritePath, carriedRoomItemSurface);
+			} else {
+				(void)loadBitmapResource(*resources, spritePath, carriedRoomItemBitmap);
+			}
+		}
 
 		script->setRuntimeObjectVisible(object.currentOwnerOrRoom, object.objectName, false);
 		hideSceneObject(object.objectName, nullptr);
