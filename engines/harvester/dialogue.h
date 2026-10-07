@@ -21,7 +21,7 @@
 
 #ifndef HARVESTER_DIALOGUE_H
 #define HARVESTER_DIALOGUE_H
-
+#include "graphics/surface.h"
 #include "common/array.h"
 #include "common/error.h"
 #include "common/rect.h"
