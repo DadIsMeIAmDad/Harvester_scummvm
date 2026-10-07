@@ -548,6 +548,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		Common::String carriedRoomItemName;
 		Common::String carriedRoomItemLabel;
 		IndexedBitmap carriedRoomItemBitmap;
+		Graphics::Surface carriedRoomItemSurface;
 		auto hasCarriedRoomItem = [&]() {
 			return !carriedRoomItemName.empty();
 		};
