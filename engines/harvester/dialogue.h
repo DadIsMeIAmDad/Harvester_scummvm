@@ -49,8 +49,13 @@ public:
 	bool hasRoomNpcHandler(const Common::String &npcName) const;
 	void resetRoomNpcDialogueState();
 	void syncRuntimeSaveState(Common::Serializer &s);
-	Common::Error runRoomNpcDialogue(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, const NpcRecord &npc, const Common::String &usedItemName,
+	Common::Error runRoomNpcDialogue(
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *dialogueBackdropSurface,
+		const byte *palette,
+		float paletteBrightness,
+		const NpcRecord &npc,
+		const Common::String &usedItemName,
 		Flow &flow);
 
 private:
