@@ -558,8 +558,8 @@ public:
 
 		_leftHeadSpeakerId = buildDialogueHeadId(_npc.npcName, 0);
 		_rightHeadSpeakerId = buildDialogueHeadId("PC", 0);
-		(void)loadDialogueHeadBitmap(_engine, _npc.npcName, 0, _leftHeadBitmap);
-		(void)loadDialogueHeadBitmap(_engine, "PC", 0, _rightHeadBitmap);
+		(void)loadDialogueHeadBitmap(_engine, _npc.npcName, 0, _leftHeadBitmap, _leftHeadBitmap);
+		(void)loadDialogueHeadBitmap(_engine, "PC", 0, _rightHeadBitmap, _rightHeadBitmap);
 		_leftHeadVisible = _leftHeadBitmap.isValid();
 		_rightHeadVisible = _rightHeadBitmap.isValid();
 	}
@@ -1111,17 +1111,35 @@ private:
 
 	void ensureSpeakerPortrait(const Common::String &speakerId, int headVariant) {
 		if (speakerId.empty())
-			return;
+		return;
 
 		const Common::String headId = buildDialogueHeadId(speakerId, headVariant);
-		IndexedBitmap *targetBitmap = speakerId.equalsIgnoreCase("PC") ? &_rightHeadBitmap : &_leftHeadBitmap;
-		Common::String *targetSpeakerId = speakerId.equalsIgnoreCase("PC") ? &_rightHeadSpeakerId : &_leftHeadSpeakerId;
-		if (targetBitmap->isValid() && targetSpeakerId->equalsIgnoreCase(headId))
+
+		IndexedBitmap *targetBitmap =
+			speakerId.equalsIgnoreCase("PC") ? &_rightHeadBitmap : &_leftHeadBitmap;
+
+		Graphics::Surface *targetSurface =
+			speakerId.equalsIgnoreCase("PC") ? &_rightHeadSurface : &_leftHeadSurface;
+
+		Common::String *targetSpeakerId =
+			speakerId.equalsIgnoreCase("PC") ? &_rightHeadSpeakerId : &_leftHeadSpeakerId;
+
+		if ((targetSurface->w > 0 && targetSurface->h > 0) &&
+				targetSpeakerId->equalsIgnoreCase(headId))
 			return;
 
 		IndexedBitmap updatedBitmap;
-		if (loadDialogueHeadBitmap(_engine, speakerId, headVariant, updatedBitmap)) {
+		Graphics::Surface updatedSurface;
+
+		if (loadDialogueHeadBitmap(_engine, speakerId, headVariant,
+				updatedBitmap, updatedSurface)) {
+
+			targetBitmap->free();
+			targetSurface->free();
+
 			*targetBitmap = Common::move(updatedBitmap);
+			targetSurface->copyFrom(updatedSurface);
+
 			*targetSpeakerId = headId;
 		} else {
 			warning("Harvester: unable to load dialogue head for '%s'", headId.c_str());
