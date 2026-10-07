@@ -3433,6 +3433,15 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		const Common::String selectedItemName =
 		inventoryCarry ? _inventory.getSelectedItemName() : carriedRoomItemName;
 		InteractionResult interaction;
+		
+		debugC(1, kDebugInventory,
+			"Harvester: USE ITEM source=%s item='%s' target='%s'",
+			inventoryCarry ? "INVENTORY" : "ROOM_CARRY",
+			selectedItemName.c_str(),
+			target.objectName.c_str());
+		
+		
+		
 		const bool handled = _engine.getScript()->resolveUseItemInteraction(
 			selectedItemName, target, interaction, scene.state.roomName);
 		if (!handled) {
