@@ -312,11 +312,14 @@ Common::Error RoomInteractionProcessor::runScriptedDialogue(const Common::String
 	const NpcRecord *dialogueNpc = _engine.getScript()->findRuntimeNpcRecord(npcName);
 	if (dialogueNpc) {
 		IndexedBitmap dialogueBackdrop;
-		if (!_callbacks.captureDialogueBackdrop(dialogueBackdrop))
+		Graphics::Surface dialogueBackdropSurface;
+
+		if (!_callbacks.captureDialogueBackdrop(dialogueBackdrop, dialogueBackdropSurface))
 			return Common::kReadingFailed;
 
 		Common::Error dialogueError = _flow.runRoomNpcDialogue(
-			dialogueBackdrop, _scene.palette, _scene.targetPaletteBrightness, *dialogueNpc,
+			dialogueBackdrop, &dialogueBackdropSurface,
+			_scene.palette, _scene.targetPaletteBrightness, *dialogueNpc,
 			usedItemName);
 		if (dialogueError.getCode() != Common::kNoError)
 			return dialogueError;
