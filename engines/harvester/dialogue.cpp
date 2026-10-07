@@ -1554,7 +1554,7 @@ Common::Error DialogueSystem::runRoomNpcDialogue(
 		return Common::kNoError;
 	}
 
-	RoomNpcDialogueSession session(_engine, _mousePos, flow, backdrop, palette, paletteBrightness, npc);
+	RoomNpcDialogueSession session(_engine, _mousePos, flow, backdrop, dialogueBackdropSurface, palette, paletteBrightness, npc);
 	if (!session.isValid())
 		return Common::kReadingFailed;
 	DialogueRuntime runtime(
