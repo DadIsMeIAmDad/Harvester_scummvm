@@ -1153,7 +1153,7 @@ private:
 
 			*targetSpeakerId = headId;
 		} else {
-		    debug("HEAD PNG: %s %dx%d", headId.c_str(),
+		    debug("Harvester: unable to load dialogue head for '%s %dx%d", headId.c_str(),
 				updatedSurface.w, updatedSurface.h);
 			warning("Harvester: unable to load dialogue head for '%s'", headId.c_str());
 		}
