@@ -3763,12 +3763,30 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				drawInventoryWeekday(*activeScreen, *inventoryTooltipFont,
 					_inventory.resolveWeekdayLabel(flow._menuTextConfig));
 			}
+
 			if (inventorySelectionActive) {
 				_inventory.drawSelectedDragItem(*activeScreen, _mousePos);
-			} else if (roomCarryActive && carriedRoomItemBitmap.isValid()) {
-				const int drawX = _mousePos.x - (int)carriedRoomItemBitmap.width / 2;
-				const int drawY = _mousePos.y - (int)carriedRoomItemBitmap.height / 2;
-				blitBitmap(*activeScreen, carriedRoomItemBitmap, drawX, drawY);
+
+			} else if (roomCarryActive) {
+				if (carriedRoomItemSurface.w > 0 &&
+						carriedRoomItemSurface.h > 0) {
+
+					const int surfaceDrawX =
+						_mousePos.x - carriedRoomItemSurface.w / 2;
+					const int surfaceDrawY =
+						_mousePos.y - carriedRoomItemSurface.h / 2;
+
+					activeScreen->blitFrom(
+						carriedRoomItemSurface,
+						Common::Rect(0, 0,
+							carriedRoomItemSurface.w,
+							carriedRoomItemSurface.h),
+						Common::Point(surfaceDrawX, surfaceDrawY));
+
+				} else if (carriedRoomItemBitmap.isValid()) {
+					blitBitmap(*activeScreen, carriedRoomItemBitmap,
+						drawX, drawY);
+				}
 			}
 
 			if (showingInspectText) {
