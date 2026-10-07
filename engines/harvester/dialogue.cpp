@@ -566,8 +566,14 @@ public:
 
 		const char *keywordBitmapPath = _menuTextConfig.hasDialogueKeywordLabel()
 			? kDialogueLocalizedKeywordBitmapPath : kDialogueKeywordBitmapPath;
-		if (!loadBitmapResource(*resources, keywordBitmapPath, _keywordBitmap))
-			return;
+		if (!loadBitmapResource(*resources, keywordBitmapPath, _keywordBitmap)) {
+			warning("DIALOGUE KEYWORD BITMAP FAILED: %s", keywordBitmapPath);
+			//return;
+		}
+		debug("DIALOGUE KEYWORD BITMAP LOADED: %s %dx%d",
+				keywordBitmapPath, _keywordBitmap.width, _keywordBitmap.height);
+
+
 		debugC(2, kDebugDialogue,
 			"Harvester: dialogue keyword panel='%s' title='%s' other='%s' responses='%s'",
 			keywordBitmapPath, _menuTextConfig.dialogueKeywordLabel.c_str(),
