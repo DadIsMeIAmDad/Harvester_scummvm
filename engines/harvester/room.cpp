@@ -3378,14 +3378,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			}
 		}
 
-		debugC(1, kDebugInventory,
-			"Harvester: begin carry object='%s' path='%s' surface=%dx%d bm=%ux%u",
-			object.objectName.c_str(),
-			spritePath.c_str(),
-			carriedRoomItemSurface.w,
-			carriedRoomItemSurface.h,
-			carriedRoomItemBitmap.width,
-			carriedRoomItemBitmap.height);
+
 
 		script->setRuntimeObjectVisible(object.currentOwnerOrRoom, object.objectName, false);
 		hideSceneObject(object.objectName, nullptr);
@@ -3978,6 +3971,16 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 						needsRedraw = true;
 					break;
 				}
+
+				debugC(1, kDebugInventory,
+					"Harvester: CLICK STATE inventorySelection=%d roomCarry=%d target=%s",
+					_inventory.hasSelection() ? 1 : 0,
+					hasCarriedRoomItem() ? 1 : 0,
+					clickHoverState.object
+						? clickHoverState.object->objectName.c_str()
+						: "<none>");
+
+
 				if (hasCarriedRoomItem()) {
 					if (!stowCarriedRoomItemToInventory())
 						return Common::kReadingFailed;
@@ -4069,6 +4072,12 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							needsRedraw = true;
 							break;
 						}
+
+						debugC(1, kDebugInventory,
+							"Harvester: BEFORE INVENTORY BRANCH inventorySelection=%d roomCarry=%d",
+							_inventory.hasSelection() ? 1 : 0,
+							hasCarriedRoomItem() ? 1 : 0);
+
 
 						if (!inventoryHover->object.objectName.equalsIgnoreCase(_inventory.getSelectedItemName())) {
 							debugC(1, kDebugInventory,
