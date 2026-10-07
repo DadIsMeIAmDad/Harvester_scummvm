@@ -20,7 +20,8 @@
  */
 
 #include "harvester/dialogue.h"
-
+#include "image/png.h"
+#include "graphics/surface.h"
 #include "common/algorithm.h"
 #include "common/debug.h"
 #include "common/endian.h"
@@ -294,6 +295,31 @@ static bool loadBitmapResource(ResourceManager &resources, const Common::String 
 
 	bitmap.pixels.resize(pixelCount);
 	memcpy(bitmap.pixels.data(), data.data() + 12, pixelCount);
+	return true;
+}
+
+static bool loadDialogueHeadPngResource(ResourceManager &resources,
+		const Common::String &path,
+		Graphics::Surface &surface) {
+	Common::SeekableReadStream *stream = resources.openFile(path);
+	if (!stream)
+		return false;
+
+	Image::PNGDecoder decoder;
+	if (!decoder.loadStream(stream)) {
+		delete stream;
+		return false;
+	}
+
+	const Graphics::Surface *decoded = decoder.getSurface();
+	if (!decoded || !decoded->pixels || decoded->w <= 0 || decoded->h <= 0) {
+		delete stream;
+		return false;
+	}
+
+	surface.copyFrom(*decoded);
+
+	delete stream;
 	return true;
 }
 
@@ -1285,8 +1311,20 @@ private:
 		if (!activeScreen)
 			return;
 
-		setScaledPalette(*activeScreen, _palette, _paletteBrightness);
-		blitBitmap(*activeScreen, _backdrop, 0, 0);
+		if (_dialogueBackdropSurface) {
+			activeScreen->blitFrom(*_dialogueBackdropSurface,
+				Common::Rect(0, 0,
+					_dialogueBackdropSurface->w,
+					_dialogueBackdropSurface->h),
+				Common::Point(0, 0));
+		} else {
+			setScaledPalette(*activeScreen, _palette, _paletteBrightness);
+			blitBitmap(*activeScreen, _backdrop, 0, 0);
+		}
+
+
+
+
 		if (_leftHeadVisible && _leftHeadBitmap.isValid())
 			blitTransparentBitmap(*activeScreen, _leftHeadBitmap, kDialogueLeftHeadX, kDialogueHeadY);
 		if (_rightHeadVisible && _rightHeadBitmap.isValid())
