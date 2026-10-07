@@ -1556,7 +1556,8 @@ Common::Error DialogueSystem::runRoomNpcDialogue(
 	Script *script = _engine.getScript();
 	Text *text = _engine.getText();
 	if (!script || !text || !backdrop.isValid())
-		return Common::kReadingFailed;
+		//return Common::kReadingFailed;
+		warning("WARNING MARK BACKDROP IS INVALID");
 	if (!hasRoomNpcHandler(npc.npcName)) {
 		debugC(1, kDebugDialogue,
 			"Harvester: blocked room NPC dialogue npc='%s' reason='no handler'",
@@ -1573,7 +1574,8 @@ Common::Error DialogueSystem::runRoomNpcDialogue(
 
 	RoomNpcDialogueSession session(_engine, _mousePos, flow, backdrop, dialogueBackdropSurface, palette, paletteBrightness, npc);
 	if (!session.isValid())
-		return Common::kReadingFailed;
+		//return Common::kReadingFailed;
+		warning("WARNING MARK SESSION IS INVALID");
 	DialogueRuntime runtime(
 		_engine, *script, *text, flow, npc.roomName, session.getGenericByeTopic(), session);
 
