@@ -4089,15 +4089,49 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					clickHoverState.npc ? clickHoverState.npc->npcName.c_str() : "",
 					clickHoverState.region ? clickHoverState.region->regionName.c_str() : "",
 					clickHoverState.cursorSequence, clickHoverState.promptText.c_str());
+
+
+
+
+
 					if (hasCarriedRoomItem()) {
-					if (clickHoverState.playerEntity && playerState.entity &&
-							clickHoverState.playerEntity == playerState.entity) {
-						if (!stowCarriedRoomItemToInventory())
-							return Common::kReadingFailed;
-						needsRedraw = true;
+						if (clickHoverState.playerEntity && playerState.entity &&
+								clickHoverState.playerEntity == playerState.entity) {
+							if (!stowCarriedRoomItemToInventory())
+								return Common::kReadingFailed;
+							needsRedraw = true;
+							break;
+						}
+
+						ObjectRecord *roomTarget = clickHoverState.object
+							? findSceneObjectByName(scene.sceneObjects,
+								clickHoverState.object->objectName)
+							: nullptr;
+
+						if (roomTarget) {
+							Common::Error interactionError =
+								handleInventoryTargetInteraction(*roomTarget);
+
+							if (interactionError.getCode() != Common::kNoError)
+								return interactionError;
+
+							needsRedraw = true;
+							break;
+						}
+
+						break;
 					}
-					break;
-				}
+
+
+
+
+
+
+
+
+
+
+
 				if (_inventory.hasSelection()) {
 					const Common::String selectedItemName = _inventory.getSelectedItemName();
 					if (clickHoverState.npc) {
