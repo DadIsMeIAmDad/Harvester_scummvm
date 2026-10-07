@@ -544,11 +544,18 @@ public:
 		const bool textEnabled = textMode != kStartupDialogueTextNone &&
 			_text->resolveDialogueSubtitle(wavId, subtitleText);
 		Common::Array<Common::String> subtitleLines;
-		const IndexedBitmap *textboxBitmap = nullptr;
+		const Graphics::Surface *textboxSurface = nullptr;
+
 		if (textEnabled) {
-			wrapDialogueTextLikeNative(*_subtitleFont, _subtitleFontUsesCft,
-				subtitleText, kDialogueSubtitleTextWidth, subtitleLines);
-			textboxBitmap = _art->getTextboxBitmap(resolveDialogueTextboxIndex(subtitleLines.size()));
+			wrapDialogueTextLikeNative(
+				*_subtitleFont,
+				_subtitleFontUsesCft,
+				subtitleText,
+				kDialogueSubtitleTextWidth,
+				subtitleLines);
+
+			textboxSurface = _art->getTextboxSurface(
+				resolveDialogueTextboxIndex(subtitleLines.size()));
 		}
 
 		const Common::String voicePath = buildDialogueVoicePath(*_script, wavId);
@@ -567,7 +574,13 @@ public:
 		bool pointerInterrupted = false;
 		Graphics::FrameLimiter limiter(g_system, 60);
 		for (;;) {
-			drawDialogueOverlay(textboxBitmap, textEnabled ? &subtitleLines : nullptr, nullptr, -1, false, nullptr);
+			drawDialogueOverlay(
+				textboxSurface,
+				textEnabled ? &subtitleLines : nullptr,
+				nullptr,
+				-1,
+				false,
+				nullptr);
 
 			Common::Event event;
 			while (g_system->getEventManager()->pollEvent(event)) {
@@ -601,8 +614,13 @@ public:
 		} else if (textMode == kStartupDialogueTextClick) {
 			Graphics::FrameLimiter clickLimiter(g_system, 60);
 			for (;;) {
-				drawDialogueOverlay(textboxBitmap, textEnabled ? &subtitleLines : nullptr,
-					nullptr, -1, false, nullptr);
+				drawDialogueOverlay(
+					textboxSurface,
+					textEnabled ? &subtitleLines : nullptr,
+					nullptr,
+					-1,
+					false,
+					nullptr);
 
 				bool continuePressed = false;
 				Common::Event event;
