@@ -1445,18 +1445,20 @@ void OpenGLGraphicsManager::displayActivityIconOnOSD(const Graphics::Surface *ic
 
 void OpenGLGraphicsManager::setPalette(const byte *colors, uint start, uint num) {
 	assert(_gameScreen);
-	assert(_gameScreen->hasPalette());
+	if (!_gameScreen->hasPalette())
+		return;   // silently ignore when in true-color mode
 
 	memcpy(_gamePalette + start * 3, colors, num * 3);
 	_gameScreen->setPalette(start, num, colors);
-
-	// We might need to update the cursor palette here.
 	updateCursorPalette();
 }
 
 void OpenGLGraphicsManager::grabPalette(byte *colors, uint start, uint num) const {
 	assert(_gameScreen);
-	assert(_gameScreen->hasPalette());
+	if (!_gameScreen->hasPalette()) {
+		memset(colors, 0, num * 3);
+		return;
+	}
 
 	memcpy(colors, _gamePalette + start * 3, num * 3);
 }
