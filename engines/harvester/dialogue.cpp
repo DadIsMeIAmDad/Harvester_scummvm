@@ -567,8 +567,8 @@ public:
 		const char *keywordBitmapPath = _menuTextConfig.hasDialogueKeywordLabel()
 			? kDialogueLocalizedKeywordBitmapPath : kDialogueKeywordBitmapPath;
 
-		const Common::String keywordPngPath =
-			Common::String(keywordBitmapPath).replace(".BM", ".png");
+		Common::String keywordPngPath = keywordBitmapPath;
+		keywordPngPath.replace(".BM", ".png");
 
 		if (!loadDialogueHeadPngResource(*resources, keywordPngPath, _keywordSurface)) {
 			if (!loadBitmapResource(*resources, keywordBitmapPath, _keywordBitmap))
