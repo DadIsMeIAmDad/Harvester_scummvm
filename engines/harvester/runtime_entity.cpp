@@ -1032,26 +1032,42 @@ void Entity::draw(Graphics::Screen &screen) const {
 Common::Rect Entity::getFrameRect() const {
 	const Common::Point drawOrigin = getDrawOrigin();
 
-	if (!_pngFrames.empty()) {
+	// PNG animation frames: _pngFrames may still be full-size when depth scale
+	// is applied only at draw time. Prefer scaled bounds so hit/click rects
+	// match the drawn sprite.
+	if (!_pngFrames.empty() || !_basePngFrames.empty()) {
 		int w = _boundsWidth;
 		int h = _boundsHeight;
-		if (_currentFrame >= 0 && (uint)_currentFrame < _pngFrames.size() &&
-			_pngFrames[_currentFrame]) {
-			w = _pngFrames[_currentFrame]->w;
-			h = _pngFrames[_currentFrame]->h;
-		}
-		return Common::Rect(drawOrigin.x, drawOrigin.y,
-			drawOrigin.x + w, drawOrigin.y + h);
-	}
 
-	if (_pngSurface) {
+		if (w <= 0 || h <= 0) {
+			const Common::Array<Graphics::Surface *> &src =
+				!_basePngFrames.empty() ? _basePngFrames : _pngFrames;
+
+			if (_currentFrame >= 0 && (uint)_currentFrame < src.size() &&
+					src[_currentFrame]) {
+				w = scaleDimension(src[_currentFrame]->w, _depthScale);
+				h = scaleDimension(src[_currentFrame]->h, _depthScale);
+			}
+		}
+
 		return Common::Rect(
 			drawOrigin.x,
 			drawOrigin.y,
-			drawOrigin.x + _pngSurface->w,
-			drawOrigin.y + _pngSurface->h);
+			drawOrigin.x + w,
+			drawOrigin.y + h);
 	}
 
+	if (_pngSurface) {
+		const int w = scaleDimension(_pngSurface->w, _depthScale);
+		const int h = scaleDimension(_pngSurface->h, _depthScale);
+		return Common::Rect(
+			drawOrigin.x,
+			drawOrigin.y,
+			drawOrigin.x + w,
+			drawOrigin.y + h);
+	}
+
+	// ABM path: frames are already rebuilt at the current depth scale.
 	if (!_frames.empty() && _currentFrame >= 0 &&
 			(uint)_currentFrame < _frames.size()) {
 		const AbmFrame &frame = _frames[(uint)_currentFrame];
