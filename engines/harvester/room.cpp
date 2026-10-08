@@ -3487,8 +3487,9 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		needsRedraw = true;
 		return Common::kNoError;
 	};
-	auto findSelectedInventoryRoomTarget = [&](const Common::Point &point) -> ObjectRecord * {
-		if (!_inventory.hasSelection())
+	auto findCarryRoomTarget = [&](const Common::Point &point,
+			const Common::String &selectedItemName) -> ObjectRecord * {
+		if (selectedItemName.empty())
 			return nullptr;
 
 		EntityManager *entityManager = _engine.getRuntimeEntities();
@@ -3496,27 +3497,33 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		if (!entityManager || !script)
 			return nullptr;
 
-		const Common::String selectedItemName = _inventory.getSelectedItemName();
 		ObjectRecord *bestTarget = nullptr;
 		int bestDrawIndex = -1;
+
 		for (ObjectRecord &candidate : scene.sceneObjects) {
 			if (candidate.objectName.empty() ||
 					!script->hasUseItemInteraction(selectedItemName, candidate)) {
 				continue;
 			}
 
-			const Entity *entity = entityManager->findSceneEntityByName(candidate.objectName);
+			const Entity *entity =
+				entityManager->findSceneEntityByName(candidate.objectName);
+
 			if (!entity || !entity->hitTest(point))
 				continue;
+
 			if (entity->getClassId() == kRuntimeEntityClassBackground ||
 					entity->getClassId() == kRuntimeEntityClassPlayer ||
 					entity->getClassId() == kRuntimeEntityClassRectHotspot19) {
 				continue;
 			}
 
-			const int drawIndex = entityManager->findSceneEntityDrawIndexByName(entity->getName());
+			const int drawIndex =
+				entityManager->findSceneEntityDrawIndexByName(entity->getName());
+
 			if (drawIndex < 0)
 				continue;
+
 			if (!bestTarget || drawIndex > bestDrawIndex) {
 				bestTarget = &candidate;
 				bestDrawIndex = drawIndex;
@@ -3716,7 +3723,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				: resolveRoomHoverState(_engine, scene.state, scene.sceneObjects, scene.state.roomNpcs,
 					scene.sceneRegions, _mousePos, flow._menuTextConfig, &flow._dialogue);
 			if (!suppressHover && activeCarry && !hoverState.npc) {
-				if (ObjectRecord *selectedTarget = findSelectedInventoryRoomTarget(_mousePos))
+				const Common::String carryItemName =
+					inventorySelectionActive
+						? _inventory.getSelectedItemName()
+						: carriedRoomItemName;
+
+				if (ObjectRecord *selectedTarget =
+						findCarryRoomTarget(_mousePos, carryItemName))
 					hoverState.object = selectedTarget;
 			}
 			Common::String promptText;
@@ -4094,6 +4107,21 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				ObjectRecord *selectedRoomTarget = nullptr;
 				if (_inventory.hasSelection() && !hoverState.npc)
 					selectedRoomTarget = findSelectedInventoryRoomTarget(_mousePos);
+
+
+				ObjectRecord *selectedRoomTarget = nullptr;
+
+				if (activeCarry && !hoverState.npc) {
+					const Common::String carryItemName =
+						_inventory.hasSelection()
+							? _inventory.getSelectedItemName()
+							: carriedRoomItemName;
+
+					selectedRoomTarget =
+						findCarryRoomTarget(_mousePos, carryItemName);
+				}
+
+
 				if (selectedRoomTarget &&
 						(!hoverState.object ||
 						 !selectedRoomTarget->objectName.equalsIgnoreCase(hoverState.object->objectName))) {
@@ -4151,15 +4179,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 						break;
 					}
-
-
-
-
-
-
-
-
-
 
 
 				if (_inventory.hasSelection()) {
