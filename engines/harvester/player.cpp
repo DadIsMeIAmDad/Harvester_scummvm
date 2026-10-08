@@ -1126,7 +1126,7 @@ float Player::computeDepthScale(const RoomSetupState &state, float z) {
 	// >1 = stronger depth scaling
 	static const float kDepthScaleStrength = 1.0f;
 
-	float scale = 0.5f;
+	float scale = 0.2f;
 	if (state.roomPerspectiveScale != 0.0f) {
 		const float delta =
 			(z - (float)state.roomFullScaleZ) * state.roomPerspectiveScale;
