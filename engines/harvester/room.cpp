@@ -4157,21 +4157,40 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							break;
 						}
 
-						ObjectRecord *roomTarget = clickHoverState.object
-							? findSceneObjectByName(scene.sceneObjects,
-								clickHoverState.object->objectName)
+						// Present carried room item to NPC (same as inventory selection)
+						if (clickHoverState.npc) {
+							const Common::String selectedItemName = carriedRoomItemName;
+							bool didTransition = false;
+							Common::Error dialogueError = interactionProcessor.runScriptedDialogue(
+								clickHoverState.npc->npcName, selectedItemName, Common::String(), didTransition);
+							if (dialogueError.getCode() != Common::kNoError)
+								return dialogueError;
+							if (flow.hasPendingMainMenuReturn())
+								return Common::kNoError;
+
+
+							clearCarriedRoomItem();
+
+							if (!_inventory.refresh())
+								return Common::kReadingFailed;
+							needsRedraw = true;
+							break;
+						}
+
+							ObjectRecord *roomTarget = clickHoverState.object
+							? findSceneObjectByName(scene.sceneObjects, clickHoverState.object->objectName)
 							: nullptr;
 
 						if (roomTarget) {
 							Common::Error interactionError =
 								handleInventoryTargetInteraction(*roomTarget);
-
 							if (interactionError.getCode() != Common::kNoError)
 								return interactionError;
-
 							needsRedraw = true;
 							break;
 						}
+
+
 
 						break;
 					}
