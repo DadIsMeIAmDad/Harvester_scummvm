@@ -4114,7 +4114,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					clickHoverState.region ? clickHoverState.region->regionName.c_str() : "",
 					clickHoverState.cursorSequence, clickHoverState.promptText.c_str());
 
-
+				debugC(1, kDebugRoom,
+					"Harvester: room click room='%s' mouse=(%d,%d) object='%s' npc='%s' region='%s' cursor_sequence=%d prompt='%s'",
+					scene.state.roomName.c_str(), _mousePos.x, _mousePos.y,
+					clickHoverState.object ? clickHoverState.object->objectName.c_str() : "",
+					clickHoverState.npc ? clickHoverState.npc->npcName.c_str() : "",
+					clickHoverState.region ? clickHoverState.region->regionName.c_str() : "",
+					clickHoverState.cursorSequence, clickHoverState.promptText.c_str());
 
 
 
