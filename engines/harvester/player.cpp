@@ -1127,7 +1127,7 @@ float Player::computeDepthScale(const RoomSetupState &state, float z) {
 	// 1.0 = native script curve
 	// <1 = milder shrink when walking back
 	// >1 = stronger depth scaling
-	static const float kDepthScaleStrength = 0.5f;
+	static const float kDepthScaleStrength = 0.3f;
     // THIS IS THE SCALE IN WHICH PLAYER GROWS SHRINKS UP OR DOWN --> kDepthScaleStrength
 	
 	
