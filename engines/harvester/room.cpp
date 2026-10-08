@@ -2437,19 +2437,38 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		npc.deathOrMonsterfyFlag = true;
 		if (combatState.deathDamageType != 0)
 			npc.deathDamageType = combatState.deathDamageType;
+
+
+
 		const bool runtimeChanged = script
 			? script->finalizeRuntimeNpcDeathOrMonsterfy(
 				npc.npcName, npc.deathDamageType, false, -1, monsterfyPosZ)
 			: false;
-		debugC(1, kDebugCombat,
-			"Harvester: combat npc death complete target='%s' damage_type=%d last_frame=%d preserve_runtime_actor=%d monsterfy='%s' on_death='%s'",
-			npc.npcName.c_str(), combatState.deathDamageType, combatState.deathLastFrame,
-			retainDeathEntity, npc.monsterfyTargetName.c_str(), npc.onDeathActionTag.c_str());
+
+		// Option A: crime flags when the fight starts (monsterfy), not only when the monster dies.
+		// Arrest still happens on room exit; player can't leave mid-combat.
+		bool crimeFlagsChanged = false;
+		if (script && runtimeChanged && !npc.monsterfyTargetName.empty()) {
+			crimeFlagsChanged =
+				script->setRuntimeFlagValue("PC_KILLED_ANYONE", true) || crimeFlagsChanged;
+
+			// Optional character-specific flags if your SCR expects them at transform time:
+			// crimeFlagsChanged =
+			//     script->setRuntimeFlagValue("KILLED_JIMMY", true) || crimeFlagsChanged;
+			// crimeFlagsChanged =
+			//     script->setRuntimeFlagValue("JIMMY_M_IS_DEAD", true) || crimeFlagsChanged;
+
+			debugC(1, kDebugCombat,
+				"Harvester: combat monsterfy crime flags npc='%s' monsterfy='%s' pc_killed_anyone=1",
+				npc.npcName.c_str(), npc.monsterfyTargetName.c_str());
+		}
+
 		clearRoomNpcCombatState(combatState);
 
 		InteractionResult interaction;
-		interaction.mutatedRuntimeState = runtimeChanged;
-		interaction.visualRuntimeStateChanged = runtimeChanged;
+		interaction.mutatedRuntimeState = runtimeChanged || crimeFlagsChanged;
+		interaction.visualRuntimeStateChanged = runtimeChanged || crimeFlagsChanged;
+
 		if (script && !npc.onDeathActionTag.empty()) {
 			InteractionResult deathInteraction;
 			if (script->executeActionTag(npc.onDeathActionTag, deathInteraction, true, npc.roomName)) {
@@ -2461,6 +2480,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 		return handleCombatInteraction(interaction);
 	};
+	
+	
+	
+	
+	
+	
+	
+	
 	auto killDebugActiveMonster = [&]() -> Common::Error {
 		if (!_engine.isCombatDebugEnabled())
 			return Common::kNoError;
