@@ -4133,23 +4133,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							break;
 						}
 
-						ObjectRecord *carriedRoomTarget = clickHoverState.object
+						ObjectRecord *roomTarget = clickHoverState.object
 							? findSceneObjectByName(scene.sceneObjects,
 								clickHoverState.object->objectName)
 							: nullptr;
 
-						debugC(1, kDebugInventory,
-							"Harvester: ROOM CARRY CLICK object='%s' roomTarget='%s'",
-							clickHoverState.object
-								? clickHoverState.object->objectName.c_str()
-								: "<none>",
-							carriedRoomTarget
-								? carriedRoomTarget->objectName.c_str()
-								: "<none>");
-
-						if (carriedRoomTarget) {
+						if (roomTarget) {
 							Common::Error interactionError =
-								handleInventoryTargetInteraction(*carriedRoomTarget);
+								handleInventoryTargetInteraction(*roomTarget);
 
 							if (interactionError.getCode() != Common::kNoError)
 								return interactionError;
@@ -4157,6 +4148,9 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							needsRedraw = true;
 							break;
 						}
+
+						break;
+					}
 
 
 
