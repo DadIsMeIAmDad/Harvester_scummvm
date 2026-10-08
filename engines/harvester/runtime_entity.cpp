@@ -586,11 +586,59 @@ bool Entity::getCurrentFrameMetrics(int &width, int &height,
 }
 
 bool Entity::hasOpaqueFramesInRange(int firstFrame, int lastFrame) const {
-	const Common::Array<AbmFrame> &frames = !_baseFrames.empty() ? _baseFrames : _frames;
-	if (frames.empty() || firstFrame < 0 || lastFrame < firstFrame ||
-			(uint)lastFrame >= frames.size()) {
-		return false;
+	// PNG / ZIP path — combat attack/death banks need this; ABM-only checks
+	// always failed when _frames was empty.
+	if (!_pngFrames.empty() || !_basePngFrames.empty()) {
+		const Common::Array<Graphics::Surface *> &src =
+			!_basePngFrames.empty() ? _basePngFrames : _pngFrames;
+
+		if (firstFrame < 0 || lastFrame < firstFrame ||
+				(uint)lastFrame >= src.size())
+			return false;
+
+		for (int i = firstFrame; i <= lastFrame; ++i) {
+			const Graphics::Surface *frame = src[(uint)i];
+			if (!frame || frame->w <= 0 || frame->h <= 0)
+				return false;
+
+			bool hasOpaque = false;
+			const Graphics::PixelFormat &fmt = frame->format;
+
+			for (int y = 0; y < frame->h && !hasOpaque; ++y) {
+				for (int x = 0; x < frame->w; ++x) {
+					const uint32 pixel = frame->getPixel(x, y);
+
+					if (fmt.aBits() > 0) {
+						uint8 r, g, b, a;
+						fmt.colorToARGB(pixel, a, r, g, b);
+						if (a != 0) {
+							hasOpaque = true;
+							break;
+						}
+					} else {
+						// No alpha: any non-zero pixel counts as drawable content.
+						// (If you use a specific RGB key later, test against that instead.)
+						if (pixel != 0) {
+							hasOpaque = true;
+							break;
+						}
+					}
+				}
+			}
+
+			if (!hasOpaque)
+				return false;
+		}
+		return true;
 	}
+
+	// Classic ABM path
+	const Common::Array<AbmFrame> &frames =
+		!_baseFrames.empty() ? _baseFrames : _frames;
+
+	if (frames.empty() || firstFrame < 0 || lastFrame < firstFrame ||
+			(uint)lastFrame >= frames.size())
+		return false;
 
 	for (int frameIndex = firstFrame; frameIndex <= lastFrame; ++frameIndex) {
 		const AbmFrame &frame = frames[(uint)frameIndex];
@@ -604,10 +652,8 @@ bool Entity::hasOpaqueFramesInRange(int firstFrame, int lastFrame) const {
 		if (!hasOpaquePixel)
 			return false;
 	}
-
 	return true;
 }
-
 void Entity::freePngFrames() {
 	for (Graphics::Surface *s : _pngFrames) {
 		if (s) {
