@@ -4133,7 +4133,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							break;
 						}
 
-						ObjectRecord *roomTarget = clickHoverState.object
+						ObjectRecord *carriedRoomTarget = clickHoverState.object
 							? findSceneObjectByName(scene.sceneObjects,
 								clickHoverState.object->objectName)
 							: nullptr;
@@ -4143,13 +4143,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							clickHoverState.object
 								? clickHoverState.object->objectName.c_str()
 								: "<none>",
-								roomTarget
-								? roomTarget->objectName.c_str()
+							carriedRoomTarget
+								? carriedRoomTarget->objectName.c_str()
 								: "<none>");
 
-						if (roomTarget) {
+						if (carriedRoomTarget) {
 							Common::Error interactionError =
-								handleInventoryTargetInteraction(*roomTarget);
+								handleInventoryTargetInteraction(*carriedRoomTarget);
 
 							if (interactionError.getCode() != Common::kNoError)
 								return interactionError;
