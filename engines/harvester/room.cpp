@@ -4117,8 +4117,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					_engine, scene.state, scene.sceneObjects, scene.state.roomNpcs, scene.sceneRegions,
 					_mousePos, flow._menuTextConfig, &flow._dialogue);
 				ObjectRecord *selectedRoomTarget = nullptr;
-				if (_inventory.hasSelection() && !hoverState.npc)
-					selectedRoomTarget = findSelectedInventoryRoomTarget(_mousePos);
+
 				if (selectedRoomTarget &&
 						(!hoverState.object ||
 						 !selectedRoomTarget->objectName.equalsIgnoreCase(hoverState.object->objectName))) {
