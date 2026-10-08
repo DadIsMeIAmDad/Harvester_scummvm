@@ -4160,6 +4160,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 						// Present carried room item to NPC (same as inventory selection)
 						if (clickHoverState.npc) {
 							const Common::String selectedItemName = carriedRoomItemName;
+
 							bool didTransition = false;
 							Common::Error dialogueError = interactionProcessor.runScriptedDialogue(
 								clickHoverState.npc->npcName, selectedItemName, Common::String(), didTransition);
@@ -4168,11 +4169,10 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							if (flow.hasPendingMainMenuReturn())
 								return Common::kNoError;
 
-
-							clearCarriedRoomItem();
-
-							if (!_inventory.refresh())
+							// Put it back in inventory (same end state as inventory-window path)
+							if (!stowCarriedRoomItemToInventory())
 								return Common::kReadingFailed;
+
 							needsRedraw = true;
 							break;
 						}
