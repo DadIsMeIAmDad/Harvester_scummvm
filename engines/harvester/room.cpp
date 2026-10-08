@@ -4107,21 +4107,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				ObjectRecord *selectedRoomTarget = nullptr;
 				if (_inventory.hasSelection() && !hoverState.npc)
 					selectedRoomTarget = findSelectedInventoryRoomTarget(_mousePos);
-
-
-				ObjectRecord *selectedRoomTarget = nullptr;
-
-				if (activeCarry && !hoverState.npc) {
-					const Common::String carryItemName =
-						_inventory.hasSelection()
-							? _inventory.getSelectedItemName()
-							: carriedRoomItemName;
-
-					selectedRoomTarget =
-						findCarryRoomTarget(_mousePos, carryItemName);
-				}
-
-
 				if (selectedRoomTarget &&
 						(!hoverState.object ||
 						 !selectedRoomTarget->objectName.equalsIgnoreCase(hoverState.object->objectName))) {
