@@ -509,7 +509,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		if (entityManager) {
 			for (const MonsterRecord &monster : scene.state.roomMonsters) {
 				Entity *entity = entityManager->findSceneEntityByName(monster.monsterName);
-				if (entity)
+				if (entity && monster.currentHitPoints > 0)
 					Monster::applyAnimation(*entity, monster);
 			}
 			entityManager->pauseTimerCountdowns();
