@@ -506,12 +506,9 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			);
 			return Common::kReadingFailed;
 		}
-		
 		if (entityManager) {
 			for (const MonsterRecord &monster : scene.state.roomMonsters) {
 				Entity *entity = entityManager->findSceneEntityByName(monster.monsterName);
-				
-
 				if (entity)
 					Monster::applyAnimation(*entity, monster);
 			}
@@ -927,18 +924,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				(float)npc.posZ - floorf(MAX<float>(entity.getZExtent(), 0.0f) * 0.5f);
 			entity.setAnchorMode(kRuntimeEntityAnchorTopLeft);
 			entity.setPosition(npc.posX - xOffset - width / 2, npc.posY - height - yOffset, renderZ);
-
-
-			if (currentRoomTarget == "PCHOUSE") {
-				for (MonsterRecord &monster : scene.state.roomMonsters) {
-					if (!monster.active &&
-							monster.currentHitPoints <= 0 &&
-							monster.runtimeSpawned &&
-							monster.runtimeState >= 0) {
-						monster.visible = false;
-					}
-				}
-			}
 			return true;
 		};
 		auto spawnSceneNpcEntityFromRecord = [&](const NpcRecord &npc) -> Entity * {
