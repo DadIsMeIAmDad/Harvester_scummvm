@@ -3451,6 +3451,18 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				"Harvester: inventory target miss selected='%s' target='%s' owner='%s' action='%s'",
 				selectedItemName.c_str(), target.objectName.c_str(),
 				target.currentOwnerOrRoom.c_str(), target.actionTag.c_str());
+
+			static const char *const kUseItemFailSounds[] = {
+				"2:/SOUND/RESPONSE/BAD1.WAV",   // replace with real native paths
+				"2:/SOUND/RESPONSE/BAD2.WAV",
+				"2:/SOUND/RESPONSE/BAD3.WAV",
+				"2:/SOUND/RESPONSE/BAD4.WAV",
+			};
+			const uint count = ARRAYSIZE(kUseItemFailSounds);
+			const uint index = _engine.getRandomNumber(count - 1);
+			(void)_engine.playSound(kUseItemFailSounds[index]);
+
+			needsRedraw = true;  // optional; keeps prompt/cursor in sync
 			return Common::kNoError;
 		}
 
