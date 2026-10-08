@@ -2991,8 +2991,12 @@ void Script::executeCommandChain(const Common::String &initialTag, const char *c
 		if (command->opcodeName.equalsIgnoreCase("SET_REGION")) {
 			RegionRecord *currentRegion = findRuntimeRegion(command->arg1);
 			if (!currentRegion) {
-				debug(1, "Harvester: unresolved region for %s '%s' region='%s'",
-					contextLabel, contextName.c_str(), command->arg1.c_str());
+				warning(
+					"SET_REGION FAILED: context='%s' name='%s' region='%s'",
+					contextLabel,
+					contextName.c_str(),
+					command->arg1.c_str());
+
 				currentTag = command->arg4;
 				continue;
 			}
