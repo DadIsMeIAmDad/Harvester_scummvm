@@ -1121,12 +1121,18 @@ static bool finishPlayerIdleAnimation(const RoomSetupState &state, RoomPlayerSta
 } // End of anonymous namespace
 
 float Player::computeDepthScale(const RoomSetupState &state, float z) {
+
+
+
 	// 1.0 = native script curve
 	// <1 = milder shrink when walking back
 	// >1 = stronger depth scaling
-	static const float kDepthScaleStrength = 1.0f;
-
-	float scale = 0.2f;
+	static const float kDepthScaleStrength = 0.5f;
+    // THIS IS THE SCALE IN WHICH PLAYER GROWS SHRINKS UP OR DOWN --> kDepthScaleStrength
+	
+	
+	// LEAVE THIS ALONE vvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	float scale = 1.0f;
 	if (state.roomPerspectiveScale != 0.0f) {
 		const float delta =
 			(z - (float)state.roomFullScaleZ) * state.roomPerspectiveScale;
