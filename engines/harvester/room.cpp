@@ -839,13 +839,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			return npc.visible && !npc.deathOrMonsterfyFlag;
 		};
 		auto shouldSpawnRoomMonsterEntity = [](const MonsterRecord &monster) {
-			if (!monster.active &&
-					monster.currentHitPoints <= 0 &&
-					monster.runtimeSpawned &&
-					monster.runtimeState >= 0) {
-				return false;
-			}
-
 			return monster.visible;
 		};
 		auto sameNpcEntityState = [&](const NpcRecord &lhs, const NpcRecord &rhs) {
