@@ -4138,6 +4138,15 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 								clickHoverState.object->objectName)
 							: nullptr;
 
+						debugC(1, kDebugInventory,
+							"Harvester: ROOM CARRY CLICK object='%s' roomTarget='%s'",
+							clickHoverState.object
+								? clickHoverState.object->objectName.c_str()
+								: "<none>",
+								roomTarget
+								? roomTarget->objectName.c_str()
+								: "<none>");
+
 						if (roomTarget) {
 							Common::Error interactionError =
 								handleInventoryTargetInteraction(*roomTarget);
@@ -4148,9 +4157,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							needsRedraw = true;
 							break;
 						}
-
-						break;
-					}
 
 
 
