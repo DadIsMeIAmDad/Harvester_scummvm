@@ -977,12 +977,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			entity->setHitTestMode(kRuntimeEntityHitTestNone);
 			entity->setVisible(monster.visible);
 			Monster::applyAnimation(*entity, monster);
-
-			// Hide dead monsters when their room entity is spawned.
-			if (monster.currentHitPoints < 1)
-				entity->setVisible(false);
-
-
 			if (!applyRoomActorPlacement(roomState, *entity, monster.posX, monster.posY, (float)monster.posZ)) {
 				removeSceneEntityByName(monster.monsterName);
 				return nullptr;
