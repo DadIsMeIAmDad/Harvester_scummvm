@@ -1531,7 +1531,7 @@ Common::Error MenuSystem::runRoomMenuStub(
 				paletteBrightness,
 				flow);
 			warning("HARVESTER OPTIONS CALLER: AFTER runOptionsMenu, error=%d",
-			if (optionsError.getCode() != Common::kNoError)
+			if (optionsError.getCode() != Common::kNoError) {
 				return RoomMenuActivationResult(optionsError, false);
 			needsRedraw = true;
 			return RoomMenuActivationResult(Common::kNoError, false);
