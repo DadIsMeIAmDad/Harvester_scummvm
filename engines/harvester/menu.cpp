@@ -1091,19 +1091,22 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			return false;
 		}
 
+
 		if (screen->format.bytesPerPixel != 1) {
-			if (!_mainMenuBackdropSurface)
-				_mainMenuBackdropSurface = new Graphics::Surface();
+			if (!_mainMenuBackdropSurface ||
+				!_mainMenuBackdropSurface->getPixels()) {
+				warning("HARVESTER: clean HD menu backdrop is unavailable");
+				return false;
+			}
 
-			_mainMenuBackdropSurface->copyFrom(*screen);
-
-			warning("HARVESTER: captured HD menu backdrop %dx%d bpp=%u",
+			warning("HARVESTER: reusing clean HD menu backdrop %dx%d bpp=%u",
 				_mainMenuBackdropSurface->w,
 				_mainMenuBackdropSurface->h,
 				_mainMenuBackdropSurface->format.bytesPerPixel);
 
 			return true;
 		}
+
 
 		if (_hasMainMenuBackdrop) {
 			renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f,
