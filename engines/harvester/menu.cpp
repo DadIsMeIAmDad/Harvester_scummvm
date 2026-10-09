@@ -2389,11 +2389,11 @@ Common::Error MenuSystem::runOptionsMenu(
 	Graphics::Surface *indicatorSurface = nullptr;
 
 	if (!loadPngAsMenuSurface(*resources, kOptionsVolumeBitmapPath, volumeBarSurface)) {
-		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/VOLUME.BM", volumeBar))
+		if (!loadBitmapResource(*resources, "4:/GRAPHIC/OTHER/VOLUME.png", volumeBar))
 			return Common::kReadingFailed;
 	}
 	if (!loadPngAsMenuSurface(*resources, kOptionsIndicatorBitmapPath, indicatorSurface)) {
-		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/INDICATR.BM", indicator)) {
+		if (!loadBitmapResource(*resources, "4:/GRAPHIC/OTHER/INDICATR.png", indicator)) {
 			if (volumeBarSurface) {
 				volumeBarSurface->free();
 				delete volumeBarSurface;
