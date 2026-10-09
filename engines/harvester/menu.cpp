@@ -1067,7 +1067,6 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		_engine.canSaveGameStateCurrently(),
 		_engine.canLoadGameStateCurrently(),
 		mainMenuItems);
-	int returnedGameOverSelection = -1;
 	if (flow.takePendingGameOverReturn()) {
 		warning("HARVESTER: BEFORE pending game-over check");
 		Common::Error gameOverError = showGameOverBackdrop(flow, returnedGameOverSelection);
@@ -2486,33 +2485,18 @@ Common::Error MenuSystem::runOptionsMenu(
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!_engine.shouldQuit()) {
-		if (returnedGameOverSelection != -1) {
-			selectedItem = returnedGameOverSelection;
-			returnedGameOverSelection = -1;
-
-			needsRedraw = true;
-
-			Common::Error activateError = activateSelectedItem();
-			if (activateError.getCode() != Common::kNoError)
-				return activateError;
-
-			continue;
-		}
-
 		if (needsRedraw) {
-			if (_hasMainMenuBackdrop)
-				renderBackdropMenuScreen(
-					_mainMenuBackdrop,
-					_mainMenuBackdropPalette,
-					1.0f,
-					mainMenuItems,
-					selectedItem);
-			else
-				renderMainMenuStub(
-					mainMenuItems,
-					selectedItem,
-					statusMessage);
-
+			if (showingQuickTips) {
+				renderQuickTipsOverlay(_engine,
+					backdrop,
+					backdropSurface,   // same one passed into runOptionsMenu
+					palette, paletteBrightness,
+					config, quickTipsLayout, flow._quickTips[quickTipIndex]);
+			} else {
+				renderOptionsMenuScreen(_engine, backdrop, backdropSurface, palette, paletteBrightness,
+					selectedFont, unselectedFont, *art, config,
+					volumeBar, volumeBarSurface, indicator, indicatorSurface, selectedItem);
+			}
 			needsRedraw = false;
 		}
 
