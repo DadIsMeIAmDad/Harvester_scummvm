@@ -884,14 +884,17 @@ static void renderConfirmPromptScreen(HarvesterEngine &engine,
 
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
 
-	if (backdropSurface) {
+	if (backdropSurface && backdropSurface->getPixels()) {
+		const int copyWidth = MIN(screen->w, backdropSurface->w);
+		const int copyHeight = MIN(screen->h, backdropSurface->h);
+
 		screen->copyRectToSurface(
 			backdropSurface->getPixels(),
 			backdropSurface->pitch,
 			0,
 			0,
-			backdropSurface->w,
-			backdropSurface->h
+			copyWidth,
+			copyHeight
 		);
 	} else if (backdrop.isValid()) {
 		blitBitmap(*screen, backdrop, 0, 0);
@@ -1159,7 +1162,7 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			bool confirmed = false;
 			Common::Error confirmError = runConfirmPrompt(
 				menuBackdrop,
-				nullptr,
+				_mainMenuBackdropSurface,
 				menuPalette,
 				1.0f,
 				flow,
