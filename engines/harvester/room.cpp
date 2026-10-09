@@ -3026,8 +3026,8 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				if (entity->getCurrentFrame() == combatState.deathLastFrame) {
 					combatState.deathActive = false;
 					monster.active = false;
-					monster.visible = true;
-					monster.runtimeSpawned = false;
+					monster.visible = false;
+					monster.runtimeSpawned = true;
 					monster.runtimeState = entity->getCurrentFrame();
 					entity->setAnimationRate(0);
 					entity->setAnimationFrameRange(monster.runtimeState, monster.runtimeState, false);
