@@ -1066,7 +1066,6 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		_engine.canSaveGameStateCurrently(),
 		_engine.canLoadGameStateCurrently(),
 		mainMenuItems);
-	
 	if (flow.takePendingGameOverReturn()) {
 		warning("HARVESTER: BEFORE pending game-over check");
 		Common::Error gameOverError = showGameOverBackdrop(flow);
@@ -1323,51 +1322,69 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	return Common::kNoError;
 }
 
-
-
-Common::Error MenuSystem::showGameOverBackdrop(Flow &flow, int &returnedSelection) {
-	returnedSelection = -1;
-
+Common::Error MenuSystem::showGameOverBackdrop(Flow &flow) {
 	ResourceManager *resources = _engine.getResources();
 	Graphics::Screen *screen = _engine.getScreen();
 	if (!resources || !screen)
 		return Common::kReadingFailed;
 
 	IndexedBitmap backdrop;
-	Graphics::Surface *backdropSurface = nullptr;
-	byte palette[256 * 3] = {};
-
-	const bool loadedPng =
-		loadPngAsMenuSurface(*resources, kGameOverBitmapPath, backdropSurface);
-
-	if (!loadedPng) {
-		if (!loadBitmapResource(*resources, kGameOverBitmapPath, backdrop) ||
-				!loadPaletteResource(*resources, kGameOverPalettePath, palette)) {
-			return Common::kReadingFailed;
-		}
+	byte palette[256 * 3];
+	if (!loadBitmapResource(*resources, kGameOverBitmapPath, backdrop) ||
+			!loadPaletteResource(*resources, kGameOverPalettePath, palette)) {
+		return Common::kReadingFailed;
 	}
 
+	_mainMenuBackdrop = Common::move(backdrop);
+	memcpy(_mainMenuBackdropPalette, palette, sizeof(_mainMenuBackdropPalette));
+	_hasMainMenuBackdrop = true;
 	flow.resetCursorAnimationSequence();
 	(void)_engine.playMusic(kGameOverMusicPath);
 
-	Common::Error result = runRoomMenuStub(
-		backdrop,
-		backdropSurface,
-		palette,
-		1.0f,
-		flow,
-		false,
-		true,
-		&returnedSelection);
+	bool needsRedraw = true;
+	Graphics::FrameLimiter limiter(g_system, 60);
+	while (!_engine.shouldQuit()) {
+		if (needsRedraw) {
+			applyMenuPalette(*screen, _engine, _mainMenuBackdropPalette, 1.0f);
+			screen->fillRect(screen->getBounds(), 0);
+			blitBitmap(*screen, _mainMenuBackdrop, 0, 0);
+			if (_engine.getRuntimeEntities())
+				_engine.getRuntimeEntities()->drawCursor(*screen);
+			screen->makeAllDirty();
+			screen->update();
+			needsRedraw = false;
+		}
 
-	if (backdropSurface) {
-		backdropSurface->free();
-		delete backdropSurface;
+		Common::Event event;
+		while (g_system->getEventManager()->pollEvent(event)) {
+			Common::Error result = Common::kNoError;
+			if (flow.handleSystemEvent(event, result))
+				return result;
+
+			switch (event.type) {
+			case Common::EVENT_MOUSEMOVE:
+				needsRedraw = true;
+				break;
+			case Common::EVENT_LBUTTONDOWN:
+			case Common::EVENT_RBUTTONDOWN:
+			case Common::EVENT_KEYDOWN:
+				return Common::kNoError;
+			default:
+				break;
+			}
+		}
+
+		if (EntityManager *entityManager = _engine.getRuntimeEntities()) {
+			if (entityManager->syncCursorEntityPosition(_mousePos))
+				needsRedraw = true;
+		}
+
+		limiter.delayBeforeSwap();
+		limiter.startFrame();
 	}
 
-	return result;
+	return Common::kNoError;
 }
-
 
 void MenuSystem::clearMainMenuBackdrop() {
 	_mainMenuBackdrop = IndexedBitmap();
@@ -1376,14 +1393,12 @@ void MenuSystem::clearMainMenuBackdrop() {
 }
 
 Common::Error MenuSystem::runRoomMenuStub(
-    const IndexedBitmap &backdrop,
-    const Graphics::Surface *backdropSurface,
-    const byte *palette,
-    float paletteBrightness,
-    Flow &flow,
-    bool canSaveGame,
-    bool disableEscape,
-    int *returnedSelection) {
+	const IndexedBitmap &backdrop,
+	const Graphics::Surface *backdropSurface,
+	const byte *palette,
+	float paletteBrightness,
+	Flow &flow,
+	bool canSaveGame) {
 	Graphics::FrameLimiter limiter(g_system, 60);
 	if (backdropSurface) {
 		if (!_mainMenuBackdropSurface)
@@ -1414,16 +1429,6 @@ Common::Error MenuSystem::runRoomMenuStub(
 	auto activateSelectedItem = [&]() -> RoomMenuActivationResult {
 		if (selectedItem < 0 || selectedItem >= (int)roomMenuItems.size())
 			return RoomMenuActivationResult(Common::kNoError, false);
-
-
-
-		if (disableEscape && returnedSelection &&
-				(selectedItem == kMainMenuItemNewGame ||
-				selectedItem == kMainMenuItemLoadGame)) {
-			*returnedSelection = selectedItem;
-			return RoomMenuActivationResult(Common::kNoError, true);
-		}
-
 
 		const Common::String &item = roomMenuItems[selectedItem];
 		if (item.empty() || item == kBlankMenuSlot)
@@ -1536,8 +1541,6 @@ Common::Error MenuSystem::runRoomMenuStub(
 			}
 			case Common::EVENT_KEYDOWN:
 				if (event.kbd.keycode == Common::KEYCODE_ESCAPE)
-					if (disableEscape)
-						break;
 					return Common::kNoError;
 
 				if (roomMenuItems.empty())

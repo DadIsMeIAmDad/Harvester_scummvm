@@ -95,9 +95,7 @@ public:
 		const byte *palette,
 		float paletteBrightness,
 		Flow &flow,
-		bool canSaveGame,
-		bool disableEscape = false);
-		
+		bool canSaveGame);
 	Common::Error validateParentalPassword(Flow &flow);
 
 private:
