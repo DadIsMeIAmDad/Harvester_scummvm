@@ -1052,7 +1052,6 @@ MenuSystem::MenuSystem(HarvesterEngine &engine, Common::Point &mousePos,
 }
 
 Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
-	int returnedGameOverSelection = -1;
     warning("HARVESTER: ENTER runMainMenuStub");
 	const Art *art = _engine.getArt();
 	if (!art) {
@@ -1067,9 +1066,10 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		_engine.canSaveGameStateCurrently(),
 		_engine.canLoadGameStateCurrently(),
 		mainMenuItems);
+
 	if (flow.takePendingGameOverReturn()) {
 		warning("HARVESTER: BEFORE pending game-over check");
-		Common::Error gameOverError = showGameOverBackdrop(flow, returnedGameOverSelection);
+		Common::Error gameOverError = showGameOverBackdrop(flow);
 		if (gameOverError.getCode() != Common::kNoError)
 			return gameOverError;
 	} else {
@@ -1130,7 +1130,7 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		needsRedraw = true;
 		(void)flow.takePendingMainMenuReturn();
 		if (flow.takePendingGameOverReturn()) {
-			Common::Error gameOverError = showGameOverBackdrop(flow, returnedGameOverSelection);
+			Common::Error gameOverError = showGameOverBackdrop(flow);
 			if (gameOverError.getCode() != Common::kNoError)
 				return gameOverError;
 		} else {
@@ -2481,7 +2481,6 @@ Common::Error MenuSystem::runOptionsMenu(
 
 		return Common::kNoError;
 	};
-
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!_engine.shouldQuit()) {
