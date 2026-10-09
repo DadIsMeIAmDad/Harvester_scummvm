@@ -4748,20 +4748,16 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		return Common::kNoError;
 
 
-	// Prevent leaving the room while a monster fight is active.
-	
-	pendingRoomChange.clear();
-	pendingRoomChangeIsRoomName = false;
-	pendingRoomChangeUsesSavedRoomState = false;
-	
-
-
-
 	if (pendingRoomChange.equals(kExitCloseupPendingRoomChange)) {
 		flow.requestCloseupParentRestart();
 		return Common::kNoError;
 	}
 	
+	// Prevent leaving the room while a monster fight is active.
+	
+	pendingRoomChange.clear();
+	pendingRoomChangeIsRoomName = false;
+	pendingRoomChangeUsesSavedRoomState = false;
 	
 
 	currentRoomTarget = pendingRoomChange;
