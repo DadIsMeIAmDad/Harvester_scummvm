@@ -1234,7 +1234,7 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 
 			Common::Error quitError = runQuitGameConfirm(
 				menuBackdrop,
-				nullptr,
+				_mainMenuBackdropSurface,
 				menuPalette,
 				1.0f,
 				flow);
