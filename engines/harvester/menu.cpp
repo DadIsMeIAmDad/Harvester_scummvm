@@ -1371,12 +1371,13 @@ void MenuSystem::clearMainMenuBackdrop() {
 }
 
 Common::Error MenuSystem::runRoomMenuStub(
-	const IndexedBitmap &backdrop,
-	const Graphics::Surface *backdropSurface,
-	const byte *palette,
-	float paletteBrightness,
-	Flow &flow,
-	bool canSaveGame) {
+    const IndexedBitmap &backdrop,
+    const Graphics::Surface *backdropSurface,
+    const byte *palette,
+    float paletteBrightness,
+    Flow &flow,
+    bool canSaveGame,
+    bool disableEscape) {
 	Graphics::FrameLimiter limiter(g_system, 60);
 	if (backdropSurface) {
 		if (!_mainMenuBackdropSurface)
