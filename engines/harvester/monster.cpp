@@ -71,7 +71,6 @@ void Monster::applyAnimation(Entity &entity, const MonsterRecord &monster) {
 		entity.setVisible(false);
 	}
 
-	entity.setVisible(monster.visible);
 	if (!monster.visible)
 		return;
 
