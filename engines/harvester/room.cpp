@@ -506,6 +506,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			);
 			return Common::kReadingFailed;
 		}
+		flow.resetCursorAnimationSequence();
 		if (entityManager) {
 			for (const MonsterRecord &monster : scene.state.roomMonsters) {
 				Entity *entity = entityManager->findSceneEntityByName(monster.monsterName);
@@ -515,7 +516,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			entityManager->pauseTimerCountdowns();
 		}
 
-		flow.resetCursorAnimationSequence();
+		
 		flow.executeStartupAudioCommands(scene.state.audioCommands);
 		if (!scene.state.musicPath.empty())
 			(void)_engine.playMusic(scene.state.musicPath);
