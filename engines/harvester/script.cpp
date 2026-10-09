@@ -1471,19 +1471,20 @@ void Script::resetRuntimeState() {
 	}
 
 	for (MonsterRecord &monster : _currentMonsters) {
-		monster.currentHitPoints = monster.initialHitPoints;
-		monster.runtimeSpawned = false;
-		monster.runtimeState = -1;
-		
-		if (monster.currentHitPoints < 1) {
-			warning("MONSTER IS DEAD");
+		// Do NOT reset HP here if you want the kill to stick
+		if (monster.currentHitPoints < 1 || !monster.active) {
+			// Dead or inactive ? force it out of the room
+			monster.active = false;
+			monster.visible = false;
 			monster.savedVisible = false;
+			monster.runtimeSpawned = false;
+			monster.runtimeState = -1;
+			// optional: leave currentHitPoints at 0
 		} else {
+			// Still alive
 			monster.savedVisible = monster.visible;
-		}
-		
-		if (monster.active && monster.currentHitPoints > 0) {
-			monster.visible = true;
+			// only force visible if you really want every living monster shown
+			// monster.visible = true;
 		}
 	}
 
