@@ -3289,6 +3289,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				continue;
 			}
 			combatState.attackActive = true;
+			pendingRegionName.clear();
 			combatState.attackFirstFrame = range.firstFrame;
 			combatState.attackLastFrame = range.lastFrame;
 			combatState.attackContactFrame =
