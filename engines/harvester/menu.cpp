@@ -1214,7 +1214,6 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			if (!captureMenuBackdrop(menuBackdrop))
 				warning("Background Skipped In Options");
 				return Common::kReadingFailed;
-			warning("HARVESTER OPTIONS CALLER: BEFORE runOptionsMenu 1");
 			Common::Error optionsError = runOptionsMenu(
 				menuBackdrop,
 				_mainMenuBackdropSurface,   // may be nullptr in 8-bit mode — OK
@@ -1222,8 +1221,6 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 				1.0f,
 				flow);
 			needsRedraw = true;
-			warning("HARVESTER OPTIONS CALLER: AFTER runOptionsMenu 1, error=%d",
-				optionsError.getCode());
 			return optionsError;
 		}
 
@@ -1523,15 +1520,13 @@ Common::Error MenuSystem::runRoomMenuStub(
 		}
 
 		if (selectedItem == kMainMenuItemOptions) {
-			warning("HARVESTER OPTIONS CALLER: BEFORE runOptionsMenu");
 			Common::Error optionsError = runOptionsMenu(
 				backdrop,
 				backdropSurface,   // pass the room menu's surface through
 				palette,
 				paletteBrightness,
 				flow);
-			warning("HARVESTER OPTIONS CALLER: AFTER runOptionsMenu, error=%d",
-			if (optionsError.getCode() != Common::kNoError) {
+			if (optionsError.getCode() != Common::kNoError)
 				return RoomMenuActivationResult(optionsError, false);
 			needsRedraw = true;
 			return RoomMenuActivationResult(Common::kNoError, false);
@@ -2379,16 +2374,15 @@ Common::Error MenuSystem::runOptionsMenu(
 		const byte *palette,
 		float paletteBrightness,
 		Flow &flow) {
-	warning("HARVESTER OPTIONS: ENTER runOptionsMenu");
 	const Art *art = _engine.getArt();
 	Script *script = _engine.getScript();
 	ResourceManager *resources = _engine.getResources();
 	const CftFontResource *selectedFontResource = findStartupFontByName(_engine, "HARVFONT");
 	const CftFontResource *unselectedFontResource = findStartupFontByName(_engine, "HARVFNT2");
-	if (!art || !script || !resources || !selectedFontResource || !unselectedFontResource) {
+	if (!art || !script || !resources || !selectedFontResource || !unselectedFontResource)
 		warning("HARVESTER OPTIONS: FIRST OPTION FAILED");
 		return Common::kReadingFailed;
-	}
+
 	HarvesterCftFont selectedFont(*selectedFontResource);
 	HarvesterCftFont unselectedFont(*unselectedFontResource);
 	if (!selectedFont.isValid() || !unselectedFont.isValid())
