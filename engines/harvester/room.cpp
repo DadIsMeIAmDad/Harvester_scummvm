@@ -4753,7 +4753,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 	pendingRoomChange.clear();
 	pendingRoomChangeIsRoomName = false;
 	pendingRoomChangeUsesSavedRoomState = false;
-	return;
 	
 
 
