@@ -981,13 +981,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				removeSceneEntityByName(monster.monsterName);
 				return nullptr;
 			}
-			
-			
-			if (monster.currentHitPoints <= 0) {
-				entity->setPosition(monster.posX, -100, (float)monster.posZ);
-			}
-			
-			
 			entityManager->reinsertSceneEntity(entity);
 			return entity;
 		};
