@@ -2389,18 +2389,30 @@ Common::Error MenuSystem::runOptionsMenu(
 	Graphics::Surface *indicatorSurface = nullptr;
 
 	if (!loadPngAsMenuSurface(*resources, kOptionsVolumeBitmapPath, volumeBarSurface)) {
-		if (!loadBitmapResource(*resources, "4:/GRAPHIC/OTHER/VOLUME.png", volumeBar))
+		warning("HARVESTER: Options volume PNG failed; trying original VOLUME.BM");
+		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/VOLUME.BM", volumeBar)) {
+			warning("HARVESTER: Options VOLUME.BM failed to load");
 			return Common::kReadingFailed;
+		}
+	} else {
+		warning("HARVESTER: Options volume PNG loaded");
 	}
+
 	if (!loadPngAsMenuSurface(*resources, kOptionsIndicatorBitmapPath, indicatorSurface)) {
-		if (!loadBitmapResource(*resources, "4:/GRAPHIC/OTHER/INDICATR.png", indicator)) {
+		warning("HARVESTER: Options indicator PNG failed; trying original INDICATR.BM");
+		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/INDICATR.BM", indicator)) {
+			warning("HARVESTER: Options INDICATR.BM failed to load");
 			if (volumeBarSurface) {
 				volumeBarSurface->free();
 				delete volumeBarSurface;
 			}
 			return Common::kReadingFailed;
 		}
+	} else {
+		warning("HARVESTER: Options indicator PNG loaded");
 	}
+
+
 
 	const int lineHeight = getNativeRoomMenuLineHeight(selectedFont);
 	int selectedItem = 0;
