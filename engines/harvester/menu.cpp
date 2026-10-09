@@ -2369,6 +2369,7 @@ Common::Error MenuSystem::validateParentalPassword(Flow &flow) {
 }
 
 Common::Error MenuSystem::runOptionsMenu(
+		warning("HARVESTER OPTIONS: ENTER runOptionsMenu");
 		const IndexedBitmap &backdrop,
 		const Graphics::Surface *backdropSurface,
 		const byte *palette,
@@ -2380,11 +2381,13 @@ Common::Error MenuSystem::runOptionsMenu(
 	const CftFontResource *selectedFontResource = findStartupFontByName(_engine, "HARVFONT");
 	const CftFontResource *unselectedFontResource = findStartupFontByName(_engine, "HARVFNT2");
 	if (!art || !script || !resources || !selectedFontResource || !unselectedFontResource)
+		warning("HARVESTER OPTIONS: FIRST OPTION FAILED");
 		return Common::kReadingFailed;
 
 	HarvesterCftFont selectedFont(*selectedFontResource);
 	HarvesterCftFont unselectedFont(*unselectedFontResource);
 	if (!selectedFont.isValid() || !unselectedFont.isValid())
+		warning("HARVESTER OPTIONS: Second OPTION FAILED");
 		return Common::kReadingFailed;
 
 	const MenuTextConfig &config = flow._menuTextConfig;
@@ -2412,6 +2415,7 @@ Common::Error MenuSystem::runOptionsMenu(
 				volumeBarSurface->free();
 				delete volumeBarSurface;
 			}
+			warning("HARVESTER OPTIONS: THIRD OPTION FAILED");
 			return Common::kReadingFailed;
 		}
 	} else {
@@ -2540,6 +2544,7 @@ Common::Error MenuSystem::runOptionsMenu(
 		case 5:
 			if (!flow._quickTips.empty()) {
 				if (!resolveQuickTipsLayout(_engine, config, quickTipsLayout))
+					warning("HARVESTER OPTIONS: FORTH OPTION FAILED");
 					return Common::kReadingFailed;
 				showingQuickTips = true;
 				needsRedraw = true;
@@ -2593,6 +2598,7 @@ Common::Error MenuSystem::runOptionsMenu(
 					} else if (quickTipsLayout.toggleRect.contains(_mousePos)) {
 						script->setQuickTipsEnabled(!script->isQuickTipsEnabled());
 						if (!resolveQuickTipsLayout(_engine, config, quickTipsLayout))
+							warning("HARVESTER OPTIONS: Fifth OPTION FAILED");
 							return Common::kReadingFailed;
 						persistConfig();
 						needsRedraw = true;
