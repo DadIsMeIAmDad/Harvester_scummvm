@@ -1323,7 +1323,10 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 }
 
 
-Common::Error MenuSystem::showGameOverBackdrop(Flow &flow) {
+
+Common::Error MenuSystem::showGameOverBackdrop(Flow &flow, int &returnedSelection) {
+	returnedSelection = -1;
+
 	ResourceManager *resources = _engine.getResources();
 	Graphics::Screen *screen = _engine.getScreen();
 	if (!resources || !screen)
@@ -1353,7 +1356,8 @@ Common::Error MenuSystem::showGameOverBackdrop(Flow &flow) {
 		1.0f,
 		flow,
 		false,
-		true);
+		true,
+		&returnedSelection);
 
 	if (backdropSurface) {
 		backdropSurface->free();
@@ -1377,7 +1381,8 @@ Common::Error MenuSystem::runRoomMenuStub(
     float paletteBrightness,
     Flow &flow,
     bool canSaveGame,
-    bool disableEscape) {
+    bool disableEscape,
+    int *returnedSelection) {
 	Graphics::FrameLimiter limiter(g_system, 60);
 	if (backdropSurface) {
 		if (!_mainMenuBackdropSurface)
@@ -1408,6 +1413,16 @@ Common::Error MenuSystem::runRoomMenuStub(
 	auto activateSelectedItem = [&]() -> RoomMenuActivationResult {
 		if (selectedItem < 0 || selectedItem >= (int)roomMenuItems.size())
 			return RoomMenuActivationResult(Common::kNoError, false);
+
+
+
+		if (disableEscape && returnedSelection &&
+				(selectedItem == kMainMenuItemNewGame ||
+				selectedItem == kMainMenuItemLoadGame)) {
+			*returnedSelection = selectedItem;
+			return RoomMenuActivationResult(Common::kNoError, true);
+		}
+
 
 		const Common::String &item = roomMenuItems[selectedItem];
 		if (item.empty() || item == kBlankMenuSlot)

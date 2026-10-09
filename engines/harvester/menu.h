@@ -89,6 +89,8 @@ public:
 		const Common::Array<Common::String> &menuItems);
 
 	Common::Error runMainMenuStub(Flow &flow);
+	
+	
 	Common::Error runRoomMenuStub(
 		const IndexedBitmap &backdrop,
 		const Graphics::Surface *backdropSurface,
@@ -96,7 +98,10 @@ public:
 		float paletteBrightness,
 		Flow &flow,
 		bool canSaveGame,
-		bool disableEscape = false);
+		bool disableEscape = false,
+		int *returnedSelection = nullptr);
+		
+		
 	Common::Error validateParentalPassword(Flow &flow);
 
 private:
@@ -130,7 +135,7 @@ private:
 	Common::Error runPasswordPrompt(const IndexedBitmap &backdrop, const byte *palette,
 		float paletteBrightness, Flow &flow, bool drawLogo, Common::String &password,
 		bool &accepted) const;
-	Common::Error showGameOverBackdrop(Flow &flow);
+	Common::Error showGameOverBackdrop(Flow &flow, int &returnedSelection);
 	void clearMainMenuBackdrop();
 	void renderMainMenuStub(const Common::Array<Common::String> &menuItems, int selectedItem,
 		const Common::String &statusMessage) const;
