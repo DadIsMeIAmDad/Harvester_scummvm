@@ -1066,9 +1066,10 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		_engine.canSaveGameStateCurrently(),
 		_engine.canLoadGameStateCurrently(),
 		mainMenuItems);
+	int returnedGameOverSelection = -1;
 	if (flow.takePendingGameOverReturn()) {
 		warning("HARVESTER: BEFORE pending game-over check");
-		Common::Error gameOverError = showGameOverBackdrop(flow);
+		Common::Error gameOverError = showGameOverBackdrop(flow, returnedGameOverSelection);
 		if (gameOverError.getCode() != Common::kNoError)
 			return gameOverError;
 	} else {
@@ -1129,7 +1130,7 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		needsRedraw = true;
 		(void)flow.takePendingMainMenuReturn();
 		if (flow.takePendingGameOverReturn()) {
-			Common::Error gameOverError = showGameOverBackdrop(flow);
+			Common::Error gameOverError = showGameOverBackdrop(flow, returnedGameOverSelection);
 			if (gameOverError.getCode() != Common::kNoError)
 				return gameOverError;
 		} else {
