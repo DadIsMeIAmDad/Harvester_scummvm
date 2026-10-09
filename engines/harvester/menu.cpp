@@ -1323,68 +1323,120 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 }
 
 Common::Error MenuSystem::showGameOverBackdrop(Flow &flow) {
-	ResourceManager *resources = _engine.getResources();
-	Graphics::Screen *screen = _engine.getScreen();
-	if (!resources || !screen)
-		return Common::kReadingFailed;
+ResourceManager *resources = _engine.getResources();
+Graphics::Screen *screen = _engine.getScreen();
+if (!resources || !screen)
+return Common::kReadingFailed;
 
-	IndexedBitmap backdrop;
-	byte palette[256 * 3];
+IndexedBitmap backdrop;
+byte palette[256 * 3] = {};
+Graphics::Surface *backdropSurface = nullptr;
+
+const bool loadedPng =
+	loadPngAsMenuSurface(*resources, kGameOverBitmapPath, backdropSurface);
+
+if (!loadedPng) {
 	if (!loadBitmapResource(*resources, kGameOverBitmapPath, backdrop) ||
 			!loadPaletteResource(*resources, kGameOverPalettePath, palette)) {
 		return Common::kReadingFailed;
 	}
+}
 
+if (backdropSurface) {
+	if (!_mainMenuBackdropSurface)
+		_mainMenuBackdropSurface = new Graphics::Surface();
+
+	_mainMenuBackdropSurface->copyFrom(*backdropSurface);
+
+	warning("HARVESTER: GAME OVER PNG loaded %dx%d bpp=%u",
+		_mainMenuBackdropSurface->w,
+		_mainMenuBackdropSurface->h,
+		_mainMenuBackdropSurface->format.bytesPerPixel);
+
+	backdropSurface->free();
+	delete backdropSurface;
+} else {
+	if (_mainMenuBackdropSurface) {
+		_mainMenuBackdropSurface->free();
+		delete _mainMenuBackdropSurface;
+		_mainMenuBackdropSurface = nullptr;
+	}
+}
+
+if (!loadedPng) {
 	_mainMenuBackdrop = Common::move(backdrop);
 	memcpy(_mainMenuBackdropPalette, palette, sizeof(_mainMenuBackdropPalette));
-	_hasMainMenuBackdrop = true;
-	flow.resetCursorAnimationSequence();
-	(void)_engine.playMusic(kGameOverMusicPath);
+}
 
-	bool needsRedraw = true;
-	Graphics::FrameLimiter limiter(g_system, 60);
-	while (!_engine.shouldQuit()) {
-		if (needsRedraw) {
+_hasMainMenuBackdrop = true;
+flow.resetCursorAnimationSequence();
+(void)_engine.playMusic(kGameOverMusicPath);
+
+bool needsRedraw = true;
+Graphics::FrameLimiter limiter(g_system, 60);
+
+while (!_engine.shouldQuit()) {
+	if (needsRedraw) {
+		if (!loadedPng)
 			applyMenuPalette(*screen, _engine, _mainMenuBackdropPalette, 1.0f);
-			screen->fillRect(screen->getBounds(), 0);
+
+		screen->fillRect(screen->getBounds(), 0);
+
+		if (_mainMenuBackdropSurface) {
+			screen->copyRectToSurface(
+				_mainMenuBackdropSurface->getPixels(),
+				_mainMenuBackdropSurface->pitch,
+				0,
+				0,
+				MIN(screen->w, _mainMenuBackdropSurface->w),
+				MIN(screen->h, _mainMenuBackdropSurface->h));
+		} else {
 			blitBitmap(*screen, _mainMenuBackdrop, 0, 0);
-			if (_engine.getRuntimeEntities())
-				_engine.getRuntimeEntities()->drawCursor(*screen);
-			screen->makeAllDirty();
-			screen->update();
-			needsRedraw = false;
 		}
 
-		Common::Event event;
-		while (g_system->getEventManager()->pollEvent(event)) {
-			Common::Error result = Common::kNoError;
-			if (flow.handleSystemEvent(event, result))
-				return result;
+		if (_engine.getRuntimeEntities())
+			_engine.getRuntimeEntities()->drawCursor(*screen);
 
-			switch (event.type) {
-			case Common::EVENT_MOUSEMOVE:
-				needsRedraw = true;
-				break;
-			case Common::EVENT_LBUTTONDOWN:
-			case Common::EVENT_RBUTTONDOWN:
-			case Common::EVENT_KEYDOWN:
-				return Common::kNoError;
-			default:
-				break;
-			}
-		}
-
-		if (EntityManager *entityManager = _engine.getRuntimeEntities()) {
-			if (entityManager->syncCursorEntityPosition(_mousePos))
-				needsRedraw = true;
-		}
-
-		limiter.delayBeforeSwap();
-		limiter.startFrame();
+		screen->makeAllDirty();
+		screen->update();
+		needsRedraw = false;
 	}
 
-	return Common::kNoError;
+	Common::Event event;
+	while (g_system->getEventManager()->pollEvent(event)) {
+		Common::Error result = Common::kNoError;
+		if (flow.handleSystemEvent(event, result))
+			return result;
+
+		switch (event.type) {
+		case Common::EVENT_MOUSEMOVE:
+			needsRedraw = true;
+			break;
+
+		case Common::EVENT_LBUTTONDOWN:
+		case Common::EVENT_RBUTTONDOWN:
+		case Common::EVENT_KEYDOWN:
+			return Common::kNoError;
+
+		default:
+			break;
+		}
+	}
+
+	if (EntityManager *entityManager = _engine.getRuntimeEntities()) {
+		if (entityManager->syncCursorEntityPosition(_mousePos))
+			needsRedraw = true;
+	}
+
+	limiter.delayBeforeSwap();
+	limiter.startFrame();
 }
+
+return Common::kNoError;
+
+}
+
+
 
 void MenuSystem::clearMainMenuBackdrop() {
 	_mainMenuBackdrop = IndexedBitmap();
