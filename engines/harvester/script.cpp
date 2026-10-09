@@ -2788,6 +2788,10 @@ bool Script::buildRuntimeRoomState(const RoomRecord &room, const EntranceRecord 
 	return true;
 }
 
+
+
+
+
 void Script::executeCommandChain(const Common::String &initialTag, const char *contextLabel,
 		const Common::String &contextName, const Common::String &contextRoomName,
 		bool allowTransitions, Common::String *musicPath,
@@ -3000,8 +3004,9 @@ void Script::executeCommandChain(const Common::String &initialTag, const char *c
 			const bool enabled = !command->arg2.equalsIgnoreCase("F");
 			const bool changed = currentRegion->startEnabled != enabled;
 			currentRegion->startEnabled = enabled;
-			noteCurrentRoomVisualMutation(changed,
-				belongsToContextRoom(currentRegion->roomName));
+			// Always request a visual refresh when enable state changes.
+			// Room loop still only applies it for the active room.
+			noteCurrentRoomVisualMutation(changed, true);
 			currentTag = command->arg4;
 			continue;
 		}

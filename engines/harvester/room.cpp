@@ -652,16 +652,8 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (!script)
 				return;
 
-			// Region enable state is a persistent script mutation; keep the runtime record in lockstep
-			// with the currently materialized scene so one-shot regions do not resurrect on revisit.
-			for (const RegionRecord &baseRegion : script->getRegions()) {
-				if (!baseRegion.roomName.equalsIgnoreCase(scene.state.roomName))
-					continue;
-
-				const bool enabled =
-					findSceneRegionByName(scene.sceneRegions, baseRegion.regionName) != nullptr;
-				(void)script->setRuntimeRegionEnabled(baseRegion.regionName, enabled);
-			}
+			// Region startEnabled is owned by script/SET_REGION.
+			// materializeRoomState filters on it; do not push scene presence back into runtime.
 
 			if (entityManager) {
 				for (AnimRecord &anim : scene.state.roomAnimations) {
@@ -2054,6 +2046,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			syncGlobalTimerEntities, captureDialogueBackdrop, showCdChangePrompt,
 			runRoomExitCommands, applyLightingCommand, applyPlayerGotoXZ, runModalShowText,
 			resetIdleState, stopPlayerRegionInteraction, startPlayerDefeatSequence);
+			
 		RoomInteractionProcessor interactionProcessor(
 			_engine, flow, scene, playerState, pendingRegionName, pendingRoomChange,
 			pendingRoomChangeIsRoomName, pendingRoomChangeUsesSavedRoomState,
@@ -4753,13 +4746,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		return Common::kNoError;
 	}
 	
-	// Prevent leaving the room while a monster fight is active.
-	
-	pendingRoomChange.clear();
-	pendingRoomChangeIsRoomName = false;
-	pendingRoomChangeUsesSavedRoomState = false;
-	
-
 	currentRoomTarget = pendingRoomChange;
 	currentTargetIsRoomName = pendingRoomChangeIsRoomName;
 	currentTargetUsesSavedRoomState = pendingRoomChangeUsesSavedRoomState;
