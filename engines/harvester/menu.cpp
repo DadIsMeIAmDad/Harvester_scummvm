@@ -1376,7 +1376,6 @@ Common::Error MenuSystem::runRoomMenuStub(
 	const byte *palette,
 	float paletteBrightness,
 	Flow &flow,
-	bool canSaveGame, bool disableEscape = false,
 	bool canSaveGame) {
 	Graphics::FrameLimiter limiter(g_system, 60);
 	if (backdropSurface) {
