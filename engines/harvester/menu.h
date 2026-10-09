@@ -95,14 +95,20 @@ public:
 		const byte *palette,
 		float paletteBrightness,
 		Flow &flow,
-		bool canSaveGame);
+		bool canSaveGame,
+		bool disableEscape = false);
+		
 	Common::Error validateParentalPassword(Flow &flow);
 
 private:
 	Common::Error runLoadGameMenu(const byte *palette, float paletteBrightness,
 		Flow &flow, bool &loadedGame);
-	Common::Error runOptionsMenu(const IndexedBitmap &backdrop, const byte *palette,
-		float paletteBrightness, Flow &flow);
+	Common::Error runOptionsMenu(
+		const IndexedBitmap &backdrop,
+		const Graphics::Surface *backdropSurface,   // NEW
+		const byte *palette,
+		float paletteBrightness,
+		Flow &flow);
 	Common::Error runHelpScreen(const byte *palette, float paletteBrightness, Flow &flow);
 	Common::Error runSaveGameMenu(const byte *palette, float paletteBrightness,
 		Flow &flow, bool &savedGame);
