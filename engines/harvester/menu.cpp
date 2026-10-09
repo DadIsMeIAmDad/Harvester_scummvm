@@ -1328,7 +1328,7 @@ Graphics::Screen *screen = _engine.getScreen();
 if (!resources || !screen)
 return Common::kReadingFailed;
 
-```
+
 IndexedBitmap backdrop;
 Graphics::Surface *backdropSurface = nullptr;
 byte palette[256 * 3];
@@ -1414,7 +1414,7 @@ if (backdropSurface) {
 }
 
 return Common::kNoError;
-```
+
 
 }
 
