@@ -1248,28 +1248,13 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	};
 
 	while (!_engine.shouldQuit()) {
-		if (returnedGameOverSelection != -1) {
-			selectedItem = returnedGameOverSelection;
-			returnedGameOverSelection = -1;
-
-			needsRedraw = true;
-
-			Common::Error activateError = activateSelectedItem();
-			if (activateError.getCode() != Common::kNoError)
-				return activateError;
-
-			continue;
+		if (needsRedraw) {
+			if (_hasMainMenuBackdrop)
+				renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f, mainMenuItems, selectedItem);
+			else
+				renderMainMenuStub(mainMenuItems, selectedItem, statusMessage);
+			needsRedraw = false;
 		}
-
-    if (needsRedraw) {
-        if (_hasMainMenuBackdrop)
-            renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f, mainMenuItems, selectedItem);
-        else
-            renderMainMenuStub(mainMenuItems, selectedItem, statusMessage);
-        needsRedraw = false;
-    }
-
-    // Keep the rest of this loop unchanged.
 
 		Common::Event event;
 		while (g_system->getEventManager()->pollEvent(event)) {
@@ -1529,19 +1514,6 @@ Common::Error MenuSystem::runRoomMenuStub(
 	};
 
 	while (!_engine.shouldQuit()) {
-	    if (returnedGameOverSelection != -1) {
-        selectedItem = returnedGameOverSelection;
-        returnedGameOverSelection = -1;
-
-        needsRedraw = true;
-
-        Common::Error activateError = activateSelectedItem();
-        if (activateError.getCode() != Common::kNoError)
-            return activateError;
-
-        continue;
-    }
-
 		if (needsRedraw) {
 			renderBackdropMenuScreen(backdrop, palette, paletteBrightness, roomMenuItems, selectedItem);
 			needsRedraw = false;
@@ -2513,17 +2485,19 @@ Common::Error MenuSystem::runOptionsMenu(
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
-			if (showingQuickTips) {
-				renderQuickTipsOverlay(_engine,
-					backdrop,
-					backdropSurface,   // same one passed into runOptionsMenu
-					palette, paletteBrightness,
-					config, quickTipsLayout, flow._quickTips[quickTipIndex]);
-			} else {
-				renderOptionsMenuScreen(_engine, backdrop, backdropSurface, palette, paletteBrightness,
-					selectedFont, unselectedFont, *art, config,
-					volumeBar, volumeBarSurface, indicator, indicatorSurface, selectedItem);
-			}
+			if (_hasMainMenuBackdrop)
+				renderBackdropMenuScreen(
+					_mainMenuBackdrop,
+					_mainMenuBackdropPalette,
+					1.0f,
+					mainMenuItems,
+					selectedItem);
+			else
+				renderMainMenuStub(
+					mainMenuItems,
+					selectedItem,
+					statusMessage);
+
 			needsRedraw = false;
 		}
 
