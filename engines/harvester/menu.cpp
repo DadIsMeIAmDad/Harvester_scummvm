@@ -1066,7 +1066,7 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		_engine.canSaveGameStateCurrently(),
 		_engine.canLoadGameStateCurrently(),
 		mainMenuItems);
-
+	
 	if (flow.takePendingGameOverReturn()) {
 		warning("HARVESTER: BEFORE pending game-over check");
 		Common::Error gameOverError = showGameOverBackdrop(flow);
