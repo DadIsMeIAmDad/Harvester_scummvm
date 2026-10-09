@@ -2369,21 +2369,21 @@ Common::Error MenuSystem::validateParentalPassword(Flow &flow) {
 }
 
 Common::Error MenuSystem::runOptionsMenu(
-		warning("HARVESTER OPTIONS: ENTER runOptionsMenu");
 		const IndexedBitmap &backdrop,
 		const Graphics::Surface *backdropSurface,
 		const byte *palette,
 		float paletteBrightness,
 		Flow &flow) {
+	warning("HARVESTER OPTIONS: ENTER runOptionsMenu");
 	const Art *art = _engine.getArt();
 	Script *script = _engine.getScript();
 	ResourceManager *resources = _engine.getResources();
 	const CftFontResource *selectedFontResource = findStartupFontByName(_engine, "HARVFONT");
 	const CftFontResource *unselectedFontResource = findStartupFontByName(_engine, "HARVFNT2");
-	if (!art || !script || !resources || !selectedFontResource || !unselectedFontResource)
+	if (!art || !script || !resources || !selectedFontResource || !unselectedFontResource) {
 		warning("HARVESTER OPTIONS: FIRST OPTION FAILED");
 		return Common::kReadingFailed;
-
+	}
 	HarvesterCftFont selectedFont(*selectedFontResource);
 	HarvesterCftFont unselectedFont(*unselectedFontResource);
 	if (!selectedFont.isValid() || !unselectedFont.isValid())
