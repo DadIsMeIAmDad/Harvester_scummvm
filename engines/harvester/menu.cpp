@@ -1248,13 +1248,28 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	};
 
 	while (!_engine.shouldQuit()) {
-		if (needsRedraw) {
-			if (_hasMainMenuBackdrop)
-				renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f, mainMenuItems, selectedItem);
-			else
-				renderMainMenuStub(mainMenuItems, selectedItem, statusMessage);
-			needsRedraw = false;
+		if (returnedGameOverSelection != -1) {
+			selectedItem = returnedGameOverSelection;
+			returnedGameOverSelection = -1;
+
+			needsRedraw = true;
+
+			Common::Error activateError = activateSelectedItem();
+			if (activateError.getCode() != Common::kNoError)
+				return activateError;
+
+			continue;
 		}
+
+    if (needsRedraw) {
+        if (_hasMainMenuBackdrop)
+            renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f, mainMenuItems, selectedItem);
+        else
+            renderMainMenuStub(mainMenuItems, selectedItem, statusMessage);
+        needsRedraw = false;
+    }
+
+    // Keep the rest of this loop unchanged.
 
 		Common::Event event;
 		while (g_system->getEventManager()->pollEvent(event)) {
@@ -1526,12 +1541,9 @@ Common::Error MenuSystem::runRoomMenuStub(
 
         continue;
     }
-	
-	    if (needsRedraw) {
-			if (_hasMainMenuBackdrop)
-				renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f, mainMenuItems, selectedItem);
-			else
-				renderMainMenuStub(mainMenuItems, selectedItem, statusMessage);
+
+		if (needsRedraw) {
+			renderBackdropMenuScreen(backdrop, palette, paletteBrightness, roomMenuItems, selectedItem);
 			needsRedraw = false;
 		}
 
