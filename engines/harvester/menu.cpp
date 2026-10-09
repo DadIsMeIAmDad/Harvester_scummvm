@@ -1052,6 +1052,7 @@ MenuSystem::MenuSystem(HarvesterEngine &engine, Common::Point &mousePos,
 }
 
 Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
+	int returnedGameOverSelection = -1;
     warning("HARVESTER: ENTER runMainMenuStub");
 	const Art *art = _engine.getArt();
 	if (!art) {
@@ -2482,8 +2483,22 @@ Common::Error MenuSystem::runOptionsMenu(
 		return Common::kNoError;
 	};
 
+
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!_engine.shouldQuit()) {
+		if (returnedGameOverSelection != -1) {
+			selectedItem = returnedGameOverSelection;
+			returnedGameOverSelection = -1;
+
+			needsRedraw = true;
+
+			Common::Error activateError = activateSelectedItem();
+			if (activateError.getCode() != Common::kNoError)
+				return activateError;
+
+			continue;
+		}
+
 		if (needsRedraw) {
 			if (_hasMainMenuBackdrop)
 				renderBackdropMenuScreen(
