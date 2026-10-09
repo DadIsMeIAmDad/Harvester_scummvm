@@ -68,8 +68,11 @@ int Monster::resolveFacingFrame(int facing) {
 
 void Monster::applyAnimation(Entity &entity, const MonsterRecord &monster) {
 	if (monster.currentHitPoints <= 0) {
-		entity->setPosition(Common::Point(entity->getPosition().x, -100));
+		entity->setPosition(Common::Point(monster.posX, -100));
 	}
+
+	entityManager->reinsertSceneEntity(entity);
+	return entity;
 
 	entity.setVisible(monster.visible);
 	if (!monster.visible)
