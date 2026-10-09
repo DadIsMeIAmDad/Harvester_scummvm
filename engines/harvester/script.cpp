@@ -1474,9 +1474,17 @@ void Script::resetRuntimeState() {
 		monster.currentHitPoints = monster.initialHitPoints;
 		monster.runtimeSpawned = false;
 		monster.runtimeState = -1;
-		monster.savedVisible = monster.visible;
-		if (monster.active)
+		
+		if (monster.currentHitPoints < 1) {
+			warning("MONSTER IS DEAD");
+			monster.savedVisible = false;
+		} else {
+			monster.savedVisible = monster.visible;
+		}
+		
+		if (monster.active && monster.currentHitPoints > 0) {
 			monster.visible = true;
+		}
 	}
 
 	for (TimerRecord &timer : _currentTimers)
