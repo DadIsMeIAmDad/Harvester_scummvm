@@ -1323,68 +1323,101 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 }
 
 Common::Error MenuSystem::showGameOverBackdrop(Flow &flow) {
-	ResourceManager *resources = _engine.getResources();
-	Graphics::Screen *screen = _engine.getScreen();
-	if (!resources || !screen)
-		return Common::kReadingFailed;
+ResourceManager *resources = _engine.getResources();
+Graphics::Screen *screen = _engine.getScreen();
+if (!resources || !screen)
+return Common::kReadingFailed;
 
-	IndexedBitmap backdrop;
-	byte palette[256 * 3];
-	if (!loadBitmapResource(*resources, kGameOverBitmapPath, backdrop) ||
-			!loadPaletteResource(*resources, kGameOverPalettePath, palette)) {
-		return Common::kReadingFailed;
-	}
+```
+IndexedBitmap backdrop;
+Graphics::Surface *backdropSurface = nullptr;
+byte palette[256 * 3];
 
-	_mainMenuBackdrop = Common::move(backdrop);
-	memcpy(_mainMenuBackdropPalette, palette, sizeof(_mainMenuBackdropPalette));
-	_hasMainMenuBackdrop = true;
-	flow.resetCursorAnimationSequence();
-	(void)_engine.playMusic(kGameOverMusicPath);
+const bool loadedPng =
+    loadPngAsMenuSurface(*resources, kGameOverBitmapPath, backdropSurface);
 
-	bool needsRedraw = true;
-	Graphics::FrameLimiter limiter(g_system, 60);
-	while (!_engine.shouldQuit()) {
-		if (needsRedraw) {
-			applyMenuPalette(*screen, _engine, _mainMenuBackdropPalette, 1.0f);
-			screen->fillRect(screen->getBounds(), 0);
-			blitBitmap(*screen, _mainMenuBackdrop, 0, 0);
-			if (_engine.getRuntimeEntities())
-				_engine.getRuntimeEntities()->drawCursor(*screen);
-			screen->makeAllDirty();
-			screen->update();
-			needsRedraw = false;
-		}
-
-		Common::Event event;
-		while (g_system->getEventManager()->pollEvent(event)) {
-			Common::Error result = Common::kNoError;
-			if (flow.handleSystemEvent(event, result))
-				return result;
-
-			switch (event.type) {
-			case Common::EVENT_MOUSEMOVE:
-				needsRedraw = true;
-				break;
-			case Common::EVENT_LBUTTONDOWN:
-			case Common::EVENT_RBUTTONDOWN:
-			case Common::EVENT_KEYDOWN:
-				return Common::kNoError;
-			default:
-				break;
-			}
-		}
-
-		if (EntityManager *entityManager = _engine.getRuntimeEntities()) {
-			if (entityManager->syncCursorEntityPosition(_mousePos))
-				needsRedraw = true;
-		}
-
-		limiter.delayBeforeSwap();
-		limiter.startFrame();
-	}
-
-	return Common::kNoError;
+if (!loadedPng) {
+    if (!loadBitmapResource(*resources, kGameOverBitmapPath, backdrop) ||
+            !loadPaletteResource(*resources, kGameOverPalettePath, palette)) {
+        return Common::kReadingFailed;
+    }
 }
+
+_mainMenuBackdrop = Common::move(backdrop);
+if (!loadedPng)
+    memcpy(_mainMenuBackdropPalette, palette, sizeof(_mainMenuBackdropPalette));
+_hasMainMenuBackdrop = !loadedPng;
+
+flow.resetCursorAnimationSequence();
+(void)_engine.playMusic(kGameOverMusicPath);
+
+bool needsRedraw = true;
+Graphics::FrameLimiter limiter(g_system, 60);
+while (!_engine.shouldQuit()) {
+    if (needsRedraw) {
+        if (loadedPng && backdropSurface) {
+            screen->copyRectToSurface(*backdropSurface, 0, 0, screen->getBounds());
+        } else {
+            applyMenuPalette(*screen, _engine, _mainMenuBackdropPalette, 1.0f);
+            screen->fillRect(screen->getBounds(), 0);
+            blitBitmap(*screen, _mainMenuBackdrop, 0, 0);
+        }
+
+        if (_engine.getRuntimeEntities())
+            _engine.getRuntimeEntities()->drawCursor(*screen);
+
+        screen->makeAllDirty();
+        screen->update();
+        needsRedraw = false;
+    }
+
+    Common::Event event;
+    while (g_system->getEventManager()->pollEvent(event)) {
+        Common::Error result = Common::kNoError;
+        if (flow.handleSystemEvent(event, result)) {
+            if (backdropSurface) {
+                backdropSurface->free();
+                delete backdropSurface;
+            }
+            return result;
+        }
+
+        switch (event.type) {
+        case Common::EVENT_MOUSEMOVE:
+            needsRedraw = true;
+            break;
+        case Common::EVENT_LBUTTONDOWN:
+        case Common::EVENT_RBUTTONDOWN:
+        case Common::EVENT_KEYDOWN:
+            if (backdropSurface) {
+                backdropSurface->free();
+                delete backdropSurface;
+            }
+            return Common::kNoError;
+        default:
+            break;
+        }
+    }
+
+    if (EntityManager *entityManager = _engine.getRuntimeEntities()) {
+        if (entityManager->syncCursorEntityPosition(_mousePos))
+            needsRedraw = true;
+    }
+
+    limiter.delayBeforeSwap();
+    limiter.startFrame();
+}
+
+if (backdropSurface) {
+    backdropSurface->free();
+    delete backdropSurface;
+}
+
+return Common::kNoError;
+```
+
+}
+
 
 void MenuSystem::clearMainMenuBackdrop() {
 	_mainMenuBackdrop = IndexedBitmap();
