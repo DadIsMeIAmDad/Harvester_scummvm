@@ -1471,21 +1471,12 @@ void Script::resetRuntimeState() {
 	}
 
 	for (MonsterRecord &monster : _currentMonsters) {
-		// Do NOT reset HP here if you want the kill to stick
-		if (monster.currentHitPoints < 1 || !monster.active) {
-			// Dead or inactive ? force it out of the room
-			monster.active = false;
-			monster.visible = false;
-			monster.savedVisible = false;
-			monster.runtimeSpawned = false;
-			monster.runtimeState = -1;
-			// optional: leave currentHitPoints at 0
-		} else {
-			// Still alive
-			monster.savedVisible = monster.visible;
-			// only force visible if you really want every living monster shown
-			// monster.visible = true;
-		}
+		monster.currentHitPoints = monster.initialHitPoints;
+		monster.runtimeSpawned = false;
+		monster.runtimeState = -1;
+		monster.savedVisible = monster.visible;
+		if (monster.active)
+			monster.visible = true;
 	}
 
 	for (TimerRecord &timer : _currentTimers)
@@ -3000,12 +2991,8 @@ void Script::executeCommandChain(const Common::String &initialTag, const char *c
 		if (command->opcodeName.equalsIgnoreCase("SET_REGION")) {
 			RegionRecord *currentRegion = findRuntimeRegion(command->arg1);
 			if (!currentRegion) {
-				warning(
-					"SET_REGION FAILED: context='%s' name='%s' region='%s'",
-					contextLabel,
-					contextName.c_str(),
-					command->arg1.c_str());
-
+				debug(1, "Harvester: unresolved region for %s '%s' region='%s'",
+					contextLabel, contextName.c_str(), command->arg1.c_str());
 				currentTag = command->arg4;
 				continue;
 			}

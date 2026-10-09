@@ -509,7 +509,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		if (entityManager) {
 			for (const MonsterRecord &monster : scene.state.roomMonsters) {
 				Entity *entity = entityManager->findSceneEntityByName(monster.monsterName);
-				if (entity && monster.currentHitPoints > 0)
+				if (entity)
 					Monster::applyAnimation(*entity, monster);
 			}
 			entityManager->pauseTimerCountdowns();
@@ -3027,7 +3027,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					combatState.deathActive = false;
 					monster.active = false;
 					monster.visible = true;
-					monster.runtimeSpawned = true;
+					monster.runtimeSpawned = false;
 					monster.runtimeState = entity->getCurrentFrame();
 					entity->setAnimationRate(0);
 					entity->setAnimationFrameRange(monster.runtimeState, monster.runtimeState, false);
