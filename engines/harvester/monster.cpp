@@ -75,6 +75,7 @@ void Monster::applyAnimation(Entity &entity, const MonsterRecord &monster) {
 	// completes instead of snapping back to an idle facing frame.
 	if (!monster.active &&
 			monster.currentHitPoints <= 0 &&
+			monster.runtimeSpawned &&
 			monster.runtimeState >= 0) {
 		int corpseFrame = monster.runtimeState;
 		if (corpseFrame > entity.getLastFrame())
