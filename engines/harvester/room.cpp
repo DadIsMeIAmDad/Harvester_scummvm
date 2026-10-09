@@ -4750,10 +4750,10 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 	// Prevent leaving the room while a monster fight is active.
 	
-		pendingRoomChange.clear();
-		pendingRoomChangeIsRoomName = false;
-		pendingRoomChangeUsesSavedRoomState = false;
-		return Common::kNoError;
+	pendingRoomChange.clear();
+	pendingRoomChangeIsRoomName = false;
+	pendingRoomChangeUsesSavedRoomState = false;
+	return Common::kNoError;
 	
 
 
