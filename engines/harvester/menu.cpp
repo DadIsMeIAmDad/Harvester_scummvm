@@ -1514,8 +1514,24 @@ Common::Error MenuSystem::runRoomMenuStub(
 	};
 
 	while (!_engine.shouldQuit()) {
-		if (needsRedraw) {
-			renderBackdropMenuScreen(backdrop, palette, paletteBrightness, roomMenuItems, selectedItem);
+	    if (returnedGameOverSelection != -1) {
+        selectedItem = returnedGameOverSelection;
+        returnedGameOverSelection = -1;
+
+        needsRedraw = true;
+
+        Common::Error activateError = activateSelectedItem();
+        if (activateError.getCode() != Common::kNoError)
+            return activateError;
+
+        continue;
+    }
+	
+	    if (needsRedraw) {
+			if (_hasMainMenuBackdrop)
+				renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f, mainMenuItems, selectedItem);
+			else
+				renderMainMenuStub(mainMenuItems, selectedItem, statusMessage);
 			needsRedraw = false;
 		}
 
