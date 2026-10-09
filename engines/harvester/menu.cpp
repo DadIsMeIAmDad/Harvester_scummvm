@@ -1352,7 +1352,8 @@ Common::Error MenuSystem::showGameOverBackdrop(Flow &flow) {
 		palette,
 		1.0f,
 		flow,
-		false);
+		false,
+		true);
 
 	if (backdropSurface) {
 		backdropSurface->free();
@@ -1375,6 +1376,7 @@ Common::Error MenuSystem::runRoomMenuStub(
 	const byte *palette,
 	float paletteBrightness,
 	Flow &flow,
+	bool canSaveGame, bool disableEscape = false,
 	bool canSaveGame) {
 	Graphics::FrameLimiter limiter(g_system, 60);
 	if (backdropSurface) {
@@ -1518,6 +1520,8 @@ Common::Error MenuSystem::runRoomMenuStub(
 			}
 			case Common::EVENT_KEYDOWN:
 				if (event.kbd.keycode == Common::KEYCODE_ESCAPE)
+					if (disableEscape)
+						break;
 					return Common::kNoError;
 
 				if (roomMenuItems.empty())
