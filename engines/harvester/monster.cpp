@@ -67,7 +67,7 @@ int Monster::resolveFacingFrame(int facing) {
 }
 
 void Monster::applyAnimation(Entity &entity, const MonsterRecord &monster) {
-	if (monster.currentHitPoints < 1) {
+	if (monster.currentHitPoints == 0) {
 		entity.setVisible(false);
 		return;
 	}
