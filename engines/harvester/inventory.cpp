@@ -115,8 +115,9 @@ static const char *const kInventoryObjectActionItems[] = {
 };
 
 static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y) {
-	if (!bitmap.isValid())
+	if (!bitmap.isValid()) {
 		return;
+}
 
 	int destX = x;
 	int destY = y;
@@ -135,13 +136,15 @@ static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, in
 		height += destY;
 		destY = 0;
 	}
-	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0)
+	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0) {
 		return;
+}
 
 	width = MIN<int>(width, screen.w - destX);
 	height = MIN<int>(height, screen.h - destY);
-	if (width <= 0 || height <= 0)
+	if (width <= 0 || height <= 0) {
 		return;
+}
 
 	const byte *src = bitmap.pixels.data() + srcY * bitmap.width + srcX;
 	byte *dst = (byte *)screen.getBasePtr(destX, destY);
@@ -161,16 +164,18 @@ static Common::String resolveSceneObjectSpritePath(const ObjectRecord &object) {
 		object.currentY == object.initialY &&
 		object.currentOwnerOrRoom.equalsIgnoreCase(object.initialOwnerOrRoom);
 	if (!object.altSpritePath.empty() &&
-		(!atInitialPlacement || object.currentOwnerOrRoom.equalsIgnoreCase("INVENTORY")))
+		(!atInitialPlacement || object.currentOwnerOrRoom.equalsIgnoreCase("INVENTORY"))) {
 		return object.altSpritePath;
+}
 
 	return object.spritePath;
 }
 
 static bool loadBitmapResource(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) {
 	Common::Array<byte> data;
-	if (!resources.loadFile(path, data) || data.size() < 12)
+	if (!resources.loadFile(path, data) || data.size() < 12) {
 		return false;
+}
 
 	// Reject PNG / non-BM payloads
 	if (data.size() >= 8 && data[0] == 0x89 && data[1] == 'P' && data[2] == 'N' && data[3] == 'G') {
@@ -184,12 +189,14 @@ static bool loadBitmapResource(ResourceManager &resources, const Common::String 
 
 	// Sanity: original game is low-res; anything huge is corrupt / wrong format
 	if (bitmap.width == 0 || bitmap.height == 0 ||
-			bitmap.width > 2048 || bitmap.height > 2048)
+			bitmap.width > 2048 || bitmap.height > 2048) {
 		return false;
+}
 
 	const uint32 pixelCount = bitmap.width * bitmap.height;
-	if (data.size() < 12 + pixelCount)
+	if (data.size() < 12 + pixelCount) {
 		return false;
+}
 
 	bitmap.pixels.resize(pixelCount);
 	memcpy(bitmap.pixels.data(), data.data() + 12, pixelCount);
@@ -202,8 +209,9 @@ static bool loadPngResource(ResourceManager &resources, const Common::String &pa
 		Graphics::Surface *&outSurface) {
 	outSurface = nullptr;
 	Common::SeekableReadStream *stream = resources.openFile(path);
-	if (!stream)
+	if (!stream) {
 		return false;
+}
 
 	Image::PNGDecoder decoder;
 	if (!decoder.loadStream(*stream)) {
@@ -213,8 +221,9 @@ static bool loadPngResource(ResourceManager &resources, const Common::String &pa
 	delete stream;
 
 	const Graphics::Surface *src = decoder.getSurface();
-	if (!src)
+	if (!src) {
 		return false;
+}
 
 	outSurface = new Graphics::Surface();
 	outSurface->copyFrom(*src);
@@ -224,8 +233,9 @@ static bool loadPngResource(ResourceManager &resources, const Common::String &pa
 
 static bool resolveInventoryCombatLoadoutId(const Common::String &objectName, int &loadoutId) {
 	loadoutId = 0;
-	if (objectName.empty())
+	if (objectName.empty()) {
 		return false;
+}
 
 	for (const InventoryCombatLoadoutEntry &entry : kInventoryCombatLoadoutMap) {
 		if (objectName.equalsIgnoreCase(entry.objectName)) {
@@ -240,12 +250,14 @@ static bool resolveInventoryCombatLoadoutId(const Common::String &objectName, in
 static bool resolveInventorySecondaryActionEntry(const Common::String &objectName,
 		InventorySecondaryAction &action) {
 	action = InventorySecondaryAction();
-	if (objectName.empty())
+	if (objectName.empty()) {
 		return false;
+}
 
 	for (const InventorySecondaryActionEntry &entry : kInventorySecondaryActionMap) {
-		if (!objectName.equalsIgnoreCase(entry.objectName))
+		if (!objectName.equalsIgnoreCase(entry.objectName)) {
 			continue;
+}
 
 		action.actionTag = entry.actionTag;
 		action.closeInventory = entry.closeInventory;
@@ -256,12 +268,14 @@ static bool resolveInventorySecondaryActionEntry(const Common::String &objectNam
 }
 
 static bool usesObjectActionForInventorySecondaryClick(const Common::String &objectName) {
-	if (objectName.empty())
+	if (objectName.empty()) {
 		return false;
+}
 
 	for (const char *itemName : kInventoryObjectActionItems) {
-		if (objectName.equalsIgnoreCase(itemName))
+		if (objectName.equalsIgnoreCase(itemName)) {
 			return true;
+}
 	}
 
 	return false;
@@ -615,9 +629,9 @@ Common::Rect InventorySystem::getPanelBounds() const {
 
 void InventorySystem::drawOverlay(Graphics::Screen &screen) const {
 	const Art *art = _engine.getArt();
-	if (!art)
+	if (!art) {
 		return;
-
+	}
 	if (const Graphics::Surface *panel = art->getInventorySurface()) {
 		screen.blitFrom(*panel,
 			Common::Rect(0, 0, panel->w, panel->h),
