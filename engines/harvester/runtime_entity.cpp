@@ -41,7 +41,7 @@ namespace {
 
 static const char *const kCursorEntityName = "MOUSE";
 static const char *const kCursorResourcePath = "1:/GRAPHIC/POINTERS/POINTERS.ABM";
-static const char *const kCursorPngResourcePath = "HD/POINTERS";
+static const char *const kCursorPngResourcePath = "4:/POINTERS";
 static const float kCursorEntityZ = -100.0f;
 static const int kCursorAnimationRate = 10;
 static const int kFramesPerSequence = 10;
