@@ -2127,7 +2127,7 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 				if (screen->format.bytesPerPixel == panel->format.bytesPerPixel &&
 						screen->format == panel->format) {
 					screen->fillRect(screen->getBounds(), 0);
-					screen->copyRectToSurface(*panel, panel->getBounds(), 0, 0);
+					screen->copyRectToSurface(*panel, 0, 0, Common::Rect(0, 0, panel->w, panel->h));
 				} else {
 					warning("Harvester: town map PNG format mismatch: screen=%u bpp, panel=%u bpp",
 						screen->format.bytesPerPixel, panel->format.bytesPerPixel);
