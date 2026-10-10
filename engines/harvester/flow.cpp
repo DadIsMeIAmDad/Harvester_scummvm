@@ -22,7 +22,7 @@
 #include <math.h>
 
 #include "harvester/flow.h"
-
+#include "image/png.h"
 #include "common/algorithm.h"
 #include "common/config-manager.h"
 #include "common/debug.h"
@@ -122,6 +122,30 @@ static const int kCursorSequencePickup = 5;
 static const int kCursorSequenceTransition = 6;
 static const int kCursorSequenceNeutral = 7;
 } // End of anonymous namespace
+
+static bool loadTownMapPngSurface(ResourceManager &resources,
+        const Common::String &path,
+        Graphics::Surface *&outSurface) {
+    outSurface = nullptr;
+
+    Common::Array<byte> data;
+    if (!resources.loadFile(path, data) || data.empty())
+        return false;
+
+    Common::MemoryReadStream stream(data.data(), data.size());
+    Image::PNGDecoder decoder;
+    if (!decoder.loadStream(stream))
+        return false;
+
+    const Graphics::Surface *src = decoder.getSurface();
+    if (!src || src->w == 0 || src->h == 0)
+        return false;
+
+    outSurface = new Graphics::Surface();
+    outSurface->copyFrom(*src);
+    return true;
+}
+
 
 static const CftFontResource *findStartupFontByName(const HarvesterEngine &engine, const char *fontName) {
 	const Text *text = engine.getText();
@@ -2043,7 +2067,7 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 
 	for (uint i = 0; i < ARRAYSIZE(kTownMapBitmapPaths); ++i) {
 		panels[i] = nullptr;
-		if (!loadPngAsMenuSurface(*resources, kTownMapBitmapPaths[i], panels[i])) {
+		if (!loadTownMapPngSurface(*resources, kTownMapBitmapPaths[i], panels[i])) {
 			warning("Harvester: failed to load town map PNG '%s'",
 				kTownMapBitmapPaths[i]);
 			for (uint j = 0; j < i; ++j) {
@@ -2103,7 +2127,7 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 				if (screen->format.bytesPerPixel == panel->format.bytesPerPixel &&
 						screen->format == panel->format) {
 					screen->fillRect(screen->getBounds(), 0);
-					screen->copyRectToSurface(*panel, 0, 0);
+					screen->copyRectToSurface(*panel, panel->getBounds(), 0, 0);
 				} else {
 					warning("Harvester: town map PNG format mismatch: screen=%u bpp, panel=%u bpp",
 						screen->format.bytesPerPixel, panel->format.bytesPerPixel);
