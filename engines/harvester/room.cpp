@@ -2908,6 +2908,55 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			return Common::kNoError;
 		}
 
+			NativeAttackSide attackSide = kNativeAttackSideNone;
+			NativeAttackBand attackBand = kNativeAttackBandMid;
+
+			if (!resolveNativePlayerAttackGeometry(
+					playerState.attackFirstFrame, attackSide, attackBand)) {
+				debugC(1, kDebugCombat,
+					"Harvester: combat player attack missed target='%s' reason='unknown attack direction'",
+					monster->monsterName.c_str());
+				return Common::kNoError;
+			}
+
+			const Common::Rect playerRect = playerState.entity->getScreenRect();
+			const Common::Rect targetRect = monsterEntity->getScreenRect();
+
+			const int playerLeft = playerRect.left;
+			const int playerRight = playerRect.right;
+			const int playerCenterX = playerLeft + playerRect.width() / 2;
+			const int targetLeft = targetRect.left;
+			const int targetCenterX = targetLeft + targetRect.width() / 2;
+
+			bool matchesDirection = false;
+
+			if (attackSide == kNativeAttackSideLeft) {
+				if (attackBand == kNativeAttackBandMid) {
+					matchesDirection = targetLeft < playerCenterX;
+				} else {
+					matchesDirection =
+						targetLeft < playerCenterX &&
+						targetCenterX > playerLeft - kNativeAttackSideWindow;
+				}
+			} else if (attackSide == kNativeAttackSideRight) {
+				if (attackBand == kNativeAttackBandMid) {
+					matchesDirection = playerCenterX < targetLeft;
+				} else {
+					matchesDirection =
+						playerCenterX < targetLeft &&
+						targetCenterX < playerRight + kNativeAttackSideWindow;
+				}
+			}
+
+			if (!matchesDirection) {
+				debugC(1, kDebugCombat,
+					"Harvester: combat player attack missed target='%s' reason='wrong attack direction'",
+					monster->monsterName.c_str());
+				return Common::kNoError;
+			}
+
+
+			
 			const int hitPointsBefore = monster->currentHitPoints;
 			monster->currentHitPoints = MAX(0,
 				monster->currentHitPoints - damageAmount);
