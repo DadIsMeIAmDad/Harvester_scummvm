@@ -1143,10 +1143,8 @@ bool Entity::hasOpaqueFrame() const {
 		(uint)_currentFrame < _frames.size();
 }
 
-bool Entity::isOpaqueAt(const Common::Point &point) const {
-	if (!hasOpaqueFrame())
-		return false;
 
+bool Entity::isOpaqueAt(const Common::Point &point) const {
 	const Common::Rect bounds = getFrameRect();
 	if (!bounds.contains(point))
 		return false;
@@ -1154,7 +1152,28 @@ bool Entity::isOpaqueAt(const Common::Point &point) const {
 	const int relativeX = point.x - bounds.left;
 	const int relativeY = point.y - bounds.top;
 
-	if (_pngFrames.size() > 0) {
+	// Static true-color PNG resource.
+	if (_pngSurface) {
+		if (relativeX < 0 || relativeY < 0 ||
+				relativeX >= _pngSurface->w ||
+				relativeY >= _pngSurface->h)
+			return false;
+
+		if (_pngSurface->format.bytesPerPixel == 4) {
+			const byte *pixelBytes =
+				(const byte *)_pngSurface->getBasePtr(relativeX, relativeY);
+			const uint32 alpha =
+				pixelBytes[_pngSurface->format.aShift / 8];
+			return alpha != 0;
+		}
+
+		return true;
+	}
+
+	if (!hasOpaqueFrame())
+		return false;
+
+	if (!_pngFrames.empty()) {
 		const Graphics::Surface *frame = _pngFrames[(uint)_currentFrame];
 		if (!frame)
 			return false;
@@ -1163,13 +1182,9 @@ bool Entity::isOpaqueAt(const Common::Point &point) const {
 				relativeX >= frame->w || relativeY >= frame->h)
 			return false;
 
-		const uint32 pixel = frame->getPixel(relativeX, relativeY);
-
-		// PNG frames are true-color. Treat alpha 0 as transparent.
 		if (frame->format.bytesPerPixel == 4) {
 			const byte *pixelBytes =
 				(const byte *)frame->getBasePtr(relativeX, relativeY);
-
 			const uint32 alpha = pixelBytes[frame->format.aShift / 8];
 			return alpha != 0;
 		}
