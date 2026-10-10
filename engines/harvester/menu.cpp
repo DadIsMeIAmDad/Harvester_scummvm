@@ -752,16 +752,18 @@ static void renderPasswordPromptScreen(HarvesterEngine &engine, const IndexedBit
 	if (palette)
 		applyMenuPalette(*screen, engine, palette, paletteBrightness);
 	blitBitmap(*screen, backdrop, 0, 0);
-	if (drawLogo)
+	if (drawLogo) {
 		blitTransparentBitmap(*screen, art.getLogoBitmap(), kLogoX, kLogoY);
+	}
 
 	const int titleWidth = titleFont.getStringWidth(title);
 	const int titleX = (screen->w - titleWidth) / 2;
 	titleFont.drawString(screen, title, titleX, 0xa0, titleWidth, 0);
 
 	Common::String displayText = text;
-	if (cursorVisible)
+	if (cursorVisible) {
 		displayText += '~';
+	}
 	entryFont.drawString(screen, displayText, kPasswordEntryX, kPasswordEntryY,
 		kPasswordEntryWidth, 0);
 
@@ -777,9 +779,9 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine,
 		const Common::String &tipText) {
 	Graphics::Screen *screen = engine.getScreen();
 	const Art *art = engine.getArt();
-	if (!screen || !art)
+	if (!screen || !art) {
 		return;
-
+	}
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
 
 	// Full background first — kills mouse trails
@@ -810,8 +812,9 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine,
 
 	drawQuickTipsPanel(engine, config, layout, tipText);
 
-	if (engine.getRuntimeEntities())
+	if (engine.getRuntimeEntities()) {
 		engine.getRuntimeEntities()->drawCursor(*screen);
+	}
 	screen->makeAllDirty();
 	screen->update();
 }
@@ -827,9 +830,9 @@ static void renderSaveGameMenuScreen(HarvesterEngine &engine,
 		const Common::String &statusMessage, int editingSlot = -1,
 		const Common::String *editingText = nullptr) {
 	Graphics::Screen *screen = engine.getScreen();
-	if (!screen)
+	if (!screen) {
 		return;
-
+	}
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
 
 	// Prefer true-color surface; fall back to indexed BM
@@ -852,8 +855,9 @@ static void renderSaveGameMenuScreen(HarvesterEngine &engine,
 			labelFont.getStringWidth(slotLabel), 0);
 
 		Common::String displayTitle = slotTitles[i];
-		if (i == editingSlot && editingText)
+		if (i == editingSlot && editingText) {
 			displayTitle = *editingText + "_";
+		}
 		slotNameFont.drawString(screen, displayTitle, kSaveSlotNameX, y, kSaveSlotTextWidth, 0);
 	}
 
