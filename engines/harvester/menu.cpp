@@ -1457,7 +1457,7 @@ Common::Error MenuSystem::runRoomMenuStub(
 	const byte *palette,
 	float paletteBrightness,
 	Flow &flow,
-	bool canSaveGame) {
+	bool canSaveGame, bool disableEscape) {
 	Graphics::FrameLimiter limiter(g_system, 60);
 	if (backdropSurface) {
 		if (!_mainMenuBackdropSurface)
@@ -1599,12 +1599,15 @@ Common::Error MenuSystem::runRoomMenuStub(
 				break;
 			}
 			case Common::EVENT_KEYDOWN:
-				if (event.kbd.keycode == Common::KEYCODE_ESCAPE)
+				if (event.kbd.keycode == Common::KEYCODE_ESCAPE) {
+					if (disableEscape) {
+						break;
+					}
 					return Common::kNoError;
-
-				if (roomMenuItems.empty())
+				}
+				if (roomMenuItems.empty()) {
 					break;
-
+				}
 				if (event.kbd.keycode == Common::KEYCODE_UP) {
 					selectedItem = (selectedItem + roomMenuItems.size() - 1) % roomMenuItems.size();
 					needsRedraw = true;
