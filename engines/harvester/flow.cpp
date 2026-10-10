@@ -67,10 +67,10 @@ static const char *const kBuiltInMenuItems[] = {
 static const char *const kTownMapPalettePath = "1:/GRAPHIC/PAL/HARVMAP.PAL";
 static const char *const kTownMapMusicPath = "SOUND/MUSIC/MENACE.CMP";
 static const char *const kTownMapBitmapPaths[] = {
-	"1:/GRAPHIC/TOWN/HARVMAP1.BM",
-	"1:/GRAPHIC/TOWN/HARVMAP2.BM",
-	"1:/GRAPHIC/TOWN/HARVMAP3.BM",
-	"1:/GRAPHIC/TOWN/HARVMAP4.BM"
+	"4:/GRAPHIC/TOWN/HARVMAP1.png",
+	"4:/GRAPHIC/TOWN/HARVMAP2.png",
+	"4:/GRAPHIC/TOWN/HARVMAP3.png",
+	"4:/GRAPHIC/TOWN/HARVMAP4.png"
 };
 
 static const int kCursorSequence7 = 7;
