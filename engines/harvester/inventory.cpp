@@ -628,18 +628,20 @@ void InventorySystem::drawOverlay(Graphics::Screen &screen) const {
 
 	for (const InventoryVisual &item : _items) {
 		if (!_selectedItemName.empty() &&
-				item.object.objectName.equalsIgnoreCase(_selectedItemName))
+				item.object.objectName.equalsIgnoreCase(_selectedItemName)) {
 			continue;
-
+		}
 		if (item.hasSurface && item.surface) {
 			screen.blitFrom(*item.surface,
 				Common::Rect(0, 0, item.surface->w, item.surface->h),
 				Common::Point(item.object.currentX, item.object.currentY));
 		} else if (item.hasBitmap && item.bitmap.isValid()) {
-			if (screen.format.bytesPerPixel == 1)
+			if (screen.format.bytesPerPixel == 1) {
 				blitBitmap(screen, item.bitmap, item.object.currentX, item.object.currentY);
-			else
+			}
+			else {
 				warning("INV: skip BM icon '%s' on true-color", item.object.objectName.c_str());
+			}
 		}
 	}
 }
