@@ -428,6 +428,7 @@ static int clampTownMapPanelIndex(int panelIndex) {
 	return CLIP<int>(panelIndex, 0, ARRAYSIZE(kTownMapBitmapPaths) - 1);
 }
 
+
 static int resolveTownMapEdgePanel(int currentPanel, const Common::Point &mousePos, int width, int height) {
 	if (mousePos.x <= kTownMapEdgeThreshold) {
 		if (currentPanel == 1)
@@ -2037,11 +2038,22 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 	if (!loadPaletteResource(*resources, kTownMapPalettePath, palette))
 		return Common::kReadingFailed;
 
-	Common::Array<IndexedBitmap> panels;
+	Common::Array<Graphics::Surface *> panels;
 	panels.resize(ARRAYSIZE(kTownMapBitmapPaths));
+
 	for (uint i = 0; i < ARRAYSIZE(kTownMapBitmapPaths); ++i) {
-		if (!loadBitmapResource(*resources, kTownMapBitmapPaths[i], panels[i]))
+		panels[i] = nullptr;
+		if (!loadPngAsMenuSurface(*resources, kTownMapBitmapPaths[i], panels[i])) {
+			warning("Harvester: failed to load town map PNG '%s'",
+				kTownMapBitmapPaths[i]);
+			for (uint j = 0; j < i; ++j) {
+				if (panels[j]) {
+					panels[j]->free();
+					delete panels[j];
+				}
+			}
 			return Common::kReadingFailed;
+		}
 	}
 
 	const Common::String previousMusicPath = _engine.getMusicPath();
@@ -2085,15 +2097,29 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 		const MapLocationRecord *hoveredLocation =
 			findTownMapLocationAt(script->getMapLocations(), currentPanel, _mousePos);
 		if (needsRedraw) {
-			setScaledPalette(*screen, palette, paletteBrightness);
-			screen->fillRect(screen->getBounds(), 0);
-			blitBitmap(*screen, panels[(uint)currentPanel], 0, 0);
+			Graphics::Surface *panel = panels[(uint)currentPanel];
+
+			if (panel) {
+				if (screen->format.bytesPerPixel == panel->format.bytesPerPixel &&
+						screen->format == panel->format) {
+					screen->fillRect(screen->getBounds(), 0);
+					screen->copyRectToSurface(*panel, 0, 0);
+				} else {
+					warning("Harvester: town map PNG format mismatch: screen=%u bpp, panel=%u bpp",
+						screen->format.bytesPerPixel, panel->format.bytesPerPixel);
+					screen->fillRect(screen->getBounds(), 0);
+				}
+			}
+
 			if (hoveredLocation) {
 				drawShadowedString(*screen, *font, hoveredLocation->labelText,
-					hoveredLocation->labelX, hoveredLocation->labelY, screen->w, kTownMapLabelColor);
+					hoveredLocation->labelX, hoveredLocation->labelY,
+					screen->w, kTownMapLabelColor);
 			}
+
 			if (EntityManager *entityManager = _engine.getRuntimeEntities())
 				entityManager->drawCursor(*screen);
+
 			screen->makeAllDirty();
 			screen->update();
 			needsRedraw = false;
