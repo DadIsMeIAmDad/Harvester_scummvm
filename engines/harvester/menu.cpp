@@ -862,8 +862,9 @@ static void renderSaveGameMenuScreen(HarvesterEngine &engine,
 			screen->w - 40, kTextColorNormal, Graphics::kTextAlignCenter);
 	}
 
-	if (engine.getRuntimeEntities())
+	if (engine.getRuntimeEntities()) {
 		engine.getRuntimeEntities()->drawCursor(*screen);
+	}
 	screen->makeAllDirty();
 	screen->update();
 }
@@ -879,9 +880,9 @@ static void renderConfirmPromptScreen(HarvesterEngine &engine,
 		const MenuTextConfig &config) {
 	Graphics::Screen *screen = engine.getScreen();
 	const Art *art = engine.getArt();
-	if (!screen || !art)
+	if (!screen || !art) {
 		return;
-
+	}
 	applyMenuPalette(*screen, engine, palette, paletteBrightness);
 
 	if (backdropSurface && backdropSurface->getPixels()) {
@@ -919,8 +920,9 @@ static void renderConfirmPromptScreen(HarvesterEngine &engine,
 	drawSinglePassString(*screen, yesFont, config.yesLabel, kConfirmYesTextX, kConfirmChoiceTextY);
 	drawSinglePassString(*screen, noFont, config.noLabel, kConfirmNoTextX, kConfirmChoiceTextY);
 
-	if (engine.getRuntimeEntities())
+	if (engine.getRuntimeEntities()) {
 		engine.getRuntimeEntities()->drawCursor(*screen);
+	}
 	screen->makeAllDirty();
 	screen->update();
 }
@@ -931,17 +933,17 @@ static int getNativeRoomMenuLineHeight(const Graphics::Font &selectedFont) {
 
 static int getNativeRoomMenuSelectionFromMouse(const Graphics::Font &selectedFont, uint itemCount,
 		const Common::Point &mousePos) {
-	if (itemCount == 0)
+	if (itemCount == 0) {
 		return -1;
-
+	}
 	int selection = mousePos.y - kMenuStartY;
-	if (selection < 1)
+	if (selection < 1) {
 		selection = 1;
-
+	}
 	selection /= MAX<int>(1, getNativeRoomMenuLineHeight(selectedFont));
-	if (selection >= (int)itemCount)
+	if (selection >= (int)itemCount) {
 		selection = (int)itemCount - 1;
-
+	}
 	return selection;
 }
 
@@ -952,9 +954,9 @@ bool resolveQuickTipsLayout(HarvesterEngine &engine, const MenuTextConfig &confi
 	const Graphics::Font *font = FontMan.getFontByUsage(Graphics::FontManager::kGUIFont);
 	const Art *art = engine.getArt();
 	const Script *script = engine.getScript();
-	if (!font || !art || !script)
+	if (!font || !art || !script) {
 		return false;
-
+	}
 	if (!config.hasQuickTipsHeader()) {
 		layout.exitRect = Common::Rect(180, 280, 238, 291);
 		layout.nextRect = Common::Rect(420, 280, 492, 291);
@@ -963,9 +965,9 @@ bool resolveQuickTipsLayout(HarvesterEngine &engine, const MenuTextConfig &confi
 	}
 
 	const IndexedBitmap *panel = art->getQuickTipsTextboxBitmap();
-	if (!panel || !panel->isValid())
+	if (!panel || !panel->isValid()) {
 		return false;
-
+	}
 	const Common::String &toggleLabel = script->isQuickTipsEnabled()
 		? config.quickTipsOnLabel : config.quickTipsOffLabel;
 	auto makeLabelRect = [font](const Common::String &label, int x) {
@@ -990,18 +992,18 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 	const Art *art = engine.getArt();
 	const Graphics::Font *font = FontMan.getFontByUsage(Graphics::FontManager::kGUIFont);
 	const Script *script = engine.getScript();
-	if (!screen || !art || !font || !script)
+	if (!screen || !art || !font || !script) {
 		return;
-
+	}
 	const IndexedBitmap *panel = nullptr;
 	const Graphics::Surface *panelSurface = nullptr;
 
 	if (config.hasQuickTipsHeader()) {
 		panel = art->getQuickTipsTextboxBitmap();
 
-		if (!panel || !panel->isValid())
+		if (!panel || !panel->isValid()) {
 			return;
-
+		}
 		blitBitmap(*screen, *panel, kQuickTipsOverlayX, kQuickTipsOverlayY);
 	} else {
 		panelSurface = art->getTipsSurface();
@@ -1018,9 +1020,9 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 		} else {
 			panel = &art->getTipsBitmap();
 
-			if (!panel || !panel->isValid())
+			if (!panel || !panel->isValid()) {
 				return;
-
+			}
 			blitBitmap(*screen, *panel, kQuickTipsOverlayX, kQuickTipsOverlayY);
 		}
 	}
@@ -1072,8 +1074,9 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	if (flow.takePendingGameOverReturn()) {
 		warning("HARVESTER: BEFORE pending game-over check");
 		Common::Error gameOverError = showGameOverBackdrop(flow);
-		if (gameOverError.getCode() != Common::kNoError)
+		if (gameOverError.getCode() != Common::kNoError) {
 			return gameOverError;
+		}
 	} else {
 		clearMainMenuBackdrop();
 	}
@@ -1128,30 +1131,32 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			needsRedraw = true;
 			return Common::kNoError;
 		}
-		if (roomError.getCode() != Common::kNoError)
+		if (roomError.getCode() != Common::kNoError) {
 			return roomError;
-
+		}
 		statusMessage.clear();
 		needsRedraw = true;
 		(void)flow.takePendingMainMenuReturn();
 		if (flow.takePendingGameOverReturn()) {
 			Common::Error gameOverError = showGameOverBackdrop(flow);
-			if (gameOverError.getCode() != Common::kNoError)
+			if (gameOverError.getCode() != Common::kNoError) {
 				return gameOverError;
+			}
 		} else {
 			clearMainMenuBackdrop();
 		}
 		return Common::kNoError;
 	};
 	auto activateSelectedItem = [&]() -> Common::Error {
-		if (selectedItem < 0 || selectedItem >= (int)mainMenuItems.size())
+		if (selectedItem < 0 || selectedItem >= (int)mainMenuItems.size()) {
 			return Common::kNoError;
-
+		}
 		const Common::String &item = mainMenuItems[selectedItem];
 		const byte *menuPalette = _hasMainMenuBackdrop ? _mainMenuBackdropPalette : art->getWaitPalette();
 		statusMessage.clear();
-		if (item.empty() || item == kBlankMenuSlot)
+		if (item.empty() || item == kBlankMenuSlot) {
 			return Common::kNoError;
+		}
 		debugC(2, kDebugGeneral, "Harvester: main menu selected index=%d label='%s'",
 			selectedItem, item.c_str());
 
@@ -1159,9 +1164,9 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			const MenuTextConfig &config = flow._menuTextConfig;
 
 			IndexedBitmap menuBackdrop;
-			if (!captureMenuBackdrop(menuBackdrop))
+			if (!captureMenuBackdrop(menuBackdrop)) {
 				return Common::kReadingFailed;
-
+			}
 			bool confirmed = false;
 			Common::Error confirmError = runConfirmPrompt(
 				menuBackdrop,
@@ -1171,12 +1176,13 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 				flow,
 				config.newGamePrompt,
 				confirmed);
-			if (confirmError.getCode() != Common::kNoError)
+			if (confirmError.getCode() != Common::kNoError) {
 				return confirmError;
+			}
 			needsRedraw = true;
-			if (!confirmed)
+			if (!confirmed) {
 				return Common::kNoError;
-
+			}
 			flow.prepareForNewGame();
 			return runSelectedRoomLoop("START");
 		}
@@ -1184,15 +1190,17 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		if (selectedItem == kMainMenuItemLoadGame) {
 			bool loadedGame = false;
 			Common::Error loadError = runLoadGameMenu(menuPalette, 1.0f, flow, loadedGame);
-			if (loadError.getCode() != Common::kNoError)
+			if (loadError.getCode() != Common::kNoError) {
 				return loadError;
+			}
 			needsRedraw = true;
-			if (!loadedGame)
+			if (!loadedGame) {
 				return Common::kNoError;
-
+			}
 			Common::String targetName = _engine.getPendingLoadedSaveRoomState().entranceName;
-			if (targetName.empty())
+			if (targetName.empty()) {
 				targetName = _engine.getPendingLoadedSaveRoomState().roomName;
+			}
 			if (targetName.empty()) {
 				statusMessage = "Loaded save is missing its room target.";
 				return Common::kNoError;
@@ -1233,9 +1241,9 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 
 		if (selectedItem == kMainMenuItemQuitGame) {
 			IndexedBitmap menuBackdrop;
-			if (!captureMenuBackdrop(menuBackdrop))
+			if (!captureMenuBackdrop(menuBackdrop)) {
 				return Common::kReadingFailed;
-
+			}
 			Common::Error quitError = runQuitGameConfirm(
 				menuBackdrop,
 				_mainMenuBackdropSurface,
@@ -1243,8 +1251,9 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 				1.0f,
 				flow);
 
-			if (quitError.getCode() != Common::kNoError)
+			if (quitError.getCode() != Common::kNoError) {
 				return quitError;
+			}
 
 			needsRedraw = true;
 			return Common::kNoError;
@@ -1255,19 +1264,20 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
-			if (_hasMainMenuBackdrop)
+			if (_hasMainMenuBackdrop) {
 				renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f, mainMenuItems, selectedItem);
-			else
+			} else {
 				renderMainMenuStub(mainMenuItems, selectedItem, statusMessage);
 			needsRedraw = false;
+			}
 		}
 
 		Common::Event event;
 		while (g_system->getEventManager()->pollEvent(event)) {
 			Common::Error result = Common::kNoError;
-			if (flow.handleSystemEvent(event, result))
+			if (flow.handleSystemEvent(event, result)) {
 				return result;
-
+			}
 			switch (event.type) {
 			case Common::EVENT_MOUSEMOVE: {
 				const int hoveredItem = _hasMainMenuBackdrop
@@ -1280,11 +1290,12 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 				break;
 			}
 			case Common::EVENT_KEYDOWN:
-				if (event.kbd.keycode == Common::KEYCODE_ESCAPE)
+				if (event.kbd.keycode == Common::KEYCODE_ESCAPE) {
 					return Common::kNoError;
-
-				if (mainMenuItems.empty())
+				}
+				if (mainMenuItems.empty()) {
 					break;
+				}
 
 				if (event.kbd.keycode == Common::KEYCODE_UP) {
 					selectedItem = (selectedItem + mainMenuItems.size() - 1) % mainMenuItems.size();
@@ -1295,23 +1306,25 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 				} else if (event.kbd.keycode == Common::KEYCODE_RETURN ||
 						event.kbd.keycode == Common::KEYCODE_KP_ENTER) {
 					Common::Error activateError = activateSelectedItem();
-					if (activateError.getCode() != Common::kNoError)
+					if (activateError.getCode() != Common::kNoError) {
 						return activateError;
+					}
 				}
 				break;
 			case Common::EVENT_LBUTTONDOWN: {
-				if (mainMenuItems.empty())
+				if (mainMenuItems.empty()) {
 					break;
-
+				}
 				selectedItem = _hasMainMenuBackdrop
 					? getBackdropMenuItemAt(_mousePos, mainMenuItems)
 					: getMenuItemAt(_mousePos, mainMenuItems);
-				if (selectedItem == -1)
+				if (selectedItem == -1) {
 					break;
-
+				}
 				Common::Error activateError = activateSelectedItem();
-				if (activateError.getCode() != Common::kNoError)
+				if (activateError.getCode() != Common::kNoError) {
 					return activateError;
+				}
 				break;
 			}
 			default:
@@ -1319,9 +1332,9 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			}
 		}
 
-		if (flow.tickRuntimeEntities())
+		if (flow.tickRuntimeEntities()) {
 			needsRedraw = true;
-
+		}
 		limiter.delayBeforeSwap();
 		limiter.startFrame();
 	}
@@ -1332,9 +1345,9 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 Common::Error MenuSystem::showGameOverBackdrop(Flow &flow) {
 ResourceManager *resources = _engine.getResources();
 Graphics::Screen *screen = _engine.getScreen();
-if (!resources || !screen)
-return Common::kReadingFailed;
-
+if (!resources || !screen) {
+	return Common::kReadingFailed;
+}
 IndexedBitmap backdrop;
 byte palette[256 * 3] = {};
 Graphics::Surface *backdropSurface = nullptr;
@@ -1350,9 +1363,9 @@ if (!loadedPng) {
 }
 
 if (backdropSurface) {
-	if (!_mainMenuBackdropSurface)
+	if (!_mainMenuBackdropSurface) {
 		_mainMenuBackdropSurface = new Graphics::Surface();
-
+	}
 	_mainMenuBackdropSurface->copyFrom(*backdropSurface);
 
 	warning("HARVESTER: GAME OVER PNG loaded %dx%d bpp=%u",
@@ -1384,8 +1397,9 @@ Graphics::FrameLimiter limiter(g_system, 60);
 
 while (!_engine.shouldQuit()) {
 	if (needsRedraw) {
-		if (!loadedPng)
+		if (!loadedPng) {
 			applyMenuPalette(*screen, _engine, _mainMenuBackdropPalette, 1.0f);
+		}
 
 		screen->fillRect(screen->getBounds(), 0);
 
@@ -1401,9 +1415,9 @@ while (!_engine.shouldQuit()) {
 			blitBitmap(*screen, _mainMenuBackdrop, 0, 0);
 		}
 
-		if (_engine.getRuntimeEntities())
+		if (_engine.getRuntimeEntities()) {
 			_engine.getRuntimeEntities()->drawCursor(*screen);
-
+		}
 		screen->makeAllDirty();
 		screen->update();
 		needsRedraw = false;
@@ -1412,9 +1426,9 @@ while (!_engine.shouldQuit()) {
 	Common::Event event;
 	while (g_system->getEventManager()->pollEvent(event)) {
 		Common::Error result = Common::kNoError;
-		if (flow.handleSystemEvent(event, result))
+		if (flow.handleSystemEvent(event, result)) {
 			return result;
-
+		}
 		switch (event.type) {
 		case Common::EVENT_MOUSEMOVE:
 			needsRedraw = true;
@@ -1431,8 +1445,9 @@ while (!_engine.shouldQuit()) {
 	}
 
 	if (EntityManager *entityManager = _engine.getRuntimeEntities()) {
-		if (entityManager->syncCursorEntityPosition(_mousePos))
+		if (entityManager->syncCursorEntityPosition(_mousePos)) {
 			needsRedraw = true;
+		}
 	}
 
 	limiter.delayBeforeSwap();
@@ -1457,7 +1472,7 @@ Common::Error MenuSystem::runRoomMenuStub(
 	const byte *palette,
 	float paletteBrightness,
 	Flow &flow,
-	bool canSaveGame, bool disableEscape) {
+	bool canSaveGame) {
 	Graphics::FrameLimiter limiter(g_system, 60);
 	if (backdropSurface) {
 		if (!_mainMenuBackdropSurface)
@@ -1599,12 +1614,12 @@ Common::Error MenuSystem::runRoomMenuStub(
 				break;
 			}
 			case Common::EVENT_KEYDOWN:
-				if (event.kbd.keycode == Common::KEYCODE_ESCAPE) {
+				if (event.kbd.keycode == Common::KEYCODE_ESCAPE)
 					return Common::kNoError;
-				}
-				if (roomMenuItems.empty()) {
+
+				if (roomMenuItems.empty())
 					break;
-				}
+
 				if (event.kbd.keycode == Common::KEYCODE_UP) {
 					selectedItem = (selectedItem + roomMenuItems.size() - 1) % roomMenuItems.size();
 					needsRedraw = true;
