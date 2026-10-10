@@ -1600,9 +1600,6 @@ Common::Error MenuSystem::runRoomMenuStub(
 			}
 			case Common::EVENT_KEYDOWN:
 				if (event.kbd.keycode == Common::KEYCODE_ESCAPE) {
-					if (disableEscape) {
-						break;
-					}
 					return Common::kNoError;
 				}
 				if (roomMenuItems.empty()) {
