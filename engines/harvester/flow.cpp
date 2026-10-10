@@ -1047,7 +1047,7 @@ static const ObjectRecord *findRoomObjectAtPoint(HarvesterEngine &engine,
 	EntityManager *entityManager = engine.getRuntimeEntities();
 	if (!entityManager) {
 		return nullptr;
-}
+	}
 
 	const Entity *topEntity = nullptr;
 	const ObjectRecord *topObject = nullptr;
@@ -1056,9 +1056,29 @@ static const ObjectRecord *findRoomObjectAtPoint(HarvesterEngine &engine,
 		if (object.objectName.empty())
 			continue;
 
+		
 		const Entity *entity = entityManager->findSceneEntityByName(object.objectName);
-		if (!entity || !entity->hitTest(point))
+		if (!entity)
 			continue;
+
+		const bool hit = entity->hitTest(point);
+		warning(
+			"HARVESTER HOVER TEST: object='%s' entity='%s' class=0x%x "
+			"mouse=(%d,%d) bounds=(%d,%d) hit=%d visible=%d",
+			object.objectName.c_str(),
+			entity->getName().c_str(),
+			entity->getClassId(),
+			point.x, point.y,
+			entity->getBoundsWidth(), entity->getBoundsHeight(),
+			hit ? 1 : 0,
+			entity->isVisible() ? 1 : 0);
+
+		if (!hit)
+			continue;
+
+
+
+
 		if (entity->getClassId() == kRuntimeEntityClassBackground ||
 			entity->getClassId() == kRuntimeEntityClassPlayer ||
 			entity->getClassId() == kRuntimeEntityClassRectHotspot19) {
@@ -1079,7 +1099,7 @@ static const ObjectRecord *findRoomObjectAtPoint(HarvesterEngine &engine,
 	}
 	if (!topEntity) {
 		return nullptr;
-}
+	}
 
 	return topObject;
 }
@@ -1383,7 +1403,7 @@ RoomHoverState resolveRoomHoverState(HarvesterEngine &engine, const RoomSetupSta
 	Script *script = engine.getScript();
 	if (!script) {
 		return hoverState;
-}
+	}
 	hoverState.object = findRoomObjectAtPoint(engine, sceneObjects, mousePos);
 	hoverState.region = findRoomRegionAtPoint(engine, sceneRegions, mousePos);
 	if (entityManager && hoverState.object && hoverState.region) {
@@ -1393,7 +1413,7 @@ RoomHoverState resolveRoomHoverState(HarvesterEngine &engine, const RoomSetupSta
 			entityManager->findSceneEntityDrawIndexByName(hoverState.region->regionName);
 		if (regionDrawIndex >= 0 && objectDrawIndex >= 0 && regionDrawIndex > objectDrawIndex) {
 			hoverState.object = nullptr;
-}
+		}
 	}
 	if (hoverState.object) {
 		hoverState.cursorSequence = resolveRoomObjectCursorSequence(*hoverState.object, *script);
@@ -1401,7 +1421,7 @@ RoomHoverState resolveRoomHoverState(HarvesterEngine &engine, const RoomSetupSta
 			*hoverState.object, *script, hoverState.cursorSequence, menuTextConfig);
 		if (hoverState.cursorSequence != kCursorSequenceNeutral || !hoverState.promptText.empty()) {
 			return hoverState;
-}
+		}
 		hoverState.object = nullptr;
 	}
 	if (hoverState.region && hoverState.region->cursorEnabled) {
