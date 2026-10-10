@@ -53,10 +53,12 @@ static MonsterAnimationRange resolveAnimationRange(int facing) {
 }
 
 static int resolveStandingFrame(const Entity &entity, const MonsterAnimationRange &range) {
-	if (entity.hasOpaqueFramesInRange(range.idleFrame, range.idleFrame))
+	if (entity.hasOpaqueFramesInRange(range.idleFrame, range.idleFrame)) {
 		return range.idleFrame;
-	if (entity.hasOpaqueFramesInRange(range.walkFirstFrame, range.walkFirstFrame))
+}
+	if (entity.hasOpaqueFramesInRange(range.walkFirstFrame, range.walkFirstFrame)) {
 		return range.walkFirstFrame;
+}
 	return CLIP<int>(range.idleFrame, 0, MAX(0, entity.getLastFrame()));
 }
 
@@ -70,7 +72,6 @@ void Monster::applyAnimation(Entity &entity, const MonsterRecord &monster) {
 	if (monster.currentHitPoints == 0) {
 		entity.setVisible(false);
 	}
-
 	if (!monster.visible)
 		return;
 

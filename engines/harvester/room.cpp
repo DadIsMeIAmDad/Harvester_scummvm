@@ -102,8 +102,9 @@ static void debugLogInventoryClick(const char *buttonLabel, const Common::Point 
 }
 
 static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, int x, int y) {
-	if (!bitmap.isValid())
+	if (!bitmap.isValid()) {
 		return;
+}
 
 	int destX = x;
 	int destY = y;
@@ -122,13 +123,15 @@ static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, in
 		height += destY;
 		destY = 0;
 	}
-	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0)
+	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0) {
 		return;
+}
 
 	width = MIN<int>(width, screen.w - destX);
 	height = MIN<int>(height, screen.h - destY);
-	if (width <= 0 || height <= 0)
+	if (width <= 0 || height <= 0) {
 		return;
+}
 
 	const byte *src = bitmap.pixels.data() + srcY * bitmap.width + srcX;
 	byte *dst = (byte *)screen.getBasePtr(destX, destY);
@@ -138,8 +141,9 @@ static void blitBitmap(Graphics::Screen &screen, const IndexedBitmap &bitmap, in
 
 static const CftFontResource *findStartupFontByName(const HarvesterEngine &engine, const char *fontName) {
 	const Text *text = engine.getText();
-	if (!text || !fontName)
+	if (!text || !fontName) {
 		return nullptr;
+}
 
 	for (const CftFontResource &font : text->getFonts()) {
 		if (font.name.equalsIgnoreCase(fontName))
@@ -152,30 +156,34 @@ static const CftFontResource *findStartupFontByName(const HarvesterEngine &engin
 static Common::String resolveStartupNpcLabel(const NpcRecord &npc) {
 	Common::String label = !npc.entityInitArg.empty() ? npc.entityInitArg : npc.npcName;
 	for (uint i = 0; i < label.size(); ++i) {
-		if (label[i] == '_')
+		if (label[i] == '_') {
 			label.setChar(' ', i);
+}
 	}
 
 	return label;
 }
 
 static Common::String resolveCarriedObjectSpritePath(const ObjectRecord &object) {
-	if (!object.altSpritePath.empty())
+	if (!object.altSpritePath.empty()) {
 		return object.altSpritePath;
+}
 	return object.spritePath;
 }
 
 static bool loadBitmapResource(ResourceManager &resources, const Common::String &path, IndexedBitmap &bitmap) {
 	Common::Array<byte> data;
-	if (!resources.loadFile(path, data) || data.size() < 12)
+	if (!resources.loadFile(path, data) || data.size() < 12) {
 		return false;
+}
 
 	bitmap = IndexedBitmap();
 	bitmap.width = READ_LE_UINT32(data.data());
 	bitmap.height = READ_LE_UINT32(data.data() + 4);
 	const uint32 pixelCount = bitmap.width * bitmap.height;
-	if (bitmap.width == 0 || bitmap.height == 0 || data.size() < 12 + pixelCount)
+	if (bitmap.width == 0 || bitmap.height == 0 || data.size() < 12 + pixelCount) {
 		return false;
+}
 
 	bitmap.pixels.resize(pixelCount);
 	memcpy(bitmap.pixels.data(), data.data() + 12, pixelCount);
@@ -186,8 +194,9 @@ static bool loadPngResource(ResourceManager &resources,
 		const Common::String &path,
 		Graphics::Surface &outSurface) {
 	Common::SeekableReadStream *stream = resources.openFile(path);
-	if (!stream)
+	if (!stream) {
 		return false;
+}
 
 	Image::PNGDecoder decoder;
 	if (!decoder.loadStream(*stream)) {
@@ -197,8 +206,9 @@ static bool loadPngResource(ResourceManager &resources,
 	delete stream;
 
 	const Graphics::Surface *src = decoder.getSurface();
-	if (!src)
+	if (!src) {
 		return false;
+}
 
 	outSurface.copyFrom(*src);
 	return true;
@@ -206,8 +216,9 @@ static bool loadPngResource(ResourceManager &resources,
 
 static bool loadPaletteResource(ResourceManager &resources, const Common::String &path, byte *palette) {
 	Common::Array<byte> data;
-	if (!resources.loadFile(path, data) || data.size() < 256 * 3)
+	if (!resources.loadFile(path, data) || data.size() < 256 * 3) {
 		return false;
+}
 
 	memcpy(palette, data.data(), 256 * 3);
 	return true;
@@ -225,22 +236,26 @@ static void applyRoomPalette(Graphics::Screen &screen, const HarvesterEngine &en
 static void renderCdChangePromptScreen(HarvesterEngine &engine, const IndexedBitmap &bitmap,
 		const byte *palette) {
 	Graphics::Screen *screen = engine.getScreen();
-	if (!screen)
+	if (!screen) {
 		return;
+}
 
 	applyRoomPalette(*screen, engine, palette, 1.0f);
 	screen->fillRect(screen->getBounds(), 0);
-	if (bitmap.isValid())
+	if (bitmap.isValid()) {
 		screen->copyRectToSurface(bitmap.pixels.data(), bitmap.width, 0, 0, bitmap.width, bitmap.height);
-	if (engine.getRuntimeEntities())
+}
+	if (engine.getRuntimeEntities()) {
 		engine.getRuntimeEntities()->drawCursor(*screen);
+}
 	screen->makeAllDirty();
 	screen->update();
 }
 
 static bool shouldDispatchPickupActionOnCarryStart(const ObjectRecord &object) {
-	if (object.actionTag.empty())
+	if (object.actionTag.empty()) {
 		return false;
+}
 
 	return !object.objectName.equalsIgnoreCase("SANDWICH") &&
 		!object.objectName.equalsIgnoreCase("SANDWICH2") &&
@@ -248,8 +263,9 @@ static bool shouldDispatchPickupActionOnCarryStart(const ObjectRecord &object) {
 }
 
 static bool shouldDispatchPickupActionOnDirectInventoryTransfer(const ObjectRecord &object) {
-	if (object.actionTag.empty())
+	if (object.actionTag.empty()) {
 		return false;
+}
 
 	return !object.objectName.equalsIgnoreCase("ST_ASPRIN") &&
 		!object.objectName.equalsIgnoreCase("ST_COUGHM") &&
@@ -258,8 +274,9 @@ static bool shouldDispatchPickupActionOnDirectInventoryTransfer(const ObjectReco
 
 static void drawRoomPrompt(Graphics::Screen &screen, const Graphics::Font &font,
 		const Common::String &promptText, bool useNativeFont) {
-	if (promptText.empty())
+	if (promptText.empty()) {
 		return;
+}
 
 	if (useNativeFont) {
 		font.drawString(&screen, promptText, 0, 462, 640, 0, Graphics::kTextAlignCenter);
@@ -272,8 +289,9 @@ static void drawRoomPrompt(Graphics::Screen &screen, const Graphics::Font &font,
 
 static void drawInventoryTooltip(Graphics::Screen &screen, const Graphics::Font &font,
 		const Common::String &tooltipText) {
-	if (tooltipText.empty())
+	if (tooltipText.empty()) {
 		return;
+}
 
 	font.drawString(&screen, tooltipText, kNativeInventoryTooltipX, kNativeInventoryTooltipY,
 		font.getStringWidth(tooltipText), kNativeInventoryTooltipColor);
@@ -281,8 +299,9 @@ static void drawInventoryTooltip(Graphics::Screen &screen, const Graphics::Font 
 
 static void drawInventoryWeekday(Graphics::Screen &screen, const Graphics::Font &font,
 		const Common::String &weekdayText) {
-	if (weekdayText.empty())
+	if (weekdayText.empty()) {
 		return;
+}
 
 	font.drawString(&screen, weekdayText, kNativeInventoryWeekdayX, kNativeInventoryWeekdayY,
 		font.getStringWidth(weekdayText), kNativeInventoryTooltipColor);
@@ -291,16 +310,19 @@ static void drawInventoryWeekday(Graphics::Screen &screen, const Graphics::Font 
 static void drawCombatLoadoutResourceIcons(Graphics::Screen &screen, const Art &art,
 		const Script &script, int loadout) {
 	CombatLoadoutHudInfo info;
-	if (!resolveCombatLoadoutHudInfo(loadout, info))
+	if (!resolveCombatLoadoutHudInfo(loadout, info)) {
 		return;
+}
 
 	const Common::Array<Graphics::Surface *> &ammoIcons = art.getAmmoIcons();
-	if (info.iconIndex >= ammoIcons.size())
+	if (info.iconIndex >= ammoIcons.size()) {
 		return;
+}
 
 	const Graphics::Surface *icon = ammoIcons[info.iconIndex];
-	if (!icon)
+	if (!icon) {
 		return;
+}
 
 	const int iconCount = CLIP<int>(
 		script.getPlayerCombatResourceCount(loadout),
@@ -320,8 +342,9 @@ static void drawCombatLoadoutResourceIcons(Graphics::Screen &screen, const Art &
 }
 
 static byte findNearestPaletteColor(const byte *palette, byte red, byte green, byte blue) {
-	if (!palette)
+	if (!palette) {
 		return 0;
+}
 
 	byte bestIndex = 0;
 	uint32 bestDistance = 0xffffffffu;
@@ -342,8 +365,9 @@ static byte findNearestPaletteColor(const byte *palette, byte red, byte green, b
 
 static void drawShadowedRoomText(Graphics::Screen &screen, const Graphics::Font &font,
 		const Common::String &text, int x, int y, byte textColor, byte shadowColor) {
-	if (text.empty())
+	if (text.empty()) {
 		return;
+}
 
 	const int width = font.getStringWidth(text);
 	font.drawString(&screen, text, x + 1, y + 1, width, shadowColor);
