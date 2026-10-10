@@ -1211,9 +1211,10 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 
 		if (selectedItem == kMainMenuItemOptions) {
 			IndexedBitmap menuBackdrop;
-			if (!captureMenuBackdrop(menuBackdrop))
+			if (!captureMenuBackdrop(menuBackdrop)) {
 				warning("Background Skipped In Options");
 				return Common::kReadingFailed;
+			}
 			Common::Error optionsError = runOptionsMenu(
 				menuBackdrop,
 				_mainMenuBackdropSurface,   // may be nullptr in 8-bit mode — OK
@@ -2380,16 +2381,16 @@ Common::Error MenuSystem::runOptionsMenu(
 	ResourceManager *resources = _engine.getResources();
 	const CftFontResource *selectedFontResource = findStartupFontByName(_engine, "HARVFONT");
 	const CftFontResource *unselectedFontResource = findStartupFontByName(_engine, "HARVFNT2");
-	if (!art || !script || !resources || !selectedFontResource || !unselectedFontResource)
+	if (!art || !script || !resources || !selectedFontResource || !unselectedFontResource) {
 		warning("HARVESTER OPTIONS: ENTER runOptionsMenu 1");
 		return Common::kReadingFailed;
-
+	}
 	HarvesterCftFont selectedFont(*selectedFontResource);
 	HarvesterCftFont unselectedFont(*unselectedFontResource);
-	if (!selectedFont.isValid() || !unselectedFont.isValid())
+	if (!selectedFont.isValid() || !unselectedFont.isValid()) {
 		warning("HARVESTER OPTIONS: ENTER runOptionsMenu 2");
 		return Common::kReadingFailed;
-
+	}
 	const MenuTextConfig &config = flow._menuTextConfig;
 
 	IndexedBitmap volumeBar;
@@ -2543,8 +2544,9 @@ Common::Error MenuSystem::runOptionsMenu(
 			break;
 		case 5:
 			if (!flow._quickTips.empty()) {
-				if (!resolveQuickTipsLayout(_engine, config, quickTipsLayout))
+				if (!resolveQuickTipsLayout(_engine, config, quickTipsLayout)) {
 					return Common::kReadingFailed;
+				}
 				showingQuickTips = true;
 				needsRedraw = true;
 			}
@@ -2596,9 +2598,10 @@ Common::Error MenuSystem::runOptionsMenu(
 						needsRedraw = true;
 					} else if (quickTipsLayout.toggleRect.contains(_mousePos)) {
 						script->setQuickTipsEnabled(!script->isQuickTipsEnabled());
-						if (!resolveQuickTipsLayout(_engine, config, quickTipsLayout))
+						if (!resolveQuickTipsLayout(_engine, config, quickTipsLayout)) {
 							warning("HARVESTER OPTIONS: ENTER runOptionsMenu 4");
 							return Common::kReadingFailed;
+						}
 						persistConfig();
 						needsRedraw = true;
 					}
@@ -2966,8 +2969,9 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 
 	HarvesterCftFont selectedFont(*selectedFontResource);
 	HarvesterCftFont unselectedFont(*unselectedFontResource);
-	if (!selectedFont.isValid() || !unselectedFont.isValid())
+	if (!selectedFont.isValid() || !unselectedFont.isValid()) {
 		return;
+	}
 
 	applyMenuPalette(*screen, _engine, palette, paletteBrightness);
 	warning("HARVESTER: MENU RESTORE surface=%p", (void *)_mainMenuBackdropSurface);
