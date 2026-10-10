@@ -2955,7 +2955,28 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return Common::kNoError;
 			}
 
+			
+			// Melee attacks require actual sprite-rectangle overlap.
+			// Projectile attacks keep their existing contact rules.
+			if (!Player::isProjectileCombatLoadout(playerState.combatLoadout)) {
+				const Common::Rect meleePlayerRect =
+					playerState.entity->getScreenRect();
+				const Common::Rect meleeTargetRect =
+					monsterEntity->getScreenRect();
 
+				const bool meleeSpritesOverlap =
+					meleePlayerRect.left < meleeTargetRect.right &&
+					meleePlayerRect.right > meleeTargetRect.left &&
+					meleePlayerRect.top < meleeTargetRect.bottom &&
+					meleePlayerRect.bottom > meleeTargetRect.top;
+
+				if (!meleeSpritesOverlap) {
+					debugC(1, kDebugCombat,
+						"Harvester: combat player attack missed target='%s' reason='melee sprites do not overlap'",
+						monster->monsterName.c_str());
+					return Common::kNoError;
+				}
+			}
 			
 			const int hitPointsBefore = monster->currentHitPoints;
 			monster->currentHitPoints = MAX(0,
