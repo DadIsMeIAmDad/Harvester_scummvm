@@ -79,7 +79,7 @@ Common::Error SparkyDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		state.returnVisitDayIndex = runtime.startupScript().getCurrentStoryDayIndex();
 
 		const DialogueLineEntry introLines[] = {
-			{ 0x2f7, "PC", 1 },
+			{ 0x2f7, "SPARKY", 1 },
 			{ 0x2fe, "SPARKY", 2 },
 			{ 0x302, "SPARKY", 0 }
 		};
@@ -93,7 +93,7 @@ Common::Error SparkyDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		lineError = runtime.playDialogueFst(kDialogueC098FstPath);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
-		lineError = playPcLine(0x30d, 1);
+		lineError = playSparkyLine(0x30d, 1);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
 
