@@ -976,7 +976,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// to the TOP-RIGHT corner of frame 0.
 		if (_name == "MOM" ||
 				_name == "HANK" ||
-				_name == "BILLY") {
+				_name == "PARSONS") {
 
 			anchorRight = true;
 		}
@@ -984,8 +984,8 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// Entities whose PNG frames should stay aligned
 		// to the TOP-LEFT corner of frame 0.
 		else if (_name == "CABNET" ||
-				_name == "DOOR" ||
-				_name == "TABLE") {
+				_name == "SWELL" ||
+				_name == "PASTORELLI") {
 
 			anchorLeft = true;
 		}
