@@ -976,25 +976,25 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// Entities anchored to the TOP-RIGHT corner.
 		if (_name == "MOM" ||
 				_name == "HANK" ||
-				_name == "NOBODY") {
+				_name == "PARSONS") {
 
 			anchorRight = true;
 		}
 
 		// Entities anchored to the TOP-LEFT corner.
 		else if (_name == "CABNET" ||
-				_name == "NOBODY3" ||
-				_name == "NOBODY2") {
+				_name == "SWELL" ||
+				_name == "PASTORELLI") {
 
 			anchorLeft = true;
 		}
 
 		// Entities anchored to the BOTTOM-CENTER.
 		// Replace these placeholders with actual entity names.
-		else if (_name == "PASTORELLI" ||
-				_name == "SWELL" ||
+		else if (_name == "NOBODY1" ||
+				_name == "NOBODY" ||
 				_name == "WASP_WOMAN" ||
-				_name == "PARSONS") {
+				_name == "NOBODY2") {
 
 			anchorBottomCenter = true;
 		}
