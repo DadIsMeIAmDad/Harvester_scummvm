@@ -965,29 +965,40 @@ void Entity::draw(Graphics::Screen &screen) const {
 		const int drawnWidth = scaleDimension(src->w, _depthScale);
 		const int drawnHeight = scaleDimension(src->h, _depthScale);
 
+
 		// -------------------------------------------------
 		// Decide how this entity should be anchored.
 		// -------------------------------------------------
 
 		bool anchorRight = false;
 		bool anchorLeft = false;
+		bool anchorBottomCenter = false;
 
 		// Entities whose PNG frames should stay aligned
 		// to the TOP-RIGHT corner of frame 0.
 		if (_name == "MOM" ||
 				_name == "HANK" ||
-				_name == "PARSONS") {
+				_name == "TED") {
 
 			anchorRight = true;
 		}
-
+		
 		// Entities whose PNG frames should stay aligned
 		// to the TOP-LEFT corner of frame 0.
 		else if (_name == "CABNET" ||
-				_name == "SWELL" ||
+				_name == "NOBODY" ||
 				_name == "PASTORELLI") {
 
 			anchorLeft = true;
+		}
+
+		// Entities whose PNG frames should stay aligned
+		// to the BOTTOM-CENTER of frame 0.
+		else if (_name == "PARSONS" ||
+				_name == "SWELL" ||
+				_name == "WASP_WOMAN") {
+
+			anchorBottomCenter = true;
 		}
 
 		// -------------------------------------------------
@@ -1006,6 +1017,11 @@ void Entity::draw(Graphics::Screen &screen) const {
 			// TOP-LEFT of first frame.
 			x = drawOrigin.x;
 			y = drawOrigin.y;
+		}
+		else if (anchorBottomCenter) {
+			// BOTTOM-CENTER of first frame.
+			x = drawOrigin.x + (anchorWidth - drawnWidth) / 2;
+			y = drawOrigin.y + anchorHeight - drawnHeight;
 		}
 
 		// -------------------------------------------------
@@ -1033,47 +1049,6 @@ void Entity::draw(Graphics::Screen &screen) const {
 		}
 
 		return;
-	}
-
-	// -------------------------------------------------
-	// Single PNG surface
-	// -------------------------------------------------
-
-	if (_pngSurface) {
-		screen.blitFrom(
-			*_pngSurface,
-			Common::Rect(
-				0,
-				0,
-				_pngSurface->w,
-				_pngSurface->h),
-			Common::Point(
-				drawOrigin.x,
-				drawOrigin.y));
-
-		return;
-	}
-
-	// -------------------------------------------------
-	// Classic ABM
-	// -------------------------------------------------
-
-	if (_currentFrame < 0)
-		return;
-
-	blitAnimationFrame(
-		screen,
-		_frames,
-		_currentFrame,
-		drawOrigin.x,
-		drawOrigin.y);
-}
-
-
-
-
-
-
 
 Common::Rect Entity::getFrameRect() const {
 	const Common::Point drawOrigin = getDrawOrigin();
