@@ -920,7 +920,6 @@ void Entity::resumeTimerCountdown(uint32 now) {
 
 
 
-```cpp
 void Entity::draw(Graphics::Screen &screen) const {
 	if (!_visible || !_drawEnabled)
 		return;
@@ -1083,7 +1082,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 		drawOrigin.x,
 		drawOrigin.y);
 }
-```
+
 
 
 
