@@ -984,7 +984,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// Entities anchored to the TOP-LEFT corner.
 		else if (_name == "CABNET" ||
 				_name == "SWELL" ||
-				_name == "PASTORELLI") {
+				_name == "NOODY") {
 
 			anchorLeft = true;
 		}
@@ -992,7 +992,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// Entities anchored to the BOTTOM-CENTER.
 		// Replace these placeholders with actual entity names.
 		else if (_name == "NOBODY1" ||
-				_name == "NOBODY" ||
+				_name == "PASTORELLI" ||
 				_name == "WASP_WOMAN" ||
 				_name == "NOBODY2") {
 
