@@ -3047,22 +3047,15 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			bool matchesDirection = false;
 
 			if (attackSide == kNativeAttackSideLeft) {
-				if (attackBand == kNativeAttackBandMid) {
-					matchesDirection = targetLeft < playerCenterX;
-				} else {
-					matchesDirection =
-						targetLeft < playerCenterX &&
-						targetCenterX > playerLeft - kNativeAttackSideWindow;
-				}
+				matchesDirection =
+					targetCenterX < playerCenterX &&
+					targetCenterX > playerLeft - kNativeAttackSideWindow;
 			} else if (attackSide == kNativeAttackSideRight) {
-				if (attackBand == kNativeAttackBandMid) {
-					matchesDirection = playerCenterX < targetLeft;
-				} else {
-					matchesDirection =
-						playerCenterX < targetLeft &&
-						targetCenterX < playerRight + kNativeAttackSideWindow;
-				}
+				matchesDirection =
+					targetCenterX > playerCenterX &&
+					targetCenterX < playerRight + kNativeAttackSideWindow;
 			}
+
 
 			if (!matchesDirection) {
 				debugC(1, kDebugCombat,
