@@ -2842,11 +2842,12 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 
 
-
 		auto resolvePlayerAttackContact = [&]() -> Common::Error {
-			if (!playerState.attackActive || playerState.attackContactResolved || !playerState.entity) {
-				return Common::kNoError;
-			}
+		if (!playerState.attackActive || playerState.attackContactResolved || !playerState.entity ||
+				playerState.attackContactFrame > 0 ||
+				playerState.entity->getCurrentFrame() < playerState.attackContactFrame) {
+			return Common::kNoError;
+		}
 
 
 
