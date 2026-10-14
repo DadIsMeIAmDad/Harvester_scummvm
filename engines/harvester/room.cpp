@@ -2258,52 +2258,26 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (Player::isProjectileCombatLoadout(playerState.combatLoadout))
 				return true;
 
-			return areCombatantsWithinRoomCombatReach(scene.state,
-				*playerState.entity, playerState.z, *targetEntity, targetEntity->getZ(), engageDistance);
-		};
-		enum NativeAttackSide {
-			kNativeAttackSideNone,
-			kNativeAttackSideLeft,
-			kNativeAttackSideRight
-		};
-		enum NativeAttackBand {
-			kNativeAttackBandMid,
-			kNativeAttackBandUpper,
-			kNativeAttackBandLower
-		};
-		auto resolveNativePlayerAttackGeometry = [](int attackFirstFrame,
-				NativeAttackSide &attackSide, NativeAttackBand &attackBand) {
-			attackSide = kNativeAttackSideNone;
-			attackBand = kNativeAttackBandMid;
+			// Monsters keep the native tight Z gate.
+			if (targetEntity->getClassId() == kRuntimeEntityClassMonster)
+				return areCombatantsWithinRoomCombatReach(scene.state,
+					*playerState.entity, playerState.z,
+					*targetEntity, targetEntity->getZ(), engageDistance);
 
-			switch (attackFirstFrame) {
-			case 0x50:
-				attackSide = kNativeAttackSideLeft;
-				attackBand = kNativeAttackBandUpper;
-				return true;
-			case 0x5a:
-				attackSide = kNativeAttackSideLeft;
-				attackBand = kNativeAttackBandMid;
-				return true;
-			case 0x64:
-				attackSide = kNativeAttackSideLeft;
-				attackBand = kNativeAttackBandLower;
-				return true;
-			case 0x6e:
-				attackSide = kNativeAttackSideRight;
-				attackBand = kNativeAttackBandUpper;
-				return true;
-			case 0x78:
-				attackSide = kNativeAttackSideRight;
-				attackBand = kNativeAttackBandMid;
-				return true;
-			case 0x82:
-				attackSide = kNativeAttackSideRight;
-				attackBand = kNativeAttackBandLower;
-				return true;
-			default:
+			// Plain NPCs (ambient animations, no MonsterRecord): use depth-extent overlap
+			// instead of the ±2.0 base-Z test so the player doesn't need perfect alignment.
+			if (!doRuntimeEntityDepthExtentsOverlap(*playerState.entity, *targetEntity))
 				return false;
-			}
+
+			// Still require reasonable horizontal reach (same helper as the general path,
+			// but we already passed the Z test via extents).
+			return areCombatantsWithinRoomCombatReach(scene.state,
+				*playerState.entity, playerState.z,
+				*targetEntity, targetEntity->getZ(), engageDistance)
+				// Optional: if the above still fails on Z for some NPCs, fall back to a
+				// pure horizontal check after the extent test succeeded:
+				|| computeRuntimeEntityHorizontalGap(*playerState.entity, *targetEntity)
+				<= MAX(0, engageDistance);
 		};
 		auto findProjectileContactMonsterTarget = [&]() -> MonsterRecord * {
 			if (!playerState.entity)
