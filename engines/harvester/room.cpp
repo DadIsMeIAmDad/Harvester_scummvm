@@ -2887,27 +2887,15 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				const int targetCenterX =
 					targetLeft + targetRect.width() / 2;
 
+				
 				bool matchesDirection = false;
 
 				if (attackSide == kNativeAttackSideLeft) {
-					if (attackBand == kNativeAttackBandMid) {
-						matchesDirection = targetLeft < playerCenterX;
-					} else {
-						matchesDirection =
-							targetLeft < playerCenterX &&
-							targetCenterX >
-								playerLeft - kNativeAttackSideWindow;
-					}
+					matchesDirection = targetCenterX < playerCenterX;
 				} else if (attackSide == kNativeAttackSideRight) {
-					if (attackBand == kNativeAttackBandMid) {
-						matchesDirection = playerCenterX < targetLeft;
-					} else {
-						matchesDirection =
-							playerCenterX < targetLeft &&
-							targetCenterX <
-								playerRight + kNativeAttackSideWindow;
-					}
+					matchesDirection = targetCenterX > playerCenterX;
 				}
+
 
 				if (!matchesDirection) {
 					debugC(1, kDebugCombat,
