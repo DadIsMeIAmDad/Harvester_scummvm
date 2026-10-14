@@ -2257,43 +2257,44 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 
 
+		// 1) Reach helper (NPC-only relaxation is fine here)
 		auto playerAttackCanReachTarget = [&](Entity *targetEntity, int engageDistance = 0) {
 			if (!playerState.entity || !targetEntity)
 				return false;
 			if (Player::isProjectileCombatLoadout(playerState.combatLoadout))
 				return true;
 
-			// Monsters keep the native tight Z gate.
 			if (targetEntity->getClassId() == kRuntimeEntityClassMonster)
 				return areCombatantsWithinRoomCombatReach(scene.state,
 					*playerState.entity, playerState.z,
 					*targetEntity, targetEntity->getZ(), engageDistance);
 
-			// Plain NPCs (ambient animations, no MonsterRecord): use depth-extent overlap
-			// instead of the ±2.0 base-Z test so the player doesn't need perfect alignment.
+			// NPC path – extent overlap (or your chosen looser test)
 			if (!doRuntimeEntityDepthExtentsOverlap(*playerState.entity, *targetEntity))
 				return false;
 
-			// Still require reasonable horizontal reach (same helper as the general path,
-			// but we already passed the Z test via extents).
 			return areCombatantsWithinRoomCombatReach(scene.state,
 				*playerState.entity, playerState.z,
-				*targetEntity, targetEntity->getZ(), engageDistance)
-				// Optional: if the above still fails on Z for some NPCs, fall back to a
-				// pure horizontal check after the extent test succeeded:
-				|| computeRuntimeEntityHorizontalGap(*playerState.entity, *targetEntity)
-				<= MAX(0, engageDistance);
+				*targetEntity, targetEntity->getZ(), engageDistance);
+		};   // <--- semicolon required
+
+		// 2) Enums must be at the same scope as the lambdas (not inside another lambda)
+		enum NativeAttackSide {
+			kNativeAttackSideNone,
+			kNativeAttackSideLeft,
+			kNativeAttackSideRight
 		};
-	
-	
-	
-	
-	
+		enum NativeAttackBand {
+			kNativeAttackBandMid,
+			kNativeAttackBandUpper,
+			kNativeAttackBandLower
+		};
+
+		// 3) Geometry helper
 		auto resolveNativePlayerAttackGeometry = [](int attackFirstFrame,
 				NativeAttackSide &attackSide, NativeAttackBand &attackBand) {
 			attackSide = kNativeAttackSideNone;
 			attackBand = kNativeAttackBandMid;
-
 			switch (attackFirstFrame) {
 			case 0x50:
 				attackSide = kNativeAttackSideLeft;
