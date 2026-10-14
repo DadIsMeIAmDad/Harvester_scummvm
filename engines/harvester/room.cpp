@@ -2252,6 +2252,11 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 			return nullptr;
 		};
+
+
+
+
+
 		auto playerAttackCanReachTarget = [&](Entity *targetEntity, int engageDistance = 0) {
 			if (!playerState.entity || !targetEntity)
 				return false;
@@ -2278,6 +2283,45 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				// pure horizontal check after the extent test succeeded:
 				|| computeRuntimeEntityHorizontalGap(*playerState.entity, *targetEntity)
 				<= MAX(0, engageDistance);
+		};
+	
+	
+	
+	
+	
+		auto resolveNativePlayerAttackGeometry = [](int attackFirstFrame,
+				NativeAttackSide &attackSide, NativeAttackBand &attackBand) {
+			attackSide = kNativeAttackSideNone;
+			attackBand = kNativeAttackBandMid;
+
+			switch (attackFirstFrame) {
+			case 0x50:
+				attackSide = kNativeAttackSideLeft;
+				attackBand = kNativeAttackBandUpper;
+				return true;
+			case 0x5a:
+				attackSide = kNativeAttackSideLeft;
+				attackBand = kNativeAttackBandMid;
+				return true;
+			case 0x64:
+				attackSide = kNativeAttackSideLeft;
+				attackBand = kNativeAttackBandLower;
+				return true;
+			case 0x6e:
+				attackSide = kNativeAttackSideRight;
+				attackBand = kNativeAttackBandUpper;
+				return true;
+			case 0x78:
+				attackSide = kNativeAttackSideRight;
+				attackBand = kNativeAttackBandMid;
+				return true;
+			case 0x82:
+				attackSide = kNativeAttackSideRight;
+				attackBand = kNativeAttackBandLower;
+				return true;
+			default:
+				return false;
+			}
 		};
 		auto findProjectileContactMonsterTarget = [&]() -> MonsterRecord * {
 			if (!playerState.entity)
