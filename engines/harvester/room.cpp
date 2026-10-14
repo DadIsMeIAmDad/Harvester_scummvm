@@ -2831,57 +2831,173 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			}
 		}
 		if (playerState.attackTargetClassId == kRuntimeEntityClassNpc) {
-			NpcRecord *npc = findRoomNpcRecordByName(playerState.attackTargetName);
-			Entity *npcEntity = npc ? findSceneRuntimeEntity(npc->npcName) : nullptr;
-			if (!npc || !npcEntity || !playerAttackCanReachTarget(npcEntity))
-				npc = Player::isProjectileCombatLoadout(playerState.combatLoadout) ? nullptr : findOverlappingNpcTarget();
-			npcEntity = npc ? findSceneRuntimeEntity(npc->npcName) : nullptr;
-			if (!npc) {
+			const bool isProjectile =
+				Player::isProjectileCombatLoadout(playerState.combatLoadout);
+
+			NpcRecord *npc = findRoomNpcRecordByName(
+				playerState.attackTargetName);
+
+			Entity *npcEntity =
+				npc ? findSceneRuntimeEntity(npc->npcName) : nullptr;
+
+			if (!npc || !npcEntity ||
+					!playerAttackCanReachTarget(npcEntity)) {
+				npc = isProjectile
+					? nullptr
+					: findOverlappingNpcTarget();
+
+				npcEntity = npc
+					? findSceneRuntimeEntity(npc->npcName)
+					: nullptr;
+			}
+
+			if (!npc || !npcEntity) {
 				debugC(1, kDebugCombat,
 					"Harvester: combat player attack missed class='npc' target='%s' reason='no reachable npc'",
 					playerState.attackTargetName.c_str());
 				return Common::kNoError;
 			}
 
+			// Melee attacks must face the NPC and physically connect.
+			// Projectile attacks retain their existing collision rules.
+			if (!isProjectile) {
+				NativeAttackSide attackSide = kNativeAttackSideNone;
+				NativeAttackBand attackBand = kNativeAttackBandMid;
+
+				if (!resolveNativePlayerAttackGeometry(
+						playerState.attackFirstFrame,
+						attackSide, attackBand)) {
+					debugC(1, kDebugCombat,
+						"Harvester: combat player attack missed target='%s' reason='unknown attack direction'",
+						npc->npcName.c_str());
+					return Common::kNoError;
+				}
+
+				const Common::Rect playerRect =
+					playerState.entity->getScreenRect();
+				const Common::Rect targetRect =
+					npcEntity->getScreenRect();
+
+				const int playerLeft = playerRect.left;
+				const int playerRight = playerRect.right;
+				const int playerCenterX =
+					playerLeft + playerRect.width() / 2;
+
+				const int targetLeft = targetRect.left;
+				const int targetCenterX =
+					targetLeft + targetRect.width() / 2;
+
+				bool matchesDirection = false;
+
+				if (attackSide == kNativeAttackSideLeft) {
+					if (attackBand == kNativeAttackBandMid) {
+						matchesDirection = targetLeft < playerCenterX;
+					} else {
+						matchesDirection =
+							targetLeft < playerCenterX &&
+							targetCenterX >
+								playerLeft - kNativeAttackSideWindow;
+					}
+				} else if (attackSide == kNativeAttackSideRight) {
+					if (attackBand == kNativeAttackBandMid) {
+						matchesDirection = playerCenterX < targetLeft;
+					} else {
+						matchesDirection =
+							playerCenterX < targetLeft &&
+							targetCenterX <
+								playerRight + kNativeAttackSideWindow;
+					}
+				}
+
+				if (!matchesDirection) {
+					debugC(1, kDebugCombat,
+						"Harvester: combat player attack missed target='%s' reason='wrong attack direction'",
+						npc->npcName.c_str());
+					return Common::kNoError;
+				}
+
+				// Check actual opaque-pixel overlap, not just rectangles.
+				if (!playerState.entity->overlapsEntity(*npcEntity)) {
+					debugC(1, kDebugCombat,
+						"Harvester: combat player attack missed target='%s' reason='melee opaque pixels do not overlap'",
+						npc->npcName.c_str());
+					return Common::kNoError;
+				}
+			}
+
+			// Keep the existing NPC-specific death and monsterfy behavior.
 			const bool runtimeChanged =
-				script->queueRuntimeNpcDeathOrMonsterfy(npc->npcName, damageType);
-			const bool jimmyFlagChanged = npc->npcName.equalsIgnoreCase("JIMMY")
-				? script->setRuntimeFlagValue("JIMMY_ATTACKED", true)
-				: false;
-			const int npcIndex = findRoomNpcIndexByName(npc->npcName);
+				script->queueRuntimeNpcDeathOrMonsterfy(
+					npc->npcName, damageType);
+
+			const bool jimmyFlagChanged =
+				npc->npcName.equalsIgnoreCase("JIMMY")
+					? script->setRuntimeFlagValue("JIMMY_ATTACKED", true)
+					: false;
+
+			const int npcIndex =
+				findRoomNpcIndexByName(npc->npcName);
+
 			RoomNpcCombatState *combatState =
-				npcIndex >= 0 && npcIndex < (int)npcCombatStates.size()
+				npcIndex >= 0 &&
+				npcIndex < (int)npcCombatStates.size()
 					? &npcCombatStates[(uint)npcIndex]
 					: nullptr;
+
 			if (runtimeChanged) {
 				npc->deathDamageType = damageType;
+
 				if (combatState)
 					clearRoomNpcCombatState(*combatState);
 			}
+
 			debugC(1, kDebugCombat,
 				"Harvester: combat player npc hit target='%s' damage_type=%d runtime_changed=%d jimmy_flag=%d",
-				npc->npcName.c_str(), damageType, runtimeChanged, jimmyFlagChanged);
+				npc->npcName.c_str(), damageType,
+				runtimeChanged, jimmyFlagChanged);
+
 			if (!runtimeChanged && !jimmyFlagChanged)
 				return Common::kNoError;
+
 			if (runtimeChanged && npcEntity) {
-				const Common::String followTargetName = npc->monsterfyTargetName;
+				const Common::String followTargetName =
+					npc->monsterfyTargetName;
+
 				if (spawnCombatHitEffect(*npcEntity, followTargetName))
 					needsRedraw = true;
 			}
+
 			if (runtimeChanged && combatState && npcEntity &&
-					beginNpcDeathTransition(*npc, *npcEntity, *combatState, damageType))
+					beginNpcDeathTransition(
+						*npc, *npcEntity, *combatState, damageType))
 				return Common::kNoError;
+
 			if (runtimeChanged) {
 				debugC(1, kDebugCombat,
 					"Harvester: combat npc defeated target='%s' damage_type=%d on_death='%s' fallback='no death bank'",
-					npc->npcName.c_str(), damageType, npc->onDeathActionTag.c_str());
+					npc->npcName.c_str(), damageType,
+					npc->onDeathActionTag.c_str());
+
 				RoomNpcCombatState fallbackState;
 				fallbackState.deathDamageType = damageType;
-				return finalizeNpcDeathTransition(*npc, combatState ? *combatState : fallbackState);
+
+				return finalizeNpcDeathTransition(
+					*npc,
+					combatState ? *combatState : fallbackState);
 			}
 
 			return Common::kNoError;
 		}
+
+
+
+
+
+
+
+
+
+
 
 		MonsterRecord *monster = nullptr;
 		if (playerState.attackTargetClassId == kRuntimeEntityClassMonster)
