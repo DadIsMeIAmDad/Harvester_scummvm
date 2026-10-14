@@ -2838,12 +2838,22 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				range.resumeFacing, range.knockbackX, kNativeMonsterHitAnimationRate);
 			needsRedraw = true;
 		};
+
+
+
+
+
 		auto resolvePlayerAttackContact = [&]() -> Common::Error {
-		if (!playerState.attackActive || playerState.attackContactResolved || !playerState.entity ||
-				playerState.attackContactFrame < 0 ||
-				playerState.entity->getCurrentFrame() < playerState.attackContactFrame) {
-			return Common::kNoError;
-		}
+			if (!playerState.attackActive || playerState.attackContactResolved || !playerState.entity) {
+				return Common::kNoError;
+			}
+
+
+
+
+
+
+
 
 		playerState.attackContactResolved = true;
 		const int damageType = Player::resolveCombatLoadoutDamageType(playerState.combatLoadout);
