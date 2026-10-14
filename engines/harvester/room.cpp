@@ -2285,7 +2285,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					*targetEntity, targetEntity->getZ(), engageDistance);
 
 			// NPC path: allow a small Z difference when lining up an attack.
-			if (ABS(playerState.z - targetEntity->getZ()) > 2.0f)
+			if (ABS(playerState.z - targetEntity->getZ()) > 10.0f)
 				return false;
 
 			return areCombatantsWithinRoomCombatReach(scene.state,
