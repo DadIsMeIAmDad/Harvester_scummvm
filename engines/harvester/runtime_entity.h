@@ -115,6 +115,7 @@ public:
 	void setDepthScale(float scale);
 	float getDepthScale() const { return _depthScale; }
 	Common::Rect getScreenRect() const;
+	bool getOpaquePixelHorizontalCenter(int &centerX) const;
 	void configureTimerCountdown(int initialValue, int currentValue, bool enabled, bool looping, bool global);
 	bool tickTimerState(uint32 now, Common::Array<Common::String> &expiredTimerNames);
 	void pauseTimerCountdown(uint32 now);

@@ -1146,6 +1146,104 @@ Common::Rect Entity::getFrameRect() const {
 		drawOrigin.y + _boundsHeight);
 }
 
+
+
+
+bool Entity::getOpaquePixelHorizontalCenter(int &centerX) const {
+	const Common::Rect rect = getFrameRect();
+
+	if (rect.width() <= 0 || rect.height() <= 0)
+		return false;
+
+	int frameWidth = 0;
+	int frameHeight = 0;
+	int minX = 0;
+	int maxX = -1;
+
+	const Graphics::Surface *surface = nullptr;
+	const AbmFrame *abmFrame = nullptr;
+
+	// Static PNG.
+	if (_pngSurface) {
+		surface = _pngSurface;
+	}
+	// Current PNG animation frame.
+	else if (!_pngFrames.empty() &&
+			_currentFrame >= 0 &&
+			(uint)_currentFrame < _pngFrames.size()) {
+		surface = _pngFrames[(uint)_currentFrame];
+	}
+	// Original PNG frames, if scaled frames are unavailable.
+	else if (!_basePngFrames.empty() &&
+			_currentFrame >= 0 &&
+			(uint)_currentFrame < _basePngFrames.size()) {
+		surface = _basePngFrames[(uint)_currentFrame];
+	}
+	// Original ABM animation frame.
+	else if (!_frames.empty() &&
+			_currentFrame >= 0 &&
+			(uint)_currentFrame < _frames.size()) {
+		abmFrame = &_frames[(uint)_currentFrame];
+	}
+
+	if (surface) {
+		frameWidth = surface->w;
+		frameHeight = surface->h;
+	} else if (abmFrame) {
+		frameWidth = abmFrame->width;
+		frameHeight = abmFrame->height;
+	} else {
+		return false;
+	}
+
+	if (frameWidth <= 0 || frameHeight <= 0)
+		return false;
+
+	minX = frameWidth;
+	maxX = -1;
+
+	for (int x = 0; x < frameWidth; ++x) {
+		for (int y = 0; y < frameHeight; ++y) {
+			bool opaque = false;
+
+			if (surface) {
+				if (surface->format.bytesPerPixel == 4) {
+					const byte *pixelBytes =
+						(const byte *)surface->getBasePtr(x, y);
+					const uint32 alpha =
+						pixelBytes[surface->format.aShift / 8];
+					opaque = alpha != 0;
+				} else {
+					opaque = true;
+				}
+			} else {
+				opaque = abmFrame->pixels[
+					(uint)y * abmFrame->width + (uint)x] != 0;
+			}
+
+			if (opaque) {
+				minX = MIN(minX, x);
+				maxX = MAX(maxX, x);
+			}
+		}
+	}
+
+	if (maxX < minX)
+		return false;
+
+	// Convert the visible pixel center into screen coordinates.
+	const int visibleCenterTwice = minX + maxX + 1;
+
+	centerX = rect.left +
+		(visibleCenterTwice * rect.width()) / (2 * frameWidth);
+
+	return true;
+}
+
+
+
+
+
 bool Entity::hasOpaqueFrame() const {
 	if (!_pngFrames.empty()) {
 		return _currentFrame >= 0 &&

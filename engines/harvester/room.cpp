@@ -2907,21 +2907,19 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					return Common::kNoError;
 				}
 
-				const Common::Rect playerRect =
-					playerState.entity->getScreenRect();
-				const Common::Rect targetRect =
-					npcEntity->getScreenRect();
-
-				const int playerLeft = playerRect.left;
-				const int playerRight = playerRect.right;
-				const int playerCenterX =
-					playerLeft + playerRect.width() / 2;
-
-				const int targetLeft = targetRect.left;
-				const int targetCenterX =
-					targetLeft + targetRect.width() / 2;
-
 				
+				int playerCenterX =
+					playerState.entity->getScreenRect().left +
+					playerState.entity->getScreenRect().width() / 2;
+
+				int targetCenterX =
+					npcEntity->getScreenRect().left +
+					npcEntity->getScreenRect().width() / 2;
+
+				// Use visible-pixel centers instead of transparent canvas centers.
+				playerState.entity->getOpaquePixelHorizontalCenter(playerCenterX);
+				npcEntity->getOpaquePixelHorizontalCenter(targetCenterX);
+
 				bool matchesDirection = false;
 
 				if (attackSide == kNativeAttackSideLeft) {
@@ -2930,13 +2928,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					matchesDirection = targetCenterX > playerCenterX;
 				}
 
-
 				if (!matchesDirection) {
 					debugC(1, kDebugCombat,
 						"Harvester: combat player attack missed target='%s' reason='wrong attack direction'",
 						npc->npcName.c_str());
 					return Common::kNoError;
 				}
+
 
 				// Check actual opaque-pixel overlap, not just rectangles.
 				if (!playerState.entity->overlapsEntity(*npcEntity)) {
