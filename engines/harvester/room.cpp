@@ -2905,7 +2905,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				}
 
 				// Check actual opaque-pixel overlap, not just rectangles.
-				if (!playerState.entity->overlapsEntity(*npcEntity, 2.0f)) {
+				if (!playerState.entity->overlapsEntity(*npcEntity)) {
 					debugC(1, kDebugCombat,
 						"Harvester: combat player attack missed target='%s' reason='melee opaque pixels do not overlap'",
 						npc->npcName.c_str());

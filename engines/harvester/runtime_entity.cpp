@@ -1253,23 +1253,10 @@ bool Entity::overlapsEntity(
 
 
 
-	if (zTolerance > 0.0f) {
-		const float zDifference =
-			_z >= other._z
-				? _z - other._z
-				: other._z - _z;
-
-		if (zDifference > zTolerance)
-			return false;
-	} else {
-		const float thisZMax = _z + _zExtent;
-		const float otherZMax = other._z + other._zExtent;
-
-		if (thisZMax < other._z || otherZMax < _z)
-			return false;
-	}
-
-
+	const float thisZMax = _z + _zExtent;
+	const float otherZMax = other._z + other._zExtent;
+	if (thisZMax < other._z || otherZMax < _z)
+		return false;
 
 
 
