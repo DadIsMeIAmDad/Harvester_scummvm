@@ -2269,8 +2269,8 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					*playerState.entity, playerState.z,
 					*targetEntity, targetEntity->getZ(), engageDistance);
 
-			// NPC path – extent overlap (or your chosen looser test)
-			if (!doRuntimeEntityDepthExtentsOverlap(*playerState.entity, *targetEntity))
+			// NPC path: allow a small Z difference when lining up an attack.
+			if (ABS(playerState.z - targetEntity->getZ()) > 2.0f)
 				return false;
 
 			return areCombatantsWithinRoomCombatReach(scene.state,
