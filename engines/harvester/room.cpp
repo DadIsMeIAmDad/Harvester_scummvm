@@ -2236,21 +2236,36 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 			return nullptr;
 		};
+
+
 		auto findOverlappingNpcTarget = [&]() -> NpcRecord * {
 			if (!playerState.entity)
 				return nullptr;
+
+			NpcRecord *bestTarget = nullptr;
 
 			for (NpcRecord &npc : scene.state.roomNpcs) {
 				if (!npc.visible || npc.deathOrMonsterfyFlag || npc.deathDamageType != 0)
 					continue;
 
 				Entity *entity = findSceneRuntimeEntity(npc.npcName);
-				if (entity && areCombatantsWithinRoomCombatReach(scene.state,
-						*playerState.entity, playerState.z, *entity, entity->getZ(), 0))
-					return &npc;
+				if (!entity)
+					continue;
+
+				if (!areCombatantsWithinRoomCombatReach(scene.state,
+						*playerState.entity, playerState.z,
+						*entity, entity->getZ(), 0))
+					continue;
+
+				// Prefer an NPC whose visible pixels actually touch the player.
+				if (!playerState.entity->overlapsEntity(*entity))
+					continue;
+
+				bestTarget = &npc;
+				break;
 			}
 
-			return nullptr;
+			return bestTarget;
 		};
 
 
