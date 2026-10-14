@@ -2838,23 +2838,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				range.resumeFacing, range.knockbackX, kNativeMonsterHitAnimationRate);
 			needsRedraw = true;
 		};
-
-
-
-
 		auto resolvePlayerAttackContact = [&]() -> Common::Error {
-		if (!playerState.attackActive || playerState.attackContactResolved || !playerState.entity) {
+		if (!playerState.attackActive || playerState.attackContactResolved || !playerState.entity ||
+				playerState.attackContactFrame < 0 ||
+				playerState.entity->getCurrentFrame() < playerState.attackContactFrame) {
 			return Common::kNoError;
 		}
 
-
-
-
-
-
-
-
-		//playerState.attackContactResolved = true;
+		playerState.attackContactResolved = true;
 		const int damageType = Player::resolveCombatLoadoutDamageType(playerState.combatLoadout);
 		const int damageAmount = Player::resolveCombatLoadoutDamageAmount(playerState.combatLoadout);
 		debugC(1, kDebugCombat,
@@ -2955,7 +2946,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					return Common::kNoError;
 				}
 			}
-			playerState.attackContactResolved = true;
+
 			// Keep the existing NPC-specific death and monsterfy behavior.
 			const bool runtimeChanged =
 				script->queueRuntimeNpcDeathOrMonsterfy(
