@@ -1238,8 +1238,7 @@ bool Entity::hitTest(const Common::Point &point) const {
 	return isOpaqueAt(point);
 }
 
-bool Entity::overlapsEntity(
-    const Entity &other, float zTolerance) const {
+bool Entity::overlapsEntity(const Entity &other) const {
 	if (this == &other || !_visible || !other._visible)
 		return false;
 
@@ -1250,16 +1249,10 @@ bool Entity::overlapsEntity(
 		return false;
 	}
 
-
-
-
 	const float thisZMax = _z + _zExtent;
 	const float otherZMax = other._z + other._zExtent;
 	if (thisZMax < other._z || otherZMax < _z)
 		return false;
-
-
-
 
 	const Common::Rect thisRect = getFrameRect();
 	const Common::Rect otherRect = other.getFrameRect();
