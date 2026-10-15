@@ -277,14 +277,6 @@ Common::Error RoomInteractionProcessor::handleInteractionResult(const Interactio
 	warning("Harvester: interaction result modalText box='%s' text='%s'",
 		interaction.modalText.boxName.c_str(),
 		interaction.modalText.value.c_str());
-		
-	warning("Harvester: interaction result modalText box='%s' text='%s'",
-		result.modalText.boxName.c_str(),
-		result.modalText.value.c_str());
-
-	warning("Harvester: interaction result modalText box='%s' text='%s'",
-		modalText.boxName.c_str(),
-		modalText.value.c_str());
 
 	if (!interaction.modalText.value.empty()) {
 		Common::Error modalError = _callbacks.runModalShowText(interaction.modalText);
