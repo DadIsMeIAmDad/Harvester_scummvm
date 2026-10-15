@@ -1858,8 +1858,15 @@ bool Script::resolveUseItemInteraction(const Common::String &itemName, const Obj
 		&result.requestPlayerDeath, &result.playerDeathDamageType,
 		&result.mutatedRuntimeState, &result.visualRuntimeStateChanged,
 		&result.previousTimerRecords, &result.requestCloseupExit);
+
+	warning("Harvester: resolveUseItemInteraction returned modalText box='%s' text='%s'",
+		result.modalText.boxName.c_str(),
+		result.modalText.value.c_str());
+
 	return true;
 }
+
+
 
 bool Script::executeDebugCommand(const CommandRecord &command,
 		InteractionResult &result, bool allowTransitions) {
