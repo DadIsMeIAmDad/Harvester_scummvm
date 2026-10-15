@@ -3212,6 +3212,13 @@ void Script::executeCommandChain(const Common::String &initialTag, const char *c
 				currentTag = command->arg4;
 				continue;
 			}
+
+			// ADD THIS WARNING HERE
+			warning("Harvester: SHOW_TEXT resolved key='%s' box='%s' text='%s'",
+				command->arg1.c_str(),
+				modalText->boxName.c_str(),
+				modalText->value.c_str());
+
 			if (continuationTag)
 				*continuationTag = command->arg4;
 			return;

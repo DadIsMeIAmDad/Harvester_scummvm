@@ -272,6 +272,13 @@ Common::Error RoomInteractionProcessor::handleInteractionResult(const Interactio
 			return Common::kReadingFailed;
 	}
 
+
+	// ADD THIS WARNING HERE
+	warning("Harvester: interaction result modalText box='%s' text='%s'",
+		interaction.modalText.boxName.c_str(),
+		interaction.modalText.value.c_str());
+
+
 	if (!interaction.modalText.value.empty()) {
 		Common::Error modalError = _callbacks.runModalShowText(interaction.modalText);
 		if (modalError.getCode() != Common::kNoError)
