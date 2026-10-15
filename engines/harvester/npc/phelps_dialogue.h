@@ -65,7 +65,6 @@ public:
 		syncDialogueBool(s, _state.jimmyDeadShown);
 		syncDialogueBool(s, _state.karinFoundDeadShown);
 		syncDialogueBool(s, _state.karinKidnapedShown);
-		syncDialogueBool(s, _state.pendingQuarterReward);
 	}
 	Common::Error handleDialogue(DialogueRuntime &runtime,
 		const Common::String &usedItemName, DialogueSharedState &sharedState) override;
