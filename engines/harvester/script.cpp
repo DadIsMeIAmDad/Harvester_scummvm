@@ -3231,11 +3231,6 @@ void Script::executeCommandChain(const Common::String &initialTag, const char *c
 				modalText->boxName.c_str(),
 				modalText->value.c_str());
 
-			warning("Harvester: RESULT SHOW_TEXT resolved key='%s' box='%s' text='%s'",
-				command->arg1.c_str(),
-				result.modalText->boxName.c_str(),
-				result.modalText->value.c_str());
-
 			if (continuationTag)
 				warning("Harvester: continuationTag");
 				*continuationTag = command->arg4;
