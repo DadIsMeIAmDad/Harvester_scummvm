@@ -2347,17 +2347,19 @@ void Flow::queueDialogueInteraction(const InteractionResult &interaction) {
 		return;
 	}
 
-	// Preserve the earlier textbox if the new interaction has no textbox.
-	InteractionResult merged = interaction;
+	// Prefer the earlier interaction when it already has a textbox
+	// so the textbox is presented before the new dialogue.
+	InteractionResult merged = _queuedDialogueInteraction;
 
-	if (merged.modalText.value.empty() &&
-			!_queuedDialogueInteraction.modalText.value.empty()) {
-		merged.modalText = _queuedDialogueInteraction.modalText;
+	if (merged.modalText.value.empty()) {
+		// No earlier textbox ? just take the new interaction as-is.
+		merged = interaction;
+	} else {
+		// Keep the earlier textbox and bring in the new dialogue’s other data.
+		// Adjust these lines to match whatever other fields InteractionResult has.
+		merged.audioCommands = interaction.audioCommands;   // replace, or append if you need both sets
+		// … copy any other dialogue-specific members from `interaction` here …
 	}
-
-	// Preserve earlier audio commands as well.
-	for (uint i = 0; i < _queuedDialogueInteraction.audioCommands.size(); ++i)
-		merged.audioCommands.insert_at(0, _queuedDialogueInteraction.audioCommands[i]);
 
 	_queuedDialogueInteraction = merged;
 }
