@@ -2341,8 +2341,25 @@ Common::Error Flow::resolveRoomTransitionTarget(const Common::String &targetName
 }
 
 void Flow::queueDialogueInteraction(const InteractionResult &interaction) {
-	_queuedDialogueInteraction = interaction;
-	_hasQueuedDialogueInteraction = true;
+	if (!_hasQueuedDialogueInteraction) {
+		_queuedDialogueInteraction = interaction;
+		_hasQueuedDialogueInteraction = true;
+		return;
+	}
+
+	// Preserve the earlier textbox if the new interaction has no textbox.
+	InteractionResult merged = interaction;
+
+	if (merged.modalText.value.empty() &&
+			!_queuedDialogueInteraction.modalText.value.empty()) {
+		merged.modalText = _queuedDialogueInteraction.modalText;
+	}
+
+	// Preserve earlier audio commands as well.
+	for (uint i = 0; i < _queuedDialogueInteraction.audioCommands.size(); ++i)
+		merged.audioCommands.insert_at(0, _queuedDialogueInteraction.audioCommands[i]);
+
+	_queuedDialogueInteraction = merged;
 }
 
 bool Flow::takeQueuedDialogueInteraction(InteractionResult &interaction) {
