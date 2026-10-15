@@ -279,10 +279,13 @@ Common::Error PhelpsDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 	}
 	if (usedItemName.equalsIgnoreCase("QUARTER")) {
 		executeDialogueActionTag(kGetPrnMagActionTag);
-		Common::Error lineError = playSequence(kPhelpsQuarterLines, ARRAYSIZE(kPhelpsQuarterLines));
+		executeDialogueActionTag(kDeleteDirtyMagazineActionTag);
+
+		Common::Error lineError = playSequence(
+			kPhelpsQuarterLines, ARRAYSIZE(kPhelpsQuarterLines));
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
-		executeDialogueActionTag(kDeleteDirtyMagazineActionTag);
+
 		return Common::kNoError;
 	}
 	if (usedItemName.equalsIgnoreCase("REWARD_MONEY")) {
