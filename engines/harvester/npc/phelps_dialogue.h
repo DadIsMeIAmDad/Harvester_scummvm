@@ -44,8 +44,9 @@ public:
 		bool jimmyDeadShown = false;
 		bool karinFoundDeadShown = false;
 		bool karinKidnapedShown = false;
+		bool pendingQuarterReward = false;
 	};
-
+	
 	bool matchesNpc(const Common::String &npcName) const override;
 	void resetState() override { _state = PhelpsRoomDialogueState(); }
 	void syncState(Common::Serializer &s) override {
@@ -64,6 +65,7 @@ public:
 		syncDialogueBool(s, _state.jimmyDeadShown);
 		syncDialogueBool(s, _state.karinFoundDeadShown);
 		syncDialogueBool(s, _state.karinKidnapedShown);
+		syncDialogueBool(s, _state.pendingQuarterReward);
 	}
 	Common::Error handleDialogue(DialogueRuntime &runtime,
 		const Common::String &usedItemName, DialogueSharedState &sharedState) override;

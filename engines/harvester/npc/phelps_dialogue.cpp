@@ -278,10 +278,24 @@ Common::Error PhelpsDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		return playPhelpsLine(0x1c3d, 1);
 	}
 	if (usedItemName.equalsIgnoreCase("QUARTER")) {
-		executeDialogueActionTag(kGetPrnMagActionTag);
-		Common::Error lineError = playSequence(kPhelpsQuarterLines, ARRAYSIZE(kPhelpsQuarterLines));
+		if (!state.pendingQuarterReward) {
+			// First pass: only kick off the action that does SHOW_TEXT.
+			// The interaction processor will display the textbox and then
+			// re-enter the dialogue system, at which point we take the
+			// second path below.
+			state.pendingQuarterReward = true;
+			executeDialogueActionTag(kGetPrnMagActionTag);
+			return Common::kNoError;
+		}
+
+		// Second pass: textbox has already been handled.
+		state.pendingQuarterReward = false;
+
+		Common::Error lineError = playSequence(kPhelpsQuarterLines,
+                                           ARRAYSIZE(kPhelpsQuarterLines));
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
+
 		executeDialogueActionTag(kDeleteDirtyMagazineActionTag);
 		return Common::kNoError;
 	}
