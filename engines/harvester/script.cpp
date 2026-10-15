@@ -1833,6 +1833,10 @@ bool Script::resolveRegionInteraction(const RegionRecord &region, InteractionRes
 
 bool Script::resolveUseItemInteraction(const Common::String &itemName, const ObjectRecord &target,
 		InteractionResult &result, const Common::String &roomName) {
+		
+	warning("Harvester: ENTER resolveUseItemInteraction item='%s' target='%s'",
+		itemName.c_str(), target.objectName.c_str());
+
 	result = InteractionResult();
 
 	const UseItemRecord *useItem = findUseItemRecord(itemName, target);
@@ -1862,6 +1866,7 @@ bool Script::resolveUseItemInteraction(const Common::String &itemName, const Obj
 	warning("Harvester: resolveUseItemInteraction returned modalText box='%s' text='%s'",
 		result.modalText.boxName.c_str(),
 		result.modalText.value.c_str());
+	warning("Harvester: EXIT resolveUseItemInteraction");
 
 	return true;
 }
