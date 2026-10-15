@@ -3738,6 +3738,11 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		int bestDrawIndex = -1;
 
 		for (ObjectRecord &candidate : scene.sceneObjects) {
+			warning("Harvester TEST: candidate='%s' item='%s' hasUseItem=%d",
+				candidate.objectName.c_str(),
+				selectedItemName.c_str(),
+				script->hasUseItemInteraction(selectedItemName, candidate) ? 1 : 0);
+
 			if (candidate.objectName.empty() ||
 					!script->hasUseItemInteraction(selectedItemName, candidate)) {
 				continue;
