@@ -3642,6 +3642,10 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		return Common::kNoError;
 	};
 	auto handleInventoryTargetInteraction = [&](const ObjectRecord &target) -> Common::Error {
+	
+		warning("Harvester TEST: inventory target handler entered target='%s'",
+			target.objectName.c_str());
+		
 		const bool inventoryCarry = _inventory.hasSelection();
 		const bool roomCarry = hasCarriedRoomItem();
 
@@ -3658,10 +3662,15 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			selectedItemName.c_str(),
 			target.objectName.c_str());
 		
-		
+		warning("Harvester TEST: calling resolveUseItemInteraction item='%s' target='%s'",
+			selectedItemName.c_str(), target.objectName.c_str());
 		
 		const bool handled = _engine.getScript()->resolveUseItemInteraction(
 			selectedItemName, target, interaction, scene.state.roomName);
+
+		warning("Harvester TEST: resolveUseItemInteraction returned handled=%d text='%s'",
+			handled ? 1 : 0, interaction.modalText.value.c_str());
+
 		if (!handled) {
 			debugC(1, kDebugInventory,
 				"Harvester: inventory target miss selected='%s' target='%s' owner='%s' action='%s'",
