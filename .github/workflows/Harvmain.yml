@@ -29,7 +29,7 @@ jobs:
       VCPKG_FEATURE_FLAGS: dependencygraph
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
       VCPKG_INSTALLED_DIR: ${{ github.workspace }}/vcpkg_installed
-      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg-binary-cache,readwrite
       VCPKG_OVERLAY_PORTS: ${{ github.workspace }}/.github/vcpkg-ports
       GIT_VCPKG_COMMIT: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
 
@@ -37,7 +37,6 @@ jobs:
       contents: write
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -48,15 +47,17 @@ jobs:
           vcpkgGitCommitId: ${{ env.GIT_VCPKG_COMMIT }}
 
       - name: Integrate vcpkg
-        run: |
-          ${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/vcpkg integrate install
+        run: ${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/vcpkg integrate install
 
-      - name: Restore vcpkg cache
+      - name: Restore vcpkg binary cache
+        id: vcpkg-cache
         uses: actions/cache/restore@v4
         with:
-          path: ${{ github.workspace }}/vcpkg_cache
-          key: vcpkg-${{ env.GIT_VCPKG_COMMIT }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json', 'vcpkg_installed/compiler-file-hash-cache.json', 'vcpkg_installed/status') }}
-          restore-keys: vcpkg-${{ env.GIT_VCPKG_COMMIT }}-${{ matrix.triplet }}-
+          path: ${{ github.workspace }}/vcpkg-binary-cache
+          key: vcpkg-${{ env.GIT_VCPKG_COMMIT }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}-${{ env.ImageOS }}-${{ env.ImageVersion }}
+          restore-keys: |
+            vcpkg-${{ env.GIT_VCPKG_COMMIT }}-${{ matrix.triplet }}-
+            vcpkg-${{ env.GIT_VCPKG_COMMIT }}-
 
       - name: Build create_project
         run: |
@@ -77,14 +78,14 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Install vcpkg packages
-        run: |
-          vcpkg install
+        run: vcpkg install
 
-      - name: Save vcpkg cache
+      - name: Save vcpkg binary cache
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: ${{ github.workspace }}/vcpkg_cache
-          key: vcpkg-${{ env.GIT_VCPKG_COMMIT }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json', 'vcpkg_installed/compiler-file-hash-cache.json', 'vcpkg_installed/status') }}
+          path: ${{ github.workspace }}/vcpkg-binary-cache
+          key: vcpkg-${{ env.GIT_VCPKG_COMMIT }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}-${{ env.ImageOS }}-${{ env.ImageVersion }}
 
       - name: Build scummvm
         run: |
