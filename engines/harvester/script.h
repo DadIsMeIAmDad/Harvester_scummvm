@@ -292,6 +292,7 @@ struct InteractionResult {
 	Common::String deathFlicPath;
 	Common::String dialogueNpcName;
 	Common::String dialogueContinuationTag;
+	Common::String dialogueUsedItemName;
 	Common::String continuationTag;
 	Common::String moveEntityToPlayerZName;
 	ResolvedText modalText;

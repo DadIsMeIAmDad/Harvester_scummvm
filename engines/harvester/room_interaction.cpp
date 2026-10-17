@@ -284,13 +284,23 @@ Common::Error RoomInteractionProcessor::handleInteractionResult(const Interactio
 			return modalError;
 	}
 
+	
 	if (!interaction.dialogueNpcName.empty()) {
+		const Common::String &dialogueItemName =
+			interaction.dialogueUsedItemName.empty()
+				? usedItemName
+				: interaction.dialogueUsedItemName;
+
 		Common::Error dialogueError = runScriptedDialogue(
-			interaction.dialogueNpcName, usedItemName, interaction.dialogueContinuationTag,
+			interaction.dialogueNpcName,
+			dialogueItemName,
+			interaction.dialogueContinuationTag,
 			didTransition);
+
 		if (dialogueError.getCode() != Common::kNoError)
 			return dialogueError;
 	}
+
 
 	if (didTransition)
 		return Common::kNoError;
@@ -302,8 +312,9 @@ Common::Error RoomInteractionProcessor::handleInteractionResult(const Interactio
 				_scene.state.roomName)) {
 			Common::Error interactionError =
 				handleInteractionResult(continuationInteraction, didTransition, usedItemName);
-			if (interactionError.getCode() != Common::kNoError)
+			if (interactionError.getCode() != Common::kNoError) {
 				return interactionError;
+			}
 		}
 	}
 
