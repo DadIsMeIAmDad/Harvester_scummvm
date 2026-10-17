@@ -991,7 +991,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 		// Entities anchored to the BOTTOM-CENTER.
 		// Replace these placeholders with actual entity names.
-		else if (_name == "NOBODY1" ||
+		else if (_name == "PLAYER" ||
 				_name == "PASTORELLI" ||
 				_name == "WASP_WOMAN" ||
 				_name == "NOBODY2") {
