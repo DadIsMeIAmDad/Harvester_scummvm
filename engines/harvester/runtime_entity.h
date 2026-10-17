@@ -59,7 +59,8 @@ enum RuntimeEntityHitTestMode {
 
 enum RuntimeEntityAnchorMode {
 	kRuntimeEntityAnchorTopLeft = 0,
-	kRuntimeEntityAnchorCentered = 1
+	kRuntimeEntityAnchorCentered = 1,
+	kRuntimeEntityAnchorBottomCenter = 2
 };
 
 class Entity {

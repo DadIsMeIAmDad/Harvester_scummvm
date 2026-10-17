@@ -1503,6 +1503,7 @@ void Entity::updateBoundsFromCurrentFrame() {
 	_boundsHeight = (int)_frames[(uint)frameIndex].height;
 }
 
+
 void Entity::updateScreenBaseFromCurrentFrame() {
 	int baseX = _x;
 	int baseY = _y;
@@ -1510,11 +1511,15 @@ void Entity::updateScreenBaseFromCurrentFrame() {
 	if (_anchorMode == kRuntimeEntityAnchorCentered) {
 		baseX -= _boundsWidth / 2;
 		baseY -= _boundsHeight / 2;
+	} else if (_anchorMode == kRuntimeEntityAnchorBottomCenter) {
+		baseX -= _boundsWidth / 2;
+		baseY -= _boundsHeight;
 	}
 
 	_screenBaseX = baseX;
 	_screenBaseY = baseY;
 }
+
 
 void Entity::rebuildScaledFrames() {
 	if (_baseFrames.empty()) {

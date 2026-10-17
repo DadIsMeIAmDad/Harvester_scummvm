@@ -576,10 +576,22 @@ static const MapLocationRecord *findTownMapLocationAt(
 	return nullptr;
 }
 
+
 static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY, float z,
 		int width, int height, int xOffset, int yOffset) {
-	entity.setPosition(centerX - xOffset - width / 2, bottomY - height - yOffset, z);
+	if (entity.getName() == "PLAYER") {
+		// PLAYER uses bottom-center anchoring.
+		// Preserve the original frame offsets.
+		entity.setPosition(centerX - xOffset, bottomY - yOffset, z);
+	} else {
+		// Keep the original top-left placement for all other actors.
+		entity.setPosition(
+			centerX - xOffset - width / 2,
+			bottomY - height - yOffset,
+			z);
+	}
 }
+
 
 static float computeRoomActorRenderZ(float z, const Entity &entity) {
 	// Native actor spawns lower the render-list depth anchor by half the z extent
@@ -599,7 +611,13 @@ static bool applyRoomActorPlacementInternal(const RoomSetupState &state, Entity 
 }
 
 	const float renderZ = computeRoomActorRenderZ(z, entity);
-	entity.setAnchorMode(kRuntimeEntityAnchorTopLeft);
+	
+	if (entity.getName() == "PLAYER") {
+		entity.setAnchorMode(kRuntimeEntityAnchorBottomCenter);
+	} else {
+		entity.setAnchorMode(kRuntimeEntityAnchorTopLeft);
+	}
+
 	setRoomActorScreenPosition(entity, centerX, bottomY, renderZ, width, height, xOffset, yOffset);
 
 	float depthScale = 1.0f;
