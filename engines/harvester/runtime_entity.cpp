@@ -692,6 +692,9 @@ void Entity::setDepthScale(float scale) {
 	if (!_basePngFrames.empty()) {
 		updateBoundsFromCurrentFrame();
 		updateScreenBaseFromCurrentFrame();
+	} else if (_pngSurface) {
+		updateBoundsFromCurrentFrame();
+		updateScreenBaseFromCurrentFrame();
 	}
 }
 
@@ -991,7 +994,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 		// Entities anchored to the BOTTOM-CENTER.
 		// Replace these placeholders with actual entity names.
-		else if (_name == "PLAYER" ||
+		else if (_name == "NOBODY1" ||
 				_name == "PASTORELLI" ||
 				_name == "WASP_WOMAN" ||
 				_name == "NOBODY2") {
