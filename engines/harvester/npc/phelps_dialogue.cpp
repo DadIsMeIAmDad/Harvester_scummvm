@@ -33,6 +33,7 @@ static const char *const kGetPrnMagActionTag = "GET_PRN_MAG";
 static const char *const kDeleteDirtyMagazineActionTag = "DEL_DRT_MAG";
 static const char *const kUseRewardAtStoreActionTag = "USE_REWARD_AT_STORE";
 static const char *const kSetGenCuStuffActionTag = "SET_GEN_CU_STUFF";
+static const char *const kPhelpsQuarterFollowUp = "__PHELPS_QUARTER_AFTER_TEXT__";
 
 static const DialogueLineEntry kPhelpsWhaleyLines[] = {
 	{ 0x1c0c, "PHELPS", 4 },
@@ -277,14 +278,42 @@ Common::Error PhelpsDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		(void)runtime.startupScript().setRuntimeFlagValue(DialogueFlags::kShownEvidenceOfBlackmail, true);
 		return playPhelpsLine(0x1c3d, 1);
 	}
+
+
+
 	if (usedItemName.equalsIgnoreCase("QUARTER")) {
-		executeDialogueActionTag(kGetPrnMagActionTag);
-		Common::Error lineError = playSequence(kPhelpsQuarterLines, ARRAYSIZE(kPhelpsQuarterLines));
-		if (lineError.getCode() != Common::kNoError)
-			return lineError;
-		executeDialogueActionTag(kDeleteDirtyMagazineActionTag);
+		InteractionResult interaction;
+
+		if (runtime.executeActionTag(kGetPrnMagActionTag, interaction)) {
+			// Play the cash-register sound immediately.
+			runtime.applyImmediateDialogueInteractionEffects(interaction);
+
+			// Display the textbox first, then run Phelps's dialogue.
+			interaction.dialogueNpcName = "PHELPS";
+			interaction.dialogueUsedItemName = kPhelpsQuarterFollowUp;
+
+			runtime.queueDialogueInteractionIfNeeded(interaction);
+		}
+
 		return Common::kNoError;
 	}
+
+	// Follow-up: the textbox has already been displayed.
+	if (usedItemName.equalsIgnoreCase(kPhelpsQuarterFollowUp)) {
+		Common::Error lineError = playSequence(
+			kPhelpsQuarterLines, ARRAYSIZE(kPhelpsQuarterLines));
+
+		if (lineError.getCode() != Common::kNoError)
+			return lineError;
+
+		executeDialogueActionTag(kDeleteDirtyMagazineActionTag);
+
+		return Common::kNoError;
+	}
+
+
+
+
 	if (usedItemName.equalsIgnoreCase("REWARD_MONEY")) {
 		executeDialogueActionTag(kUseRewardAtStoreActionTag);
 		executeDialogueActionTag(kSetGenCuStuffActionTag);
