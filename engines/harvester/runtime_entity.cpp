@@ -1079,38 +1079,65 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 
 
+
 Common::Rect Entity::getFrameRect() const {
 	const Common::Point drawOrigin = getDrawOrigin();
 
-	// PNG animation frames: _pngFrames may still be full-size when depth scale
-	// is applied only at draw time. Prefer scaled bounds so hit/click rects
-	// match the drawn sprite.
+	// PNG animation frames
 	if (!_pngFrames.empty() || !_basePngFrames.empty()) {
 		const Common::Point pngOrigin = getPngDrawOrigin();
+		const Common::Array<Graphics::Surface *> &src =
+			!_basePngFrames.empty() ? _basePngFrames : _pngFrames;
+
+		int rawW = 0;
+		int rawH = 0;
+
+		if (_currentFrame >= 0 &&
+				(uint)_currentFrame < src.size() &&
+				src[_currentFrame]) {
+			rawW = src[_currentFrame]->w;
+			rawH = src[_currentFrame]->h;
+		}
+
 		int w = _boundsWidth;
 		int h = _boundsHeight;
 
 		if (w <= 0 || h <= 0) {
-			const Common::Array<Graphics::Surface *> &src =
-				!_basePngFrames.empty() ? _basePngFrames : _pngFrames;
-
-			if (_currentFrame >= 0 && (uint)_currentFrame < src.size() &&
-					src[_currentFrame]) {
-				w = scaleDimension(src[_currentFrame]->w, _depthScale);
-				h = scaleDimension(src[_currentFrame]->h, _depthScale);
-			}
+			w = scaleDimension(rawW, _depthScale);
+			h = scaleDimension(rawH, _depthScale);
 		}
 
-		return Common::Rect(
+		Common::Rect rect(
 			pngOrigin.x,
 			pngOrigin.y,
 			pngOrigin.x + w,
 			pngOrigin.y + h);
+
+		if (_name == "PLAYER") {
+			warning(
+				"PLAYER RECT: frame=%d scale=%.3f "
+				"rawPNG=%dx%d bounds=%dx%d rect=(%d,%d)-(%d,%d) size=%dx%d",
+				_currentFrame,
+				_depthScale,
+				rawW,
+				rawH,
+				_boundsWidth,
+				_boundsHeight,
+				rect.left,
+				rect.top,
+				rect.right,
+				rect.bottom,
+				rect.width(),
+				rect.height());
+		}
+
+		return rect;
 	}
 
 	if (_pngSurface) {
 		const int w = scaleDimension(_pngSurface->w, _depthScale);
 		const int h = scaleDimension(_pngSurface->h, _depthScale);
+
 		return Common::Rect(
 			drawOrigin.x,
 			drawOrigin.y,
@@ -1122,6 +1149,7 @@ Common::Rect Entity::getFrameRect() const {
 	if (!_frames.empty() && _currentFrame >= 0 &&
 			(uint)_currentFrame < _frames.size()) {
 		const AbmFrame &frame = _frames[(uint)_currentFrame];
+
 		return Common::Rect(
 			drawOrigin.x,
 			drawOrigin.y,
