@@ -1119,7 +1119,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 				x, y,
 				drawnWidth, drawnHeight,
 				y + drawnHeight,
-				logicalY - drawnHeight);
+				_y - drawnHeight);
 
 		}
 
