@@ -518,11 +518,27 @@ static bool startResolvedAttackAnimation(RoomPlayerState &playerState,
 	return true;
 }
 
+
 static int clampRoomMovementY(const RoomSetupState &state, int screenY) {
 	if (!Player::supportsMovementBand(state))
 		return screenY;
 
-	return CLIP<int>(screenY, state.roomMaxZScreenY, state.roomMinZScreenY);
+	const int clampedY = CLIP<int>(
+		screenY,
+		state.roomMaxZScreenY,
+		state.roomMinZScreenY);
+
+	if (clampedY != screenY) {
+		warning(
+			"MOVE Y CLAMP: requestedY=%d clampedY=%d "
+			"bandTop=%d bandBottom=%d",
+			screenY,
+			clampedY,
+			state.roomMaxZScreenY,
+			state.roomMinZScreenY);
+	}
+
+	return clampedY;
 }
 
 static float mapRoomScreenYToDepth(const RoomSetupState &state, int screenY) {
