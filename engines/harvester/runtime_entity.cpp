@@ -1014,7 +1014,6 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// Draw PNG frame.
 		// -------------------------------------------------
 
-		const Common::Point pngOrigin = getPngDrawOrigin();
 
 		if (fabsf(_depthScale - 1.0f) < 0.001f) {
 			screen.blitFrom(
