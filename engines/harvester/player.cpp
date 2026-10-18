@@ -733,17 +733,6 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 		const Common::Array<AnimRecord> &sceneAnimations, const Entity &playerEntity,
 		const Common::String *ignoredBlockerName) {
 		
-	warning("MOVE: cand feetY=%d z=%.1f cx=%d bandY=[%d..%d] bandZ=[%d..%d] "
-        "clampedFeet=%d clampedZ=%.1f blocker='%s'",
-        candidateBottomY, (double)candidateZ, candidateCenterX,
-        state.roomMaxZScreenY, state.roomMinZScreenY,
-        state.roomMinZ, state.roomMaxZ,
-        clampedBottomY, (double)clampedZ,
-        blocker ? blocker->getName().c_str() : "(none)");
-
-	EntityManager *entityManager = engine.getRuntimeEntities();
-	if (!entityManager)
-		return nullptr;
 
 	for (const ObjectRecord &object : sceneObjects) {
 		const Entity *entity = entityManager->findSceneEntityByName(object.objectName);
@@ -760,7 +749,7 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 			return entity;
 		}
 	}
-	
+
 	return nullptr;
 }
 
@@ -793,6 +782,21 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
 		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr) {
+
+
+	warning("MOVE CHECK: room='%s' candidate=(cx=%d feetY=%d z=%.3f) "
+			"Y-band=[%d..%d] Z-band=[%.3f..%.3f] blocker='%s'",
+		state.roomName.c_str(),
+		candidateCenterX,
+		candidateBottomY,
+		(double)candidateZ,
+		state.roomMaxZScreenY,
+		state.roomMinZScreenY,
+		(double)state.roomMinZ,
+		(double)state.roomMaxZ,
+		blocker ? blocker->getName().c_str() : "(none)");
+
+
 	if (!playerState.entity)
 		return true;
 
