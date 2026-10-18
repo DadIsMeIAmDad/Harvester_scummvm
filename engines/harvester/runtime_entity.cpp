@@ -1086,19 +1086,35 @@ void Entity::draw(Graphics::Screen &screen) const {
 			drawDebugRectangle(screen, rightRect, 0x0000FF);
 		}
 
-		// DEBUG: display current Z above player's head.
-		char zText[64];
-		snprintf(zText, sizeof(zText), "Z=%.3f", (double)_z);
 
-		screen.drawString(
-			Common::String(zText),
-			Common::Rect(
-				x - 30,
-				y - 22,
-				x + drawnWidth + 30,
-				y - 2),
-				200,  // Text color index; may need adjusting.
-				Graphics::kTextAlignCenter);
+
+		// DEBUG: log PLAYER position and Z when they change.
+		if (_name == "PLAYER") {
+			static int lastY = -999999;
+			static float lastZ = -999999.0f;
+
+			if (y != lastY || _z != lastZ) {
+				const Common::Rect hit = getScreenRect();
+
+				warning("PLAYER DEBUG: Z=%.3f depthScale=%.3f "
+						"drawXY=(%d,%d) drawnSize=%dx%d "
+						"hitRect=(%d,%d)-(%d,%d)",
+					(double)_z,
+					(double)_depthScale,
+					x, y,
+					drawnWidth, drawnHeight,
+					hit.left, hit.top, hit.right, hit.bottom);
+
+				lastY = y;
+				lastZ = _z;
+			}
+		}
+
+
+
+
+
+
 		return;
 	}
 
