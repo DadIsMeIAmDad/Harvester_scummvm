@@ -1115,7 +1115,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 					"logical=(%d,%d) drawXY=(%d,%d) drawn=%dx%d "
 					"impliedFeetY=%d  (logicalY - drawnH)=%d",
 				(double)_z, (double)_depthScale,
-				logicalX, logicalY,          // the walk/feet position
+				_x, _y,         // the walk/feet position
 				x, y,
 				drawnWidth, drawnHeight,
 				y + drawnHeight,
