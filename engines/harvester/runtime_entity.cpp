@@ -1014,30 +1014,6 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// Draw PNG frame.
 		// -------------------------------------------------
 
-		
-		if (_name == "PLAYER") {
-			const int debugW = scaleDimension(src->w, _depthScale);
-			const int debugH = scaleDimension(src->h, _depthScale);
-
-			warning(
-				"PLAYER DRAW: frame=%d scale=%.3f "
-				"PNG=%dx%d draw=(%d,%d) drawnSize=%dx%d "
-				"screenBase=(%d,%d) pngAnchor=(%d,%d)",
-				_currentFrame,
-				_depthScale,
-				src->w,
-				src->h,
-				pngOrigin.x,
-				pngOrigin.y,
-				debugW,
-				debugH,
-				_screenBaseX,
-				_screenBaseY,
-				_pngAnchorX,
-				_pngAnchorY
-			);
-		}
-
 		if (fabsf(_depthScale - 1.0f) < 0.001f) {
 			screen.blitFrom(
 				*src,

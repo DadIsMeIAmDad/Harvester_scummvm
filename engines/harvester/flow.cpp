@@ -578,6 +578,23 @@ static const MapLocationRecord *findTownMapLocationAt(
 
 static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY, float z,
 		int width, int height, int xOffset, int yOffset) {
+		
+	if (entity.getName() == "PLAYER") {
+		warning(
+			"PLAYER PLACE: centerX=%d bottomY=%d z=%.3f "
+			"width=%d height=%d xOffset=%d yOffset=%d "
+			"calculatedTopY=%d",
+			centerX,
+			bottomY,
+			z,
+			width,
+			height,
+			xOffset,
+			yOffset,
+			bottomY - height - yOffset
+		);
+	}
+		
 	entity.setPosition(centerX - xOffset - width / 2, bottomY - height - yOffset, z);
 }
 
@@ -596,7 +613,7 @@ static bool applyRoomActorPlacementInternal(const RoomSetupState &state, Entity 
 	int yOffset = 0;
 	if (!entity.getCurrentFrameMetrics(width, height, xOffset, yOffset)) {
 		return false;
-}
+	}
 
 	const float renderZ = computeRoomActorRenderZ(z, entity);
 	entity.setAnchorMode(kRuntimeEntityAnchorTopLeft);
@@ -608,7 +625,7 @@ static bool applyRoomActorPlacementInternal(const RoomSetupState &state, Entity 
 		entity.setDepthScale(depthScale);
 		if (!entity.getCurrentFrameMetrics(width, height, xOffset, yOffset)) {
 			return false;
-}
+		}
 		setRoomActorScreenPosition(entity, centerX, bottomY, renderZ, width, height, xOffset, yOffset);
 	}
 
