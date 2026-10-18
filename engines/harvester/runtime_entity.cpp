@@ -917,7 +917,19 @@ void Entity::resumeTimerCountdown(uint32 now) {
 }
 
 
+static void drawDebugRectangle(Graphics::Screen &screen,
+		const Common::Rect &rect, uint32 color) {
+	if (rect.isEmpty())
+		return;
 
+	const int right = rect.right - 1;
+	const int bottom = rect.bottom - 1;
+
+	screen.drawLine(rect.left, rect.top, right, rect.top, color);
+	screen.drawLine(rect.left, bottom, right, bottom, color);
+	screen.drawLine(rect.left, rect.top, rect.left, bottom, color);
+	screen.drawLine(right, rect.top, right, bottom, color);
+}
 
 
 void Entity::draw(Graphics::Screen &screen) const {
@@ -1045,6 +1057,34 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 			scaled.free();
 		}
+
+
+		// -------------------------------------------------
+		// DEBUG: live PLAYER sprite bounds and hitbox.
+		// -------------------------------------------------
+
+		if (_name == "PLAYER") {
+			// Green: actual rendered sprite rectangle.
+			const Common::Rect spriteRect(
+				x,
+				y,
+				x + drawnWidth,
+				y + drawnHeight);
+
+			drawDebugRectangle(
+				screen,
+				spriteRect,
+				0x00FF00);
+
+			// Red: current entity screen/hit rectangle.
+			const Common::Rect hitRect = getScreenRect();
+
+			drawDebugRectangle(
+				screen,
+				hitRect,
+				0xFF0000);
+		}
+
 
 		return;
 	}
