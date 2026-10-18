@@ -1588,7 +1588,7 @@ void Entity::updateScreenBaseFromCurrentFrame() {
 	           _classId == kRuntimeEntityClassMonster) {
 		// Logical (_x,_y) = feet / bottom-center of the sprite
 		baseX -= _boundsWidth / 2;
-		baseY -= _boundsHeight;
+		baseY -= _boundsHeight + _y;
 	}
 
 	_screenBaseX = baseX;
