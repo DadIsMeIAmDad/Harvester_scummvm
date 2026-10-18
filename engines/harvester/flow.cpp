@@ -583,35 +583,7 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 
 	entity.setPosition(topLeftX, topLeftY, z);
 
-	if (entity.getName() == "PLAYER") {
-		const Common::Rect hit = entity.getScreenRect();
 
-		warning(
-			"PLAYER PLACE: centerX=%d bottomY=%d z=%.3f "
-			"metrics=%dx%d offset=(%d,%d) topLeft=(%d,%d) "
-			"hitRect=(%d,%d)-(%d,%d) hitSize=%dx%d "
-			"depthScale=%.3f feetY=%d expectedFeet=%d feetDelta=%d",
-			centerX,
-			bottomY,
-			(double)z,
-			width,
-			height,
-			xOffset,
-			yOffset,
-			topLeftX,
-			topLeftY,
-			hit.left,
-			hit.top,
-			hit.right,
-			hit.bottom,
-			hit.width(),
-			hit.height(),
-			(double)entity.getDepthScale(),
-			hit.bottom,
-			bottomY,
-			hit.bottom - bottomY
-		);
-	}
 }
 
 static float computeRoomActorRenderZ(float z, const Entity &entity) {
@@ -645,23 +617,6 @@ static bool applyRoomActorPlacementInternal(const RoomSetupState &state, Entity 
 		setRoomActorScreenPosition(entity, centerX, bottomY, renderZ, width, height, xOffset, yOffset);
 	}
     
-
-	if (entity.getName() == "PLAYER") {
-		const Common::Rect hit = entity.getScreenRect();
-		warning(
-			"PLAYER FINAL: z=%.3f scale=%.3f "
-			"logical=(cx=%d feetY=%d) hit=(%d,%d)-(%d,%d) %dx%d feetDelta=%d",
-			(double)z,
-			(double)entity.getDepthScale(),
-			centerX,
-			bottomY,
-			hit.left, hit.top, hit.right, hit.bottom,
-			hit.width(), hit.height(),
-			hit.bottom - bottomY   // want ~0
-		);
-	}
-	
-	
 	return true;
 }
 

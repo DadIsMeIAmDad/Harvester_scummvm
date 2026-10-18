@@ -835,7 +835,7 @@ Common::Point Entity::getPngDrawOrigin() const {
             _name == "SWELL" ||
             _name == "NOODY") {
         // Top-left anchor: no adjustment.
-    } else if (_name == "Nobyy" ||
+    } else if (_name == "PLAYER" ||
             _name == "PASTORELLI" ||
             _name == "WASP_WOMAN" ||
             _name == "NOBODY2") {
@@ -1008,7 +1008,78 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// First frame establishes the fixed anchor.
 		// -------------------------------------------------
 
-		const Common::Point pngOrigin = getPngDrawOrigin();
+		const Graphics::Surface *anchorFrame =
+			!_basePngFrames.empty()
+				? _basePngFrames[0]
+				: (*sourceFrames)[0];
+
+		const int anchorWidth = anchorFrame
+			? scaleDimension(anchorFrame->w, _depthScale)
+			: scaleDimension(src->w, _depthScale);
+
+		const int anchorHeight = anchorFrame
+			? scaleDimension(anchorFrame->h, _depthScale)
+			: scaleDimension(src->h, _depthScale);
+
+		const int drawnWidth = scaleDimension(src->w, _depthScale);
+		const int drawnHeight = scaleDimension(src->h, _depthScale);
+
+		// -------------------------------------------------
+		// Decide how this entity should be anchored.
+		// -------------------------------------------------
+
+		bool anchorRight = false;
+		bool anchorLeft = false;
+		bool anchorBottomCenter = false;
+
+		// Entities anchored to the TOP-RIGHT corner.
+		if (_name == "MOM" ||
+				_name == "HANK" ||
+				_name == "PARSONS") {
+
+			anchorRight = true;
+		}
+
+		// Entities anchored to the TOP-LEFT corner.
+		else if (_name == "CABNET" ||
+				_name == "SWELL" ||
+				_name == "NOODY") {
+
+			anchorLeft = true;
+		}
+
+		// Entities anchored to the BOTTOM-CENTER.
+		// Replace these placeholders with actual entity names.
+		else if (_name == "NOBODY1" ||
+				_name == "PASTORELLI" ||
+				_name == "WASP_WOMAN" ||
+				_name == "NOBODY2") {
+
+			anchorBottomCenter = true;
+		}
+
+		// -------------------------------------------------
+		// Calculate final PNG draw position.
+		// -------------------------------------------------
+
+		int x = drawOrigin.x;
+		int y = drawOrigin.y;
+
+		if (anchorRight) {
+			// TOP-RIGHT of first frame.
+			x = drawOrigin.x + anchorWidth - drawnWidth;
+			y = drawOrigin.y;
+		}
+		else if (anchorLeft) {
+			// TOP-LEFT of first frame.
+			x = drawOrigin.x;
+			y = drawOrigin.y;
+		}
+		else if (anchorBottomCenter) {
+			// BOTTOM-CENTER of first frame.
+			x = drawOrigin.x + (anchorWidth - drawnWidth) / 2;
+			y = drawOrigin.y + anchorHeight - drawnHeight;
+		}
 
 		// -------------------------------------------------
 		// Draw PNG frame.
@@ -1018,7 +1089,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 			screen.blitFrom(
 				*src,
 				Common::Rect(0, 0, src->w, src->h),
-				pngOrigin);
+				Common::Point(x, y));
 		} else {
 			const int sw = scaleDimension(src->w, _depthScale);
 			const int sh = scaleDimension(src->h, _depthScale);
@@ -1029,7 +1100,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 			screen.blitFrom(
 				scaled,
 				Common::Rect(0, 0, scaled.w, scaled.h),
-				pngOrigin);
+				Common::Point(x, y));
 
 			scaled.free();
 		}
@@ -1078,65 +1149,37 @@ void Entity::draw(Graphics::Screen &screen) const {
 
 
 
-
 Common::Rect Entity::getFrameRect() const {
 	const Common::Point drawOrigin = getDrawOrigin();
 
-	// PNG animation frames
+	// PNG animation frames: _pngFrames may still be full-size when depth scale
+	// is applied only at draw time. Prefer scaled bounds so hit/click rects
+	// match the drawn sprite.
 	if (!_pngFrames.empty() || !_basePngFrames.empty()) {
-		const Common::Point pngOrigin = getPngDrawOrigin();
-		const Common::Array<Graphics::Surface *> &src =
-			!_basePngFrames.empty() ? _basePngFrames : _pngFrames;
-
-		int rawW = 0;
-		int rawH = 0;
-
-		if (_currentFrame >= 0 &&
-				(uint)_currentFrame < src.size() &&
-				src[_currentFrame]) {
-			rawW = src[_currentFrame]->w;
-			rawH = src[_currentFrame]->h;
-		}
-
 		int w = _boundsWidth;
 		int h = _boundsHeight;
 
 		if (w <= 0 || h <= 0) {
-			w = scaleDimension(rawW, _depthScale);
-			h = scaleDimension(rawH, _depthScale);
+			const Common::Array<Graphics::Surface *> &src =
+				!_basePngFrames.empty() ? _basePngFrames : _pngFrames;
+
+			if (_currentFrame >= 0 && (uint)_currentFrame < src.size() &&
+					src[_currentFrame]) {
+				w = scaleDimension(src[_currentFrame]->w, _depthScale);
+				h = scaleDimension(src[_currentFrame]->h, _depthScale);
+			}
 		}
 
-		Common::Rect rect(
-			pngOrigin.x,
-			pngOrigin.y,
-			pngOrigin.x + w,
-			pngOrigin.y + h);
-
-		if (_name == "PLAYER") {
-			warning(
-				"PLAYER RECT: frame=%d scale=%.3f "
-				"rawPNG=%dx%d bounds=%dx%d rect=(%d,%d)-(%d,%d) size=%dx%d",
-				_currentFrame,
-				_depthScale,
-				rawW,
-				rawH,
-				_boundsWidth,
-				_boundsHeight,
-				rect.left,
-				rect.top,
-				rect.right,
-				rect.bottom,
-				rect.width(),
-				rect.height());
-		}
-
-		return rect;
+		return Common::Rect(
+			drawOrigin.x,
+			drawOrigin.y,
+			drawOrigin.x + w,
+			drawOrigin.y + h);
 	}
 
 	if (_pngSurface) {
 		const int w = scaleDimension(_pngSurface->w, _depthScale);
 		const int h = scaleDimension(_pngSurface->h, _depthScale);
-
 		return Common::Rect(
 			drawOrigin.x,
 			drawOrigin.y,
@@ -1148,7 +1191,6 @@ Common::Rect Entity::getFrameRect() const {
 	if (!_frames.empty() && _currentFrame >= 0 &&
 			(uint)_currentFrame < _frames.size()) {
 		const AbmFrame &frame = _frames[(uint)_currentFrame];
-
 		return Common::Rect(
 			drawOrigin.x,
 			drawOrigin.y,
