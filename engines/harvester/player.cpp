@@ -732,14 +732,6 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 		const Common::Array<ObjectRecord> &sceneObjects,
 		const Common::Array<AnimRecord> &sceneAnimations, const Entity &playerEntity,
 		const Common::String *ignoredBlockerName) {
-		
-	warning("MOVE: cand feetY=%d z=%.1f cx=%d bandY=[%d..%d] bandZ=[%d..%d] "
-        "clampedFeet=%d clampedZ=%.1f blocker='%s'",
-        candidateBottomY, (double)candidateZ, candidateCenterX,
-        state.roomMaxZScreenY, state.roomMinZScreenY,
-        state.roomMinZ, state.roomMaxZ,
-        clampedBottomY, (double)clampedZ,
-        blocker ? blocker->getName().c_str() : "(none)");
 	EntityManager *entityManager = engine.getRuntimeEntities();
 	if (!entityManager)
 		return nullptr;
