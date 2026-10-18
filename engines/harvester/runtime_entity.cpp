@@ -1064,25 +1064,25 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// -------------------------------------------------
 
 		if (_name == "PLAYER") {
-			// Green: actual rendered sprite rectangle.
 			const Common::Rect spriteRect(
-				x,
-				y,
+				x, y,
 				x + drawnWidth,
 				y + drawnHeight);
 
-			drawDebugRectangle(
-				screen,
-				spriteRect,
-				0x00FF00);
-
-			// Red: current entity screen/hit rectangle.
 			const Common::Rect hitRect = getScreenRect();
 
-			drawDebugRectangle(
-				screen,
-				hitRect,
-				0xFF0000);
+			// Sprite rectangle: green.
+			drawDebugRectangle(screen, spriteRect, 0x00FF00);
+
+			// Hitbox left half: red.
+			Common::Rect hitLeft = hitRect;
+			hitLeft.right = hitRect.left + hitRect.width() / 2;
+			drawDebugRectangle(screen, hitLeft, 0xFF0000);
+
+			// Hitbox right half: blue.
+			Common::Rect hitRight = hitRect;
+			hitRight.left = hitRect.left + hitRect.width() / 2;
+			drawDebugRectangle(screen, hitRight, 0x0000FF);
 		}
 
 
