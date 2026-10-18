@@ -790,65 +790,6 @@ bool Entity::tickVisualState(uint32 now) {
 	return true;
 }
 
-
-Common::Point Entity::getPngDrawOrigin() const {
-    const Common::Point drawOrigin = getDrawOrigin();
-
-    if (_basePngFrames.empty() && _pngFrames.empty())
-        return drawOrigin;
-
-    const Common::Array<Graphics::Surface *> &sourceFrames =
-        !_basePngFrames.empty() ? _basePngFrames : _pngFrames;
-
-    if (sourceFrames.empty())
-        return drawOrigin;
-
-    int frameIndex = _currentFrame;
-    if (frameIndex < 0 || frameIndex >= (int)sourceFrames.size())
-        frameIndex = 0;
-
-    const Graphics::Surface *src = sourceFrames[frameIndex];
-    if (!src)
-        return drawOrigin;
-
-    const Graphics::Surface *anchorFrame = sourceFrames[0];
-
-    const int anchorWidth = anchorFrame
-        ? scaleDimension(anchorFrame->w, _depthScale)
-        : scaleDimension(src->w, _depthScale);
-
-    const int anchorHeight = anchorFrame
-        ? scaleDimension(anchorFrame->h, _depthScale)
-        : scaleDimension(src->h, _depthScale);
-
-    const int drawnWidth = scaleDimension(src->w, _depthScale);
-    const int drawnHeight = scaleDimension(src->h, _depthScale);
-
-    int x = drawOrigin.x;
-    int y = drawOrigin.y;
-
-    if (_name == "MOM" ||
-            _name == "HANK" ||
-            _name == "PARSONS") {
-        x += anchorWidth - drawnWidth;
-    } else if (_name == "CABNET" ||
-            _name == "SWELL" ||
-            _name == "NOODY") {
-        // Top-left anchor: no adjustment.
-    } else if (_name == "PLAYER" ||
-            _name == "PASTORELLI" ||
-            _name == "WASP_WOMAN" ||
-            _name == "NOBODY2") {
-        x += (anchorWidth - drawnWidth) / 2;
-        y += anchorHeight - drawnHeight;
-    }
-
-    return Common::Point(x, y);
-}
-
-
-
-
 Common::Point Entity::getDrawOrigin() const {
 	// Original ABM frames have their own per-frame offsets.
 	if (!_frames.empty() &&
