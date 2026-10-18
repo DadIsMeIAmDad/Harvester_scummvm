@@ -1584,15 +1584,10 @@ void Entity::updateScreenBaseFromCurrentFrame() {
 	if (_anchorMode == kRuntimeEntityAnchorCentered) {
 		baseX -= _boundsWidth / 2;
 		baseY -= _boundsHeight / 2;
-	} else if (_classId == kRuntimeEntityClassPlayer ||
-	           _classId == kRuntimeEntityClassMonster) {
-		// Logical (_x,_y) = feet / bottom-center of the sprite
-		baseX -= _boundsWidth / 2;
-		baseY -= _boundsHeight;
 	}
 
 	_screenBaseX = baseX;
-	_screenBaseY = baseY + _boundsHeight;
+	_screenBaseY = baseY;
 }
 
 void Entity::rebuildScaledFrames() {
