@@ -629,6 +629,14 @@ static bool applyRoomActorPlacementInternal(const RoomSetupState &state, Entity 
 			return false;
 }
 		setRoomActorScreenPosition(entity, centerX, bottomY, renderZ, width, height, xOffset, yOffset);
+		if (entity.getName() == "PLAYER") {
+			warning("PLAYER PLACE: centerX=%d bottomY=%d z=%.2f "
+					"scale=%.3f metrics=%dx%d offset=%d,%d position=%d,%d",
+				centerX, bottomY, (double)renderZ,
+				(double)entity.getDepthScale(),
+				width, height, xOffset, yOffset,
+				entity.getX(), entity.getY());
+		}
 	}
 
 	return true;

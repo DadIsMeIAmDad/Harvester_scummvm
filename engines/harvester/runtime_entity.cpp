@@ -1015,8 +1015,18 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// Calculate final PNG draw position.
 		// -------------------------------------------------
 
+
 		int x = drawOrigin.x;
 		int y = drawOrigin.y;
+
+		// PLAYER: keep the feet fixed at the logical bottom position.
+		// Room placement stores _y as the sprite's top-left, so recover
+		// the intended bottom using the scaled current-frame height.
+		if (_name == "PLAYER") {
+			y = _y + drawnHeight;
+			y -= drawnHeight;
+		}
+
 
 		if (anchorRight) {
 			// TOP-RIGHT of first frame.
