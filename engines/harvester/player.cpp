@@ -728,32 +728,72 @@ static void setPlayerCurrentBlocker(RoomPlayerState &playerState, const Entity *
 	clearPlayerBlockerHistory(playerState);
 }
 
+
 static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations, const Entity &playerEntity,
+		const Common::Array<AnimRecord> &sceneAnimations,
+		const Entity &playerEntity,
 		const Common::String *ignoredBlockerName) {
+
 	EntityManager *entityManager = engine.getRuntimeEntities();
 	if (!entityManager)
 		return nullptr;
 
 	for (const ObjectRecord &object : sceneObjects) {
-		const Entity *entity = entityManager->findSceneEntityByName(object.objectName);
-		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
-				playerEntity.overlapsEntity(*entity)) {
-			return entity;
+		const Entity *entity =
+			entityManager->findSceneEntityByName(object.objectName);
+
+		if (entity &&
+				!shouldIgnoreMovementBlocker(*entity, ignoredBlockerName)) {
+			const bool overlaps = playerEntity.overlapsEntity(*entity);
+
+			if (overlaps) {
+				const Common::Rect playerRect = playerEntity.getScreenRect();
+				const Common::Rect blockerRect = entity->getScreenRect();
+
+				warning(
+					"MOVE BLOCKED: object='%s' playerRect=(%d,%d)-(%d,%d) "
+					"blockerRect=(%d,%d)-(%d,%d)",
+					entity->getName().c_str(),
+					playerRect.left, playerRect.top,
+					playerRect.right, playerRect.bottom,
+					blockerRect.left, blockerRect.top,
+					blockerRect.right, blockerRect.bottom);
+
+				return entity;
+			}
 		}
 	}
 
 	for (const AnimRecord &anim : sceneAnimations) {
-		const Entity *entity = entityManager->findSceneEntityByName(anim.animName);
-		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
-				playerEntity.overlapsEntity(*entity)) {
-			return entity;
+		const Entity *entity =
+			entityManager->findSceneEntityByName(anim.animName);
+
+		if (entity &&
+				!shouldIgnoreMovementBlocker(*entity, ignoredBlockerName)) {
+			const bool overlaps = playerEntity.overlapsEntity(*entity);
+
+			if (overlaps) {
+				const Common::Rect playerRect = playerEntity.getScreenRect();
+				const Common::Rect blockerRect = entity->getScreenRect();
+
+				warning(
+					"MOVE BLOCKED: anim='%s' playerRect=(%d,%d)-(%d,%d) "
+					"blockerRect=(%d,%d)-(%d,%d)",
+					entity->getName().c_str(),
+					playerRect.left, playerRect.top,
+					playerRect.right, playerRect.bottom,
+					blockerRect.left, blockerRect.top,
+					blockerRect.right, blockerRect.bottom);
+
+				return entity;
+			}
 		}
 	}
 
 	return nullptr;
 }
+
 
 static void refreshPlayerCurrentBlocker(HarvesterEngine &engine,
 		const Common::Array<ObjectRecord> &sceneObjects,
