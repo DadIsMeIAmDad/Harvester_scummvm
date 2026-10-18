@@ -518,27 +518,11 @@ static bool startResolvedAttackAnimation(RoomPlayerState &playerState,
 	return true;
 }
 
-
 static int clampRoomMovementY(const RoomSetupState &state, int screenY) {
 	if (!Player::supportsMovementBand(state))
 		return screenY;
 
-	const int clampedY = CLIP<int>(
-		screenY,
-		state.roomMaxZScreenY,
-		state.roomMinZScreenY);
-
-	if (clampedY != screenY) {
-		warning(
-			"MOVE Y CLAMP: requestedY=%d clampedY=%d "
-			"bandTop=%d bandBottom=%d",
-			screenY,
-			clampedY,
-			state.roomMaxZScreenY,
-			state.roomMinZScreenY);
-	}
-
-	return clampedY;
+	return CLIP<int>(screenY, state.roomMaxZScreenY, state.roomMinZScreenY);
 }
 
 static float mapRoomScreenYToDepth(const RoomSetupState &state, int screenY) {
@@ -744,72 +728,41 @@ static void setPlayerCurrentBlocker(RoomPlayerState &playerState, const Entity *
 	clearPlayerBlockerHistory(playerState);
 }
 
-
 static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations,
-		const Entity &playerEntity,
+		const Common::Array<AnimRecord> &sceneAnimations, const Entity &playerEntity,
 		const Common::String *ignoredBlockerName) {
+		
+	warning("MOVE: cand feetY=%d z=%.1f cx=%d bandY=[%d..%d] bandZ=[%d..%d] "
+        "clampedFeet=%d clampedZ=%.1f blocker='%s'",
+        candidateBottomY, (double)candidateZ, candidateCenterX,
+        state.roomMaxZScreenY, state.roomMinZScreenY,
+        state.roomMinZ, state.roomMaxZ,
+        clampedBottomY, (double)clampedZ,
+        blocker ? blocker->getName().c_str() : "(none)");
 
 	EntityManager *entityManager = engine.getRuntimeEntities();
 	if (!entityManager)
 		return nullptr;
 
 	for (const ObjectRecord &object : sceneObjects) {
-		const Entity *entity =
-			entityManager->findSceneEntityByName(object.objectName);
-
-		if (entity &&
-				!shouldIgnoreMovementBlocker(*entity, ignoredBlockerName)) {
-			const bool overlaps = playerEntity.overlapsEntity(*entity);
-
-			if (overlaps) {
-				const Common::Rect playerRect = playerEntity.getScreenRect();
-				const Common::Rect blockerRect = entity->getScreenRect();
-
-				warning(
-					"MOVE BLOCKED: object='%s' playerRect=(%d,%d)-(%d,%d) "
-					"blockerRect=(%d,%d)-(%d,%d)",
-					entity->getName().c_str(),
-					playerRect.left, playerRect.top,
-					playerRect.right, playerRect.bottom,
-					blockerRect.left, blockerRect.top,
-					blockerRect.right, blockerRect.bottom);
-
-				return entity;
-			}
+		const Entity *entity = entityManager->findSceneEntityByName(object.objectName);
+		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
+				playerEntity.overlapsEntity(*entity)) {
+			return entity;
 		}
 	}
 
 	for (const AnimRecord &anim : sceneAnimations) {
-		const Entity *entity =
-			entityManager->findSceneEntityByName(anim.animName);
-
-		if (entity &&
-				!shouldIgnoreMovementBlocker(*entity, ignoredBlockerName)) {
-			const bool overlaps = playerEntity.overlapsEntity(*entity);
-
-			if (overlaps) {
-				const Common::Rect playerRect = playerEntity.getScreenRect();
-				const Common::Rect blockerRect = entity->getScreenRect();
-
-				warning(
-					"MOVE BLOCKED: anim='%s' playerRect=(%d,%d)-(%d,%d) "
-					"blockerRect=(%d,%d)-(%d,%d)",
-					entity->getName().c_str(),
-					playerRect.left, playerRect.top,
-					playerRect.right, playerRect.bottom,
-					blockerRect.left, blockerRect.top,
-					blockerRect.right, blockerRect.bottom);
-
-				return entity;
-			}
+		const Entity *entity = entityManager->findSceneEntityByName(anim.animName);
+		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
+				playerEntity.overlapsEntity(*entity)) {
+			return entity;
 		}
 	}
-
+	
 	return nullptr;
 }
-
 
 static void refreshPlayerCurrentBlocker(HarvesterEngine &engine,
 		const Common::Array<ObjectRecord> &sceneObjects,

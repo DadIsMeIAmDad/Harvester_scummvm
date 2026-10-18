@@ -1086,7 +1086,19 @@ void Entity::draw(Graphics::Screen &screen) const {
 			drawDebugRectangle(screen, rightRect, 0x0000FF);
 		}
 
+		// DEBUG: display current Z above player's head.
+		char zText[64];
+		snprintf(zText, sizeof(zText), "Z=%.3f", (double)_z);
 
+		screen.drawString(
+			Common::String(zText),
+			Common::Rect(
+				x - 30,
+				y - 22,
+				x + drawnWidth + 30,
+				y - 2),
+				200,  // Text color index; may need adjusting.
+				Graphics::kTextAlignCenter);
 		return;
 	}
 
