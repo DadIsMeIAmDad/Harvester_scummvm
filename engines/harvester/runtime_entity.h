@@ -163,7 +163,7 @@ private:
 	void rebuildScaledPngFrames();
 	void freePngFrames();
 	void freeBasePngFrames();
-
+	Common::Point getPngDrawOrigin() const;
 	Common::String _name;
 	Common::String _resourcePath;
 	Common::Array<AbmFrame> _frames;
