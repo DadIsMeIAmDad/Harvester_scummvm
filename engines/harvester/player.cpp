@@ -40,7 +40,9 @@ static const float kRoomPlayerDepthTargetSlack = 8.0f;
 static const int kRoomRegionTargetXBias = 10;
 static const float kRoomDepthCompareEpsilon = 0.01f;
 static const int kRoomPlayerWalkAnimationRate = 17;
-static const int kRoomPlayerVerticalScreenStep = 2.5;
+
+static const int kRoomPlayerVerticalScreenStep = 1;
+
 static const int kRoomPlayerAttackAnimationRate = kRoomPlayerWalkAnimationRate;
 static const int kRoomPlayerHitAnimationRate = 4;
 // update_actor_runtime_state (0x4d750) seeds a zero-HP transition at 0x4e576
@@ -586,10 +588,11 @@ static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
 }
 
 static int computeRoomPlayerVerticalScreenStep() {
-	// Native spawn_player_combat_avatar seeds player runtime +0x1140 with 1,
-	// and update_actor_runtime_state copies abs(+0x1140) into frame_y_step for
-	// the vertical walk states instead of remapping screen Y from depth.
-	return kRoomPlayerVerticalScreenStep;
+	constexpr float kReferenceZ    = 68.0f;
+	constexpr int   kReferenceStep = 3;
+
+	const int step = static_cast<int>(std::lround(kReferenceStep * (z / kReferenceZ)));
+	return std::max(1, step);   // never go below the native seed value of 1
 }
 
 static int computePlayerFrameLeftX(const RoomPlayerState &playerState) {
