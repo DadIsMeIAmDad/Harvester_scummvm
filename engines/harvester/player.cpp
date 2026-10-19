@@ -41,7 +41,7 @@ static const int kRoomRegionTargetXBias = 10;
 static const float kRoomDepthCompareEpsilon = 0.01f;
 static const int kRoomPlayerWalkAnimationRate = 17;
 
-static const int kRoomPlayerVerticalScreenStep = 2;
+static const int kRoomPlayerVerticalScreenStep = 3;
 
 static const int kRoomPlayerAttackAnimationRate = kRoomPlayerWalkAnimationRate;
 static const int kRoomPlayerHitAnimationRate = 4;
