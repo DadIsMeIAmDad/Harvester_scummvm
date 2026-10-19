@@ -594,7 +594,7 @@ static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
 	
 	if (state.roomName == "MR_JOHNS") {
 		return kRoomPlayerVerticalScreenStep3;
-	} else if (state.roomName == "CHAP1") {
+	} else if (state.roomName == "CHAP1" || state.roomName == "MORTHALL") {
 		return kRoomPlayerVerticalScreenStep2;
 	} else {
 		return kRoomPlayerVerticalScreenStep;
