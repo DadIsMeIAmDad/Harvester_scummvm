@@ -40,9 +40,7 @@ static const float kRoomPlayerDepthTargetSlack = 8.0f;
 static const int kRoomRegionTargetXBias = 10;
 static const float kRoomDepthCompareEpsilon = 0.01f;
 static const int kRoomPlayerWalkAnimationRate = 17;
-
 static const int kRoomPlayerVerticalScreenStep = 1;
-
 static const int kRoomPlayerAttackAnimationRate = kRoomPlayerWalkAnimationRate;
 static const int kRoomPlayerHitAnimationRate = 4;
 // update_actor_runtime_state (0x4d750) seeds a zero-HP transition at 0x4e576
@@ -587,13 +585,12 @@ static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
 	return state.roomZVelocityStep > 0.0f ? state.roomZVelocityStep : 1.0f;
 }
 
-
-static int computeRoomPlayerVerticalScreenStep(
-		const RoomSetupState &state, float z) {
-	return MAX<int>(1, roundToInt(
-		Player::computeDepthScale(state, z) * kRoomPlayerVerticalScreenStep));
+static int computeRoomPlayerVerticalScreenStep() {
+	// Native spawn_player_combat_avatar seeds player runtime +0x1140 with 1,
+	// and update_actor_runtime_state copies abs(+0x1140) into frame_y_step for
+	// the vertical walk states instead of remapping screen Y from depth.
+	return kRoomPlayerVerticalScreenStep;
 }
-
 
 static int computePlayerFrameLeftX(const RoomPlayerState &playerState) {
 	if (!playerState.entity)
@@ -1742,22 +1739,25 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 			playerState, playerState.centerX + horizontalDirection * horizontalStep);
 
 
+
 	} else if (depthDirection != 0) {
 
-		int verticalStep = computeRoomPlayerVerticalScreenStep();
 
+		int verticalStep = computeRoomPlayerVerticalScreenStep();
 		if (state.roomName == "MR_JOHNS") {
 			verticalStep = 3;
 		}
 
 		const float depthStep = computeRoomPlayerDepthStep(state);
-
-
-
 		candidateBottomY = clampRoomMovementY(state,
 			playerState.bottomY + depthDirection * verticalStep);
 		candidateZ = stepTowardsFloat(playerState.z, playerState.targetZ, depthStep);
 	}
+
+
+
+
+
 
 	if (engine.isPathfindingDebugEnabled()) {
 		debugC(1, kDebugPathfinding,
@@ -1847,9 +1847,7 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	const int previousBottomY = playerState.bottomY;
 	const float previousZ = playerState.z;
 	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
-	
-	const int verticalStep = computeRoomPlayerVerticalScreenStep(state, playerState.z);
-	
+	const int verticalStep = computeRoomPlayerVerticalScreenStep();
 	const float depthStep = computeRoomPlayerDepthStep(state);
 	int candidateCenterX = clampPlayerCenterXToNativeBounds(
 		playerState, playerState.centerX + horizontalInput * horizontalStep);
