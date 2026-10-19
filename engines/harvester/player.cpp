@@ -41,7 +41,7 @@ static const int kRoomRegionTargetXBias = 10;
 static const float kRoomDepthCompareEpsilon = 0.01f;
 static const int kRoomPlayerWalkAnimationRate = 17;
 
-static const int kRoomPlayerVerticalScreenStep = 1;
+static const int kRoomPlayerVerticalScreenStep = 2;
 
 static const int kRoomPlayerAttackAnimationRate = kRoomPlayerWalkAnimationRate;
 static const int kRoomPlayerHitAnimationRate = 4;
@@ -587,17 +587,13 @@ static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
 	return state.roomZVelocityStep > 0.0f ? state.roomZVelocityStep : 1.0f;
 }
 
-static int computeRoomPlayerVerticalScreenStep(float z) {
 
-	const float kReferenceZ    = 68.0f;
-	const int   kReferenceStep = 3;
-
-	int step = (int)(kReferenceStep * (z / kReferenceZ) + 0.5f);  // round
-	if (step < 1)
-		step = 1;
-
-	return step;
+static int computeRoomPlayerVerticalScreenStep(
+		const RoomSetupState &state, float z) {
+	return MAX<int>(1, roundToInt(
+		Player::computeDepthScale(state, z) * kRoomPlayerVerticalScreenStep));
 }
+
 
 static int computePlayerFrameLeftX(const RoomPlayerState &playerState) {
 	if (!playerState.entity)
@@ -1744,9 +1740,16 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 		const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
 		candidateCenterX = clampPlayerCenterXToNativeBounds(
 			playerState, playerState.centerX + horizontalDirection * horizontalStep);
+
+
+
 	} else if (depthDirection != 0) {
-		const int verticalStep = computeRoomPlayerVerticalScreenStep();
+		const int verticalStep = computeRoomPlayerVerticalScreenStep(state, playerState.z);
 		const float depthStep = computeRoomPlayerDepthStep(state);
+
+
+
+
 		candidateBottomY = clampRoomMovementY(state,
 			playerState.bottomY + depthDirection * verticalStep);
 		candidateZ = stepTowardsFloat(playerState.z, playerState.targetZ, depthStep);
@@ -1840,7 +1843,9 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	const int previousBottomY = playerState.bottomY;
 	const float previousZ = playerState.z;
 	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
-	const int verticalStep = computeRoomPlayerVerticalScreenStep();
+	
+	const int verticalStep = computeRoomPlayerVerticalScreenStep(state, playerState.z);
+	
 	const float depthStep = computeRoomPlayerDepthStep(state);
 	int candidateCenterX = clampPlayerCenterXToNativeBounds(
 		playerState, playerState.centerX + horizontalInput * horizontalStep);
