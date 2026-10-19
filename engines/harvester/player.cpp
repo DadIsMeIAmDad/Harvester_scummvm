@@ -587,17 +587,18 @@ static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
 	return state.roomZVelocityStep > 0.0f ? state.roomZVelocityStep : 1.0f;
 }
 
-static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state, float z) {
+static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
 	// Native spawn_player_combat_avatar seeds player runtime +0x1140 with 1,
 	// and update_actor_runtime_state copies abs(+0x1140) into frame_y_step for
 	// the vertical walk states instead of remapping screen Y from depth.
 	
-    const float scale = Player::computeDepthScale(state, z);
-
-    if (scale >= 1.2f)
-        return kRoomPlayerVerticalScreenStep3;
-    else
-        return kRoomPlayerVerticalScreenStep;
+	if (state.roomName == "MR_JOHNS" || state.roomName == "PCKIT" || state.roomName == "SCHL") {
+		return kRoomPlayerVerticalScreenStep3;
+	} else if (state.roomName == "STORE_OUT") {
+		return kRoomPlayerVerticalScreenStep2;
+	} else {
+		return kRoomPlayerVerticalScreenStep;
+	}
 }
 
 static int computePlayerFrameLeftX(const RoomPlayerState &playerState) {
@@ -1749,7 +1750,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
-		const int verticalStep = computeRoomPlayerVerticalScreenStep(state, playerState.z);
+		const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
 		const float depthStep = computeRoomPlayerDepthStep(state);
 		candidateBottomY = clampRoomMovementY(state,
 			playerState.bottomY + depthDirection * verticalStep);
@@ -1849,7 +1850,7 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	const int previousBottomY = playerState.bottomY;
 	const float previousZ = playerState.z;
 	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
-	const int verticalStep = computeRoomPlayerVerticalScreenStep(state, playerState.z);
+	const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
 	const float depthStep = computeRoomPlayerDepthStep(state);
 	int candidateCenterX = clampPlayerCenterXToNativeBounds(
 		playerState, playerState.centerX + horizontalInput * horizontalStep);
