@@ -1748,7 +1748,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
-		const int verticalStep = computeRoomPlayerVerticalScreenStep();
+		const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
 		const float depthStep = computeRoomPlayerDepthStep(state);
 		candidateBottomY = clampRoomMovementY(state,
 			playerState.bottomY + depthDirection * verticalStep);
@@ -1848,7 +1848,7 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	const int previousBottomY = playerState.bottomY;
 	const float previousZ = playerState.z;
 	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
-	const int verticalStep = computeRoomPlayerVerticalScreenStep();
+	const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
 	const float depthStep = computeRoomPlayerDepthStep(state);
 	int candidateCenterX = clampPlayerCenterXToNativeBounds(
 		playerState, playerState.centerX + horizontalInput * horizontalStep);
