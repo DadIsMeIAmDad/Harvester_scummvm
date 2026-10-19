@@ -587,12 +587,16 @@ static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
 	return state.roomZVelocityStep > 0.0f ? state.roomZVelocityStep : 1.0f;
 }
 
-static int computeRoomPlayerVerticalScreenStep() {
-	constexpr float kReferenceZ    = 68.0f;
-	constexpr int   kReferenceStep = 3;
+static int computeRoomPlayerVerticalScreenStep(float z) {
 
-	const int step = static_cast<int>(std::lround(kReferenceStep * (z / kReferenceZ)));
-	return std::max(1, step);   // never go below the native seed value of 1
+	const float kReferenceZ    = 68.0f;
+	const int   kReferenceStep = 3;
+
+	int step = (int)(kReferenceStep * (z / kReferenceZ) + 0.5f);  // round
+	if (step < 1)
+		step = 1;
+
+	return step;
 }
 
 static int computePlayerFrameLeftX(const RoomPlayerState &playerState) {
