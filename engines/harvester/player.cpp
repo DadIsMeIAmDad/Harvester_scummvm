@@ -41,6 +41,8 @@ static const int kRoomRegionTargetXBias = 10;
 static const float kRoomDepthCompareEpsilon = 0.01f;
 static const int kRoomPlayerWalkAnimationRate = 17;
 static const int kRoomPlayerVerticalScreenStep = 1;
+static const int kRoomPlayerVerticalScreenStep2 = 2;
+static const int kRoomPlayerVerticalScreenStep3 = 3;
 static const int kRoomPlayerAttackAnimationRate = kRoomPlayerWalkAnimationRate;
 static const int kRoomPlayerHitAnimationRate = 4;
 // update_actor_runtime_state (0x4d750) seeds a zero-HP transition at 0x4e576
@@ -589,7 +591,12 @@ static int computeRoomPlayerVerticalScreenStep() {
 	// Native spawn_player_combat_avatar seeds player runtime +0x1140 with 1,
 	// and update_actor_runtime_state copies abs(+0x1140) into frame_y_step for
 	// the vertical walk states instead of remapping screen Y from depth.
-	return kRoomPlayerVerticalScreenStep;
+	
+	if (state.roomName == "MR_JOHNS") {
+		return kRoomPlayerVerticalScreenStep3;
+	} else {
+		return kRoomPlayerVerticalScreenStep;
+	}
 }
 
 static int computePlayerFrameLeftX(const RoomPlayerState &playerState) {
@@ -1741,13 +1748,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
-
-
-		int verticalStep = computeRoomPlayerVerticalScreenStep();
-		if (state.roomName == "MR_JOHNS") {
-			verticalStep = 3;
-		}
-
+		const int verticalStep = computeRoomPlayerVerticalScreenStep();
 		const float depthStep = computeRoomPlayerDepthStep(state);
 		candidateBottomY = clampRoomMovementY(state,
 			playerState.bottomY + depthDirection * verticalStep);
