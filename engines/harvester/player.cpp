@@ -41,7 +41,7 @@ static const int kRoomRegionTargetXBias = 10;
 static const float kRoomDepthCompareEpsilon = 0.01f;
 static const int kRoomPlayerWalkAnimationRate = 17;
 
-static const int kRoomPlayerVerticalScreenStep = 3;
+static const int kRoomPlayerVerticalScreenStep = 1;
 
 static const int kRoomPlayerAttackAnimationRate = kRoomPlayerWalkAnimationRate;
 static const int kRoomPlayerHitAnimationRate = 4;
@@ -1742,11 +1742,15 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 			playerState, playerState.centerX + horizontalDirection * horizontalStep);
 
 
-
 	} else if (depthDirection != 0) {
-		const int verticalStep = computeRoomPlayerVerticalScreenStep(state, playerState.z);
-		const float depthStep = computeRoomPlayerDepthStep(state);
 
+		int verticalStep = computeRoomPlayerVerticalScreenStep();
+
+		if (state.roomName == "MR_JOHNS") {
+			verticalStep = 3;
+		}
+
+		const float depthStep = computeRoomPlayerDepthStep(state);
 
 
 
