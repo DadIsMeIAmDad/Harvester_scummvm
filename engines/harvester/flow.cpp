@@ -576,25 +576,6 @@ static const MapLocationRecord *findTownMapLocationAt(
 	return nullptr;
 }
 
-static void drawDebugRect(Graphics::Screen &screen,
-		const Common::Rect &rect, uint32 color) {
-	if (rect.isEmpty())
-		return;
-
-	// Top and bottom edges
-	screen.drawLine(rect.left, rect.top,
-		rect.right - 1, rect.top, color);
-	screen.drawLine(rect.left, rect.bottom - 1,
-		rect.right - 1, rect.bottom - 1, color);
-
-	// Left and right edges
-	screen.drawLine(rect.left, rect.top,
-		rect.left, rect.bottom - 1, color);
-	screen.drawLine(rect.right - 1, rect.top,
-		rect.right - 1, rect.bottom - 1, color);
-}
-
-
 static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY, float z,
 		int width, int height, int xOffset, int yOffset) {
 	entity.setPosition(centerX - xOffset - width / 2, bottomY - height - yOffset, z);
@@ -629,14 +610,6 @@ static bool applyRoomActorPlacementInternal(const RoomSetupState &state, Entity 
 			return false;
 }
 		setRoomActorScreenPosition(entity, centerX, bottomY, renderZ, width, height, xOffset, yOffset);
-		if (entity.getName() == "PLAYER") {
-			warning("PLAYER PLACE: centerX=%d bottomY=%d z=%.2f "
-					"scale=%.3f metrics=%dx%d offset=%d,%d position=%d,%d",
-				centerX, bottomY, (double)renderZ,
-				(double)entity.getDepthScale(),
-				width, height, xOffset, yOffset,
-				entity.getX(), entity.getY());
-		}
 	}
 
 	return true;

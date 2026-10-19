@@ -917,19 +917,7 @@ void Entity::resumeTimerCountdown(uint32 now) {
 }
 
 
-static void drawDebugRectangle(Graphics::Screen &screen,
-		const Common::Rect &rect, uint32 color) {
-	if (rect.isEmpty())
-		return;
 
-	const int right = rect.right - 1;
-	const int bottom = rect.bottom - 1;
-
-	screen.drawLine(rect.left, rect.top, right, rect.top, color);
-	screen.drawLine(rect.left, bottom, right, bottom, color);
-	screen.drawLine(rect.left, rect.top, rect.left, bottom, color);
-	screen.drawLine(right, rect.top, right, bottom, color);
-}
 
 
 void Entity::draw(Graphics::Screen &screen) const {
@@ -1015,18 +1003,8 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// Calculate final PNG draw position.
 		// -------------------------------------------------
 
-
 		int x = drawOrigin.x;
 		int y = drawOrigin.y;
-
-		// PLAYER: keep the feet fixed at the logical bottom position.
-		// Room placement stores _y as the sprite's top-left, so recover
-		// the intended bottom using the scaled current-frame height.
-		if (_name == "PLAYER") {
-			y = _y + drawnHeight;
-			y -= drawnHeight;
-		}
-
 
 		if (anchorRight) {
 			// TOP-RIGHT of first frame.
@@ -1066,68 +1044,6 @@ void Entity::draw(Graphics::Screen &screen) const {
 				Common::Point(x, y));
 
 			scaled.free();
-		}
-
-
-		// -------------------------------------------------
-		// DEBUG: live PLAYER sprite bounds and hitbox.
-		// -------------------------------------------------
-
-		if (_name == "PLAYER") {
-			// Full rendered sprite bounds.
-			const Common::Rect spriteRect(
-				x, y,
-				x + drawnWidth,
-				y + drawnHeight);
-
-			// Actual screen/hitbox bounds.
-			const Common::Rect hitRect = getScreenRect();
-
-			// RED = left half of rendered sprite bounds.
-			Common::Rect leftRect = spriteRect;
-			leftRect.right = spriteRect.left + spriteRect.width() / 2;
-
-			drawDebugRectangle(screen, leftRect, 0xFF0000);
-
-			// BLUE = right half of getScreenRect().
-			Common::Rect rightRect = hitRect;
-			rightRect.left = hitRect.left + hitRect.width() / 2;
-
-			drawDebugRectangle(screen, rightRect, 0x0000FF);
-		}
-
-
-
-		// DEBUG: log PLAYER position and Z when they change.
-		if (_name == "PLAYER") {
-			static int lastY = -999999;
-			static float lastZ = -999999.0f;
-
-			if (y != lastY || _z != lastZ) {
-				const Common::Rect hit = getScreenRect();
-
-				warning("PLAYER DEBUG: Z=%.3f depthScale=%.3f "
-						"drawXY=(%d,%d) drawnSize=%dx%d "
-						"hitRect=(%d,%d)-(%d,%d)",
-					(double)_z,
-					(double)_depthScale,
-					x, y,
-					drawnWidth, drawnHeight,
-					hit.left, hit.top, hit.right, hit.bottom);
-
-				lastY = y;
-				lastZ = _z;
-
-				warning("PLAYER DEBUG: Z=%.3f scale=%.3f "
-						"logical=(%d,%d) drawXY=(%d,%d) drawn=%dx%d "
-						"impliedFeetY=%d  (logicalY - drawnH)=%d",
-					(double)_z, (double)_depthScale,
-					_x, _y,         // the walk/feet position
-					x, y,
-					drawnWidth, drawnHeight,
-					y + drawnHeight,
-					_y - drawnHeight);
-			}
 		}
 
 		return;

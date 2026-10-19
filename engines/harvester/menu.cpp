@@ -2170,6 +2170,7 @@ Common::Error MenuSystem::runConfirmPrompt(
 				: static_cast<const Graphics::Font &>(choiceFont);
 			const Graphics::Font &noFont = hoverNo ? static_cast<const Graphics::Font &>(promptFont)
 				: static_cast<const Graphics::Font &>(choiceFont);
+			warning("HARVESTER CONFIRM: BEFORE renderConfirmPromptScreen");
 			renderConfirmPromptScreen(
 				_engine,
 				backdrop,
@@ -2184,7 +2185,7 @@ Common::Error MenuSystem::runConfirmPrompt(
 				config);
 			needsRedraw = false;
 		}
-
+		warning("HARVESTER CONFIRM: AFTER renderConfirmPromptScreen");
 
 		Common::Event event;
 		while (g_system->getEventManager()->pollEvent(event)) {
