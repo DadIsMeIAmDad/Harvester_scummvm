@@ -423,12 +423,12 @@ static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 		return loadError;
 
 	ChessmasterPngAnim pointer;
-	loadError = loadPngAnimFromZip(*resources, "GRAPHIC/ROOMANIM/HARVPNTR.zip", pointer);  // or your real path
+	loadError = loadPngAnimFromZip(*resources, "4:/GRAPHIC/ROOMANIM/HARVPNTR.zip", pointer);
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
 	ChessmasterPngAnim operateCursor;
-	loadError = loadPngAnimFromZip(*resources, "GRAPHIC/ROOMANIM/OPERATE.zip", operateCursor);
+	loadError = loadPngAnimFromZip(*resources, "4:/GRAPHIC/ROOMANIM/OPERATE.zip", operateCursor);
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
@@ -438,7 +438,8 @@ static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!SHOULD_QUIT) {
-		// inside while (!SHOULD_QUIT) { ... }, after you have mousePos:
+		// mouse position must be read every frame, inside the loop
+		const Common::Point mousePos = g_system->getEventManager()->getMousePos();
 
 		const bool onInteractiveHotspot =
 			pointHitsHotspot(mousePos, stage.successHotspot) ||
@@ -454,7 +455,8 @@ static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 			onInteractiveHotspot ? &operateCursor : &pointer;
 		if (cursorAnim && !cursorAnim->frames.empty() &&
 				cursorAnim->frames[cursorAnim->currentFrame]) {
-			blitTransparentFrame(*screen, *cursorAnim->frames[cursorAnim->currentFrame],
+			blitTransparentFrame(*screen,
+				*cursorAnim->frames[cursorAnim->currentFrame],
 				mousePos.x, mousePos.y);
 		}
 
