@@ -31,6 +31,9 @@
 #include "harvester/npc/dialogue_runtime.h"
 #include "harvester/resources.h"
 #include "video/flic_decoder.h"
+#include "common/archive.h"
+#include "common/compression/unzip.h"
+#include "image/png.h"
 
 namespace Harvester {
 
@@ -435,15 +438,25 @@ static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!SHOULD_QUIT) {
+		// inside while (!SHOULD_QUIT) { ... }, after you have mousePos:
+
+		const bool onInteractiveHotspot =
+			pointHitsHotspot(mousePos, stage.successHotspot) ||
+			pointHitsAnyHotspot(mousePos, stage.failureHotspots, stage.failureHotspotCount);
+
 		advancePngIfNeeded(background, true);
 		advancePngIfNeeded(pointer, true);
 		advancePngIfNeeded(operateCursor, true);
 
 		drawPngFrame(*screen, background);
 
-		const ChessmasterPngAnim &cursor = onInteractiveHotspot ? operateCursor : pointer;
-		if (!cursor.frames.empty() && cursor.frames[cursor.currentFrame])
-			blitTransparentFrame(*screen, *cursor.frames[cursor.currentFrame], mousePos.x, mousePos.y);
+		const ChessmasterPngAnim *cursorAnim =
+			onInteractiveHotspot ? &operateCursor : &pointer;
+		if (cursorAnim && !cursorAnim->frames.empty() &&
+				cursorAnim->frames[cursorAnim->currentFrame]) {
+			blitTransparentFrame(*screen, *cursorAnim->frames[cursorAnim->currentFrame],
+				mousePos.x, mousePos.y);
+		}
 
 		screen->makeAllDirty();
 		screen->update();
