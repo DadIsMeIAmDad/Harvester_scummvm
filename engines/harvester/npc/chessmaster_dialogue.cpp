@@ -210,22 +210,22 @@ static const ChessmasterHotspot kChessmasterStage3FailureHotspots[] = {
 
 static const ChessmasterPuzzleStage kChessmasterPuzzleStages[] = {
 		{
-		"GRAPHIC/FST/CHOOSE1.zip",
-		"GRAPHIC/FST/CHESMOV1.zip",
+		"4:/GRAPHIC/FST/CHOOSE1.zip",
+		"4:/GRAPHIC/FST/CHESMOV1.zip",
 		{ 0x8b, 0xe0, 0xc0, 0x10d },
 		kChessmasterStage1FailureHotspots,
 		ARRAYSIZE(kChessmasterStage1FailureHotspots)
 	},
 	{
-		"GRAPHIC/FST/CHOOSE2.zip",
-		"GRAPHIC/FST/CHESMOV2.zip",
+		"4:/GRAPHIC/FST/CHOOSE2.zip",
+		"4:/GRAPHIC/FST/CHESMOV2.zip",
 		{ 0x2a, 0xfa, 0x5f, 0x12e },
 		kChessmasterStage2FailureHotspots,
 		ARRAYSIZE(kChessmasterStage2FailureHotspots)
 	},
 	{
-		"GRAPHIC/FST/CHOOSE3.zip",
-		"GRAPHIC/FST/CHESMOV3.zip",
+		"4:/GRAPHIC/FST/CHOOSE3.zip",
+		"4:/GRAPHIC/FST/CHESMOV3.zip",
 		{ 0xee, 0xa7, 0x121, 0xcb },
 		kChessmasterStage3FailureHotspots,
 		ARRAYSIZE(kChessmasterStage3FailureHotspots)
@@ -423,12 +423,12 @@ static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 		return loadError;
 
 	ChessmasterPngAnim pointer;
-	loadError = loadPngAnimFromZip(*resources, "GRAPHIC/ROOMANIM/HARVPNTR.zip", pointer);
+	loadError = loadPngAnimFromZip(*resources, "4:/GRAPHIC/ROOMANIM/HARVPNTR.zip", pointer);
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
 	ChessmasterPngAnim operateCursor;
-	loadError = loadPngAnimFromZip(*resources, "GRAPHIC/ROOMANIM/OPERATE.zip", operateCursor);
+	loadError = loadPngAnimFromZip(*resources, "4:/GRAPHIC/ROOMANIM/OPERATE.zip", operateCursor);
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
