@@ -423,12 +423,12 @@ static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 		return loadError;
 
 	ChessmasterPngAnim pointer;
-	loadError = loadPngAnimFromZip(*resources, "4:/GRAPHIC/ROOMANIM/HARVPNTR.zip", pointer);
+	loadError = loadPngAnimFromZip(*resources, "GRAPHIC/ROOMANIM/HARVPNTR.zip", pointer);
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
 	ChessmasterPngAnim operateCursor;
-	loadError = loadPngAnimFromZip(*resources, "4:/GRAPHIC/ROOMANIM/OPERATE.zip", operateCursor);
+	loadError = loadPngAnimFromZip(*resources, "GRAPHIC/ROOMANIM/OPERATE.zip", operateCursor);
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
