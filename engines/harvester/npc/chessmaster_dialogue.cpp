@@ -276,15 +276,55 @@ static void blitTransparentFrame(Graphics::Screen &screen, const Graphics::Surfa
 	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0)
 		return;
 
-	width = MIN<int>(width, screen.w - destX);
-	height = MIN<int>(height, screen.h - destY);
+	width = MIN(width, screen.w - destX);
+	height = MIN(height, screen.h - destY);
 	if (width <= 0 || height <= 0)
 		return;
 
-	const byte *src = (const byte *)frame.getBasePtr(srcX, srcY);
-	byte *dst = (byte *)screen.getBasePtr(destX, destY);
-	Graphics::keyBlit(dst, src, screen.pitch, frame.pitch, width, height,
-		screen.format.bytesPerPixel, kTransparentPaletteIndex);
+	// True-color PNG with alpha
+	if (frame.format.bytesPerPixel == 4 && frame.format.aBits > 0) {
+		for (int row = 0; row < height; ++row) {
+			const byte *src = (const byte *)frame.getBasePtr(srcX, srcY + row);
+			byte *dst = (byte *)screen.getBasePtr(destX, destY + row);
+
+			for (int col = 0; col < width; ++col) {
+				const uint32 pixel = READ_UINT32(src);
+				src += 4;
+
+				byte r, g, b, a;
+				frame.format.colorToARBG(pixel, a, r, g, b); // or colorToARGB depending on ScummVM version
+				if (a == 0)
+					continue;
+
+				if (screen.format.bytesPerPixel == 1) {
+					// Screen still indexed: nearest palette match is engine-specific;
+					// prefer converting screen to RGB for HD path. Skip or map as needed.
+					continue;
+				}
+
+				const uint32 out = screen.format.ARGBToColor(a, r, g, b);
+				if (screen.format.bytesPerPixel == 2)
+					WRITE_UINT16(dst, (uint16)out);
+				else if (screen.format.bytesPerPixel == 4)
+					WRITE_UINT32(dst, out);
+				dst += screen.format.bytesPerPixel;
+			}
+		}
+		return;
+	}
+
+	// Legacy 8-bit (old FLC path): key color 0
+	if (frame.format.bytesPerPixel == 1 && screen.format.bytesPerPixel == 1) {
+		const byte *src = (const byte *)frame.getBasePtr(srcX, srcY);
+		byte *dst = (byte *)screen.getBasePtr(destX, destY);
+		Graphics::keyBlit(dst, src, screen.pitch, frame.pitch, width, height,
+			screen.format.bytesPerPixel, kTransparentPaletteIndex);
+		return;
+	}
+
+	// Same format, no key: plain copy clipped
+	screen.blitFrom(frame, Common::Rect(srcX, srcY, srcX + width, srcY + height),
+		Common::Point(destX, destY));
 }
 
 static Common::Error decodeInitialFlicFrame(DialogueRuntime &runtime, const char *path,
