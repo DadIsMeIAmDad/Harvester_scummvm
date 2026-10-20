@@ -153,11 +153,94 @@ static void advancePngIfNeeded(ChessmasterPngAnim &anim, bool loop) {
 	anim.nextFrameTick = g_system->getMillis() + anim.frameDelayMs;
 }
 
-static void drawPngFrame(Graphics::Screen &screen, const ChessmasterPngAnim &anim) {
-	if (anim.frames.empty() || !anim.frames[anim.currentFrame])
+
+static void blitTransparentFrame(Graphics::Screen &screen, const Graphics::Surface &frame, int x, int y) {
+	if (frame.w <= 0 || frame.h <= 0)
 		return;
-	// Full-screen choice/move clips: same as old blitFrom
-	screen.blitFrom(*anim.frames[anim.currentFrame]);
+
+	int destX = x;
+	int destY = y;
+	int srcX = 0;
+	int srcY = 0;
+	int width = frame.w;
+	int height = frame.h;
+
+	if (destX < 0) {
+		srcX = -destX;
+		width += destX;
+		destX = 0;
+	}
+	if (destY < 0) {
+		srcY = -destY;
+		height += destY;
+		destY = 0;
+	}
+	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0)
+		return;
+
+	width = MIN(width, screen.w - destX);
+	height = MIN(height, screen.h - destY);
+	if (width <= 0 || height <= 0)
+		return;
+
+	// True-color PNG with alpha
+	if (frame.format.bytesPerPixel == 4 && frame.format.aBits > 0) {
+		for (int row = 0; row < height; ++row) {
+			const byte *src = (const byte *)frame.getBasePtr(srcX, srcY + row);
+			byte *dst = (byte *)screen.getBasePtr(destX, destY + row);
+
+			for (int col = 0; col < width; ++col) {
+				const uint32 pixel = READ_UINT32(src);
+				src += 4;
+
+				byte r, g, b, a;
+				frame.format.colorToARBG(pixel, a, r, g, b); // or colorToARGB depending on ScummVM version
+				if (a == 0)
+					continue;
+
+				if (screen.format.bytesPerPixel == 1) {
+					// Screen still indexed: nearest palette match is engine-specific;
+					// prefer converting screen to RGB for HD path. Skip or map as needed.
+					continue;
+				}
+
+				const uint32 out = screen.format.ARGBToColor(a, r, g, b);
+				if (screen.format.bytesPerPixel == 2)
+					WRITE_UINT16(dst, (uint16)out);
+				else if (screen.format.bytesPerPixel == 4)
+					WRITE_UINT32(dst, out);
+				dst += screen.format.bytesPerPixel;
+			}
+		}
+		return;
+	}
+
+	// Legacy 8-bit (old FLC path): key color 0
+	if (frame.format.bytesPerPixel == 1 && screen.format.bytesPerPixel == 1) {
+		const byte *src = (const byte *)frame.getBasePtr(srcX, srcY);
+		byte *dst = (byte *)screen.getBasePtr(destX, destY);
+		Graphics::keyBlit(dst, src, screen.pitch, frame.pitch, width, height,
+			screen.format.bytesPerPixel, kTransparentPaletteIndex);
+		return;
+	}
+
+	// Same format, no key: plain copy clipped
+	screen.blitFrom(frame, Common::Rect(srcX, srcY, srcX + width, srcY + height),
+		Common::Point(destX, destY));
+}
+
+static void drawPngFrame(Graphics::Screen &screen,
+        const ChessmasterPngAnim &anim) {
+    if (anim.currentFrame < 0 ||
+            anim.currentFrame >= (int)anim.frames.size())
+        return;
+
+    const Graphics::Surface *frame = anim.frames[anim.currentFrame];
+    if (!frame)
+        return;
+
+    // Preserve transparent pixels when drawing PNG animation frames.
+    blitTransparentFrame(screen, *frame, 0, 0);
 }
 
 static bool pngAnimFinished(const ChessmasterPngAnim &anim) {
@@ -252,80 +335,7 @@ static bool pointHitsAnyHotspot(const Common::Point &point, const ChessmasterHot
 	return false;
 }
 
-static void blitTransparentFrame(Graphics::Screen &screen, const Graphics::Surface &frame, int x, int y) {
-	if (frame.w <= 0 || frame.h <= 0)
-		return;
 
-	int destX = x;
-	int destY = y;
-	int srcX = 0;
-	int srcY = 0;
-	int width = frame.w;
-	int height = frame.h;
-
-	if (destX < 0) {
-		srcX = -destX;
-		width += destX;
-		destX = 0;
-	}
-	if (destY < 0) {
-		srcY = -destY;
-		height += destY;
-		destY = 0;
-	}
-	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0)
-		return;
-
-	width = MIN(width, screen.w - destX);
-	height = MIN(height, screen.h - destY);
-	if (width <= 0 || height <= 0)
-		return;
-
-	// True-color PNG with alpha
-	if (frame.format.bytesPerPixel == 4 && frame.format.aBits > 0) {
-		for (int row = 0; row < height; ++row) {
-			const byte *src = (const byte *)frame.getBasePtr(srcX, srcY + row);
-			byte *dst = (byte *)screen.getBasePtr(destX, destY + row);
-
-			for (int col = 0; col < width; ++col) {
-				const uint32 pixel = READ_UINT32(src);
-				src += 4;
-
-				byte r, g, b, a;
-				frame.format.colorToARBG(pixel, a, r, g, b); // or colorToARGB depending on ScummVM version
-				if (a == 0)
-					continue;
-
-				if (screen.format.bytesPerPixel == 1) {
-					// Screen still indexed: nearest palette match is engine-specific;
-					// prefer converting screen to RGB for HD path. Skip or map as needed.
-					continue;
-				}
-
-				const uint32 out = screen.format.ARGBToColor(a, r, g, b);
-				if (screen.format.bytesPerPixel == 2)
-					WRITE_UINT16(dst, (uint16)out);
-				else if (screen.format.bytesPerPixel == 4)
-					WRITE_UINT32(dst, out);
-				dst += screen.format.bytesPerPixel;
-			}
-		}
-		return;
-	}
-
-	// Legacy 8-bit (old FLC path): key color 0
-	if (frame.format.bytesPerPixel == 1 && screen.format.bytesPerPixel == 1) {
-		const byte *src = (const byte *)frame.getBasePtr(srcX, srcY);
-		byte *dst = (byte *)screen.getBasePtr(destX, destY);
-		Graphics::keyBlit(dst, src, screen.pitch, frame.pitch, width, height,
-			screen.format.bytesPerPixel, kTransparentPaletteIndex);
-		return;
-	}
-
-	// Same format, no key: plain copy clipped
-	screen.blitFrom(frame, Common::Rect(srcX, srcY, srcX + width, srcY + height),
-		Common::Point(destX, destY));
-}
 
 static Common::Error decodeInitialFlicFrame(DialogueRuntime &runtime, const char *path,
 		ChessmasterFlicState &state) {
