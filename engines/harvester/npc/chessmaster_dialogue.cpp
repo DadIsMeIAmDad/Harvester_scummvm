@@ -184,7 +184,7 @@ static void blitTransparentFrame(Graphics::Screen &screen, const Graphics::Surfa
 		return;
 
 	// True-color PNG with alpha
-	if (frame.format.bytesPerPixel == 4 && frame.format.aBits > 0) {
+	if (frame.format.bytesPerPixel == 4 && frame.format.aBits() > 0) {
 		for (int row = 0; row < height; ++row) {
 			const byte *src = (const byte *)frame.getBasePtr(srcX, srcY + row);
 			byte *dst = (byte *)screen.getBasePtr(destX, destY + row);
@@ -194,7 +194,7 @@ static void blitTransparentFrame(Graphics::Screen &screen, const Graphics::Surfa
 				src += 4;
 
 				byte r, g, b, a;
-				frame.format.colorToARBG(pixel, a, r, g, b); // or colorToARGB depending on ScummVM version
+				frame.format.colorToARGB(pixel, a, r, g, b); // or colorToARGB depending on ScummVM version
 				if (a == 0)
 					continue;
 
