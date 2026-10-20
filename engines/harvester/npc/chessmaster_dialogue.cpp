@@ -64,6 +64,127 @@ struct ChessmasterFlicState {
 	uint32 nextFrameTick = 0;
 };
 
+
+
+struct ChessmasterPngAnim {
+	Common::Array<Graphics::Surface *> frames;
+	int currentFrame = 0;
+	uint32 nextFrameTick = 0;
+	uint32 frameDelayMs = 100;   // pick something sensible; FLC used decoder delay
+	bool ownsFrames = true;
+
+	~ChessmasterPngAnim() {
+		if (!ownsFrames)
+			return;
+		for (Graphics::Surface *s : frames) {
+			if (s) {
+				s->free();
+				delete s;
+			}
+		}
+	}
+};
+
+static Common::Error loadPngAnimFromZip(ResourceManager &resources,
+		const Common::String &zipPath, ChessmasterPngAnim &out,
+		uint32 frameDelayMs = 100) {
+	Common::SeekableReadStream *stream = resources.openFile(zipPath);
+	if (!stream)
+		return Common::kReadingFailed;
+
+	Common::Archive *archive = Common::makeZipArchive(stream); // takes ownership of stream
+	if (!archive)
+		return Common::kReadingFailed;
+
+	for (int n = 1; ; ++n) {
+		Common::String name = Common::String::format("%03d.png", n);
+		Common::SeekableReadStream *frameStream =
+			archive->createReadStreamForMember(Common::Path(name, '/'));
+		if (!frameStream)
+			break;
+
+		Image::PNGDecoder decoder;
+		if (!decoder.loadStream(*frameStream)) {
+			delete frameStream;
+			delete archive;
+			return Common::kReadingFailed;
+		}
+		delete frameStream;
+
+		const Graphics::Surface *src = decoder.getSurface();
+		if (!src) {
+			delete archive;
+			return Common::kReadingFailed;
+		}
+
+		Graphics::Surface *copy = new Graphics::Surface();
+		copy->copyFrom(*src);
+		out.frames.push_back(copy);
+	}
+	delete archive;
+
+	if (out.frames.empty())
+		return Common::kReadingFailed;
+
+	out.currentFrame = 0;
+	out.frameDelayMs = frameDelayMs;
+	out.nextFrameTick = g_system ? g_system->getMillis() + frameDelayMs : 0;
+	return Common::kNoError;
+}
+
+static void advancePngIfNeeded(ChessmasterPngAnim &anim, bool loop) {
+	if (!g_system || anim.frames.empty())
+		return;
+	if (anim.nextFrameTick != 0 && (int32)(anim.nextFrameTick - g_system->getMillis()) > 0)
+		return;
+
+	++anim.currentFrame;
+	if (anim.currentFrame >= (int)anim.frames.size()) {
+		if (!loop) {
+			anim.currentFrame = (int)anim.frames.size() - 1;
+			anim.nextFrameTick = 0;
+			return;
+		}
+		anim.currentFrame = 0;
+	}
+	anim.nextFrameTick = g_system->getMillis() + anim.frameDelayMs;
+}
+
+static void drawPngFrame(Graphics::Screen &screen, const ChessmasterPngAnim &anim) {
+	if (anim.frames.empty() || !anim.frames[anim.currentFrame])
+		return;
+	// Full-screen choice/move clips: same as old blitFrom
+	screen.blitFrom(*anim.frames[anim.currentFrame]);
+}
+
+static bool pngAnimFinished(const ChessmasterPngAnim &anim) {
+	return !anim.frames.empty() &&
+		anim.currentFrame >= (int)anim.frames.size() - 1 &&
+		anim.nextFrameTick == 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static const ChessmasterHotspot kChessmasterStage1FailureHotspots[] = {
 	{ 0xbc, 0xa0, 0xe8, 0xc3 },
 	{ 0xfd, 0x8c, 0x130, 0xac },
@@ -86,22 +207,22 @@ static const ChessmasterHotspot kChessmasterStage3FailureHotspots[] = {
 
 static const ChessmasterPuzzleStage kChessmasterPuzzleStages[] = {
 		{
-		"GRAPHIC/FST/CHOOSE1.FLC",
-		"GRAPHIC/FST/CHESMOV1.FLC",
+		"GRAPHIC/FST/CHOOSE1.zip",
+		"GRAPHIC/FST/CHESMOV1.zip",
 		{ 0x8b, 0xe0, 0xc0, 0x10d },
 		kChessmasterStage1FailureHotspots,
 		ARRAYSIZE(kChessmasterStage1FailureHotspots)
 	},
 	{
-		"GRAPHIC/FST/CHOOSE2.FLC",
-		"GRAPHIC/FST/CHESMOV2.FLC",
+		"GRAPHIC/FST/CHOOSE2.zip",
+		"GRAPHIC/FST/CHESMOV2.zip",
 		{ 0x2a, 0xfa, 0x5f, 0x12e },
 		kChessmasterStage2FailureHotspots,
 		ARRAYSIZE(kChessmasterStage2FailureHotspots)
 	},
 	{
-		"GRAPHIC/FST/CHOOSE3.FLC",
-		"GRAPHIC/FST/CHESMOV3.FLC",
+		"GRAPHIC/FST/CHOOSE3.zip",
+		"GRAPHIC/FST/CHESMOV3.zip",
 		{ 0xee, 0xa7, 0x121, 0xcb },
 		kChessmasterStage3FailureHotspots,
 		ARRAYSIZE(kChessmasterStage3FailureHotspots)
@@ -254,25 +375,24 @@ static Common::Error runTimedDelay(uint32 durationMs) {
 
 static Common::Error playOneShotFlic(DialogueRuntime &runtime, const char *path) {
 	Graphics::Screen *screen = runtime.engine().getScreen();
-	if (!screen)
+	ResourceManager *resources = runtime.engine().getResources();
+	if (!screen || !resources || !g_system)
 		return Common::kReadingFailed;
 
-	ChessmasterFlicState video;
-	Common::Error loadError = decodeInitialFlicFrame(runtime, path, video);
+	ChessmasterPngAnim video;
+	Common::Error loadError = loadPngAnimFromZip(*resources, path, video);
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	for (;;) {
-		Common::Error advanceError = advanceFlicIfNeeded(video, false);
-		if (advanceError.getCode() != Common::kNoError)
-			return advanceError;
+		advancePngIfNeeded(video, false);
 
-		drawFlicFrame(*screen, video);
+		drawPngFrame(*screen, video);
 		screen->makeAllDirty();
 		screen->update();
 
-		if (video.decoder.endOfVideo())
+		if (pngAnimFinished(video))
 			return Common::kNoError;
 
 		Common::Event event;
@@ -285,7 +405,6 @@ static Common::Error playOneShotFlic(DialogueRuntime &runtime, const char *path)
 		limiter.startFrame();
 	}
 }
-
 static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 		const ChessmasterPuzzleStage &stage, bool &selectedSuccessHotspot) {
 	selectedSuccessHotspot = false;
@@ -295,18 +414,18 @@ static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 	if (!screen || !resources || !g_system || !g_system->getEventManager())
 		return Common::kReadingFailed;
 
-	ChessmasterFlicState background;
-	Common::Error loadError = decodeInitialFlicFrame(runtime, stage.choiceFlicPath, background);
+	ChessmasterPngAnim background;
+	Common::Error loadError = loadPngAnimFromZip(*resources, stage.choiceFlicPath, background);
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
-	ChessmasterFlicState pointer;
-	loadError = decodeInitialFlicFrame(runtime, "GRAPHIC/ROOMANIM/HARVPNTR.FLC", pointer);
+	ChessmasterPngAnim pointer;
+	loadError = loadPngAnimFromZip(*resources, "GRAPHIC/ROOMANIM/HARVPNTR.zip", pointer);  // or your real path
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
-	ChessmasterFlicState operateCursor;
-	loadError = decodeInitialFlicFrame(runtime, "GRAPHIC/ROOMANIM/OPERATE.FLC", operateCursor);
+	ChessmasterPngAnim operateCursor;
+	loadError = loadPngAnimFromZip(*resources, "GRAPHIC/ROOMANIM/OPERATE.zip", operateCursor);
 	if (loadError.getCode() != Common::kNoError)
 		return loadError;
 
@@ -316,24 +435,16 @@ static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!SHOULD_QUIT) {
-		Common::Error advanceError = advanceFlicIfNeeded(background, true);
-		if (advanceError.getCode() != Common::kNoError)
-			return advanceError;
-		advanceError = advanceFlicIfNeeded(pointer, true);
-		if (advanceError.getCode() != Common::kNoError)
-			return advanceError;
-		advanceError = advanceFlicIfNeeded(operateCursor, true);
-		if (advanceError.getCode() != Common::kNoError)
-			return advanceError;
+		advancePngIfNeeded(background, true);
+		advancePngIfNeeded(pointer, true);
+		advancePngIfNeeded(operateCursor, true);
 
-		const Common::Point mousePos = g_system->getEventManager()->getMousePos();
-		const bool onInteractiveHotspot = pointHitsHotspot(mousePos, stage.successHotspot) ||
-			pointHitsAnyHotspot(mousePos, stage.failureHotspots, stage.failureHotspotCount);
+		drawPngFrame(*screen, background);
 
-		drawFlicFrame(*screen, background);
-		const ChessmasterFlicState &cursorState = onInteractiveHotspot ? operateCursor : pointer;
-		if (cursorState.frame)
-			blitTransparentFrame(*screen, *cursorState.frame, mousePos.x, mousePos.y);
+		const ChessmasterPngAnim &cursor = onInteractiveHotspot ? operateCursor : pointer;
+		if (!cursor.frames.empty() && cursor.frames[cursor.currentFrame])
+			blitTransparentFrame(*screen, *cursor.frames[cursor.currentFrame], mousePos.x, mousePos.y);
+
 		screen->makeAllDirty();
 		screen->update();
 
