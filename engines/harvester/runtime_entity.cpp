@@ -1408,11 +1408,27 @@ bool Entity::overlapsMovementEntity(const Entity &other) const {
 	const int right = MIN(thisRect.right, otherRect.right);
 	const int bottom = MIN(thisRect.bottom, otherRect.bottom);
 
-	if (left >= right || top >= bottom)
+	
+	if (left >= right || top >= bottom) {
+		if (other.getName() == "MRJ_TUCKR") {
+			warning("MOVE TUCKER: no rectangle overlap. "
+					"Player rect=(%d,%d,%d,%d), "
+					"object rect=(%d,%d,%d,%d)",
+					thisRect.left, thisRect.top,
+					thisRect.right, thisRect.bottom,
+					otherRect.left, otherRect.top,
+					otherRect.right, otherRect.bottom);
+		}
 		return false;
+	}
 
-	if (!hasOpaqueFrame() || !other.hasOpaqueFrame())
+	if (!hasOpaqueFrame() || !other.hasOpaqueFrame()) {
+		if (other.getName() == "MRJ_TUCKR")
+			warning("MOVE TUCKER: missing opaque frame");
 		return false;
+	}
+
+
 
 	for (int y = top; y < bottom; ++y) {
 		for (int x = left; x < right; ++x) {
@@ -1422,8 +1438,12 @@ bool Entity::overlapsMovementEntity(const Entity &other) const {
 		}
 	}
 
+	if (other.getName() == "MRJ_TUCKR")
+		warning("MOVE TUCKER: rectangles overlap, but no opaque pixels overlap");
+
 	return false;
 }
+
 
 
 bool Entity::measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transparentPixels,
