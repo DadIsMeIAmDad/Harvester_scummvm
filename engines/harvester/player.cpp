@@ -751,7 +751,7 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 
 
 		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName)) {
-			const bool overlaps = playerEntity.overlapsEntity(*entity);
+			const bool overlaps = playerEntity.overlapsMovementEntity(*entity);
 
 			warning("MOVEMENT COLLISION: player=%s entity=%s overlap=%d "
 				"playerZ=%.2f entityZ=%.2f entityExtent=%.2f",
@@ -772,7 +772,7 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 	for (const AnimRecord &anim : sceneAnimations) {
 		const Entity *entity = entityManager->findSceneEntityByName(anim.animName);
 		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
-				playerEntity.overlapsEntity(*entity)) {
+				playerEntity.overlapsMovementEntity(*entity)) {
 			return entity;
 		}
 	}
@@ -827,6 +827,7 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
 		*playerState.entity, ignoredBlockerName);
+
 	(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
 	if (blockerOut)
 		*blockerOut = blocker;

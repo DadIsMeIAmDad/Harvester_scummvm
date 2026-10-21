@@ -1380,6 +1380,52 @@ bool Entity::overlapsEntity(const Entity &other) const {
 	return false;
 }
 
+
+bool Entity::overlapsMovementEntity(const Entity &other) const {
+	if (this == &other || !_visible || !other._visible)
+		return false;
+
+	if (_classId == kRuntimeEntityClassCursor ||
+			_classId == kRuntimeEntityClassBackground ||
+			_classId == kRuntimeEntityClassRectHotspot ||
+			_classId == kRuntimeEntityClassRectHotspot19 ||
+			other._classId == kRuntimeEntityClassCursor ||
+			other._classId == kRuntimeEntityClassBackground ||
+			other._classId == kRuntimeEntityClassRectHotspot ||
+			other._classId == kRuntimeEntityClassRectHotspot19) {
+		return false;
+	}
+
+	const Common::Rect thisRect = getFrameRect();
+	const Common::Rect otherRect = other.getFrameRect();
+
+	// Only test the bottom 25% of each entity for movement collision.
+	const int thisStartY = thisRect.bottom - thisRect.height() / 4;
+	const int otherStartY = otherRect.bottom - otherRect.height() / 4;
+
+	const int left = MAX(thisRect.left, otherRect.left);
+	const int top = MAX(thisStartY, otherStartY);
+	const int right = MIN(thisRect.right, otherRect.right);
+	const int bottom = MIN(thisRect.bottom, otherRect.bottom);
+
+	if (left >= right || top >= bottom)
+		return false;
+
+	if (!hasOpaqueFrame() || !other.hasOpaqueFrame())
+		return false;
+
+	for (int y = top; y < bottom; ++y) {
+		for (int x = left; x < right; ++x) {
+			const Common::Point point(x, y);
+			if (isOpaqueAt(point) && other.isOpaqueAt(point))
+				return true;
+		}
+	}
+
+	return false;
+}
+
+
 bool Entity::measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transparentPixels,
 		uint32 &preservedPixels) const {
 	framePixels = 0;
