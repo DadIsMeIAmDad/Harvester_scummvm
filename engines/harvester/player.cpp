@@ -1918,8 +1918,22 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	bool moved = tryApplyPlayerMovementWithFallbacks(engine, state, sceneObjects, sceneAnimations,
 		playerState, previousCenterX, previousBottomY, previousZ,
 		candidateCenterX, candidateBottomY, candidateZ);
-	if (!moved)
-		return false;
+
+
+
+	if (!moved) {
+		playerState.centerX = previousCenterX;
+		playerState.bottomY = previousBottomY;
+		playerState.z = previousZ;
+		playerState.hasMoveTarget = false;
+
+		const int idleFacing =
+			playerState.facing >= 0 ? playerState.facing : 0;
+		return setIdleAnimation(playerState, idleFacing);
+	}
+
+
+
 
 	const int actualFacing = resolveFacingFromRoomMovement(
 		previousCenterX, previousBottomY, playerState.centerX, playerState.bottomY);
