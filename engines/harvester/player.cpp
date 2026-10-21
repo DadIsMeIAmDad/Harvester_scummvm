@@ -841,6 +841,12 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 				playerState.entity->getZExtent(),
 				tucker->getZ(),
 				tucker->getZExtent());
+				
+		warning("TUCKER COLLISION CHECK: overlap=%d, playerVisible=%d, "
+				"TuckerVisible=%d",
+				playerState.entity->overlapsOpaquePixels(*tucker),
+				playerState.entity->isVisible(),
+				tucker->isVisible());
 	}
 
 
