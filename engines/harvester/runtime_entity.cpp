@@ -1257,9 +1257,11 @@ bool Entity::hasOpaqueFrame() const {
 }
 
 
+
 bool Entity::isOpaqueAt(const Common::Point &point) const {
 	const Common::Rect bounds = getFrameRect();
-	if (!bounds.contains(point))
+	if (!bounds.contains(point) || bounds.width() <= 0 ||
+			bounds.height() <= 0)
 		return false;
 
 	const int relativeX = point.x - bounds.left;
@@ -1267,54 +1269,74 @@ bool Entity::isOpaqueAt(const Common::Point &point) const {
 
 	// Static true-color PNG resource.
 	if (_pngSurface) {
-		if (relativeX < 0 || relativeY < 0 ||
-				relativeX >= _pngSurface->w ||
-				relativeY >= _pngSurface->h)
+		if (_pngSurface->w <= 0 || _pngSurface->h <= 0)
+			return false;
+
+		const int sourceX = relativeX * _pngSurface->w / bounds.width();
+		const int sourceY = relativeY * _pngSurface->h / bounds.height();
+
+		if (sourceX < 0 || sourceY < 0 ||
+				sourceX >= _pngSurface->w || sourceY >= _pngSurface->h)
 			return false;
 
 		if (_pngSurface->format.bytesPerPixel == 4) {
 			const byte *pixelBytes =
-				(const byte *)_pngSurface->getBasePtr(relativeX, relativeY);
-			const uint32 alpha =
-				pixelBytes[_pngSurface->format.aShift / 8];
-			return alpha != 0;
+				(const byte *)_pngSurface->getBasePtr(sourceX, sourceY);
+			return pixelBytes[_pngSurface->format.aShift / 8] != 0;
 		}
 
 		return true;
 	}
 
-	if (!hasOpaqueFrame())
-		return false;
-
+	// PNG animation frame.
 	if (!_pngFrames.empty()) {
-		const Graphics::Surface *frame = _pngFrames[(uint)_currentFrame];
-		if (!frame)
+		if (_currentFrame < 0 ||
+				(uint)_currentFrame >= _pngFrames.size())
 			return false;
 
-		if (relativeX < 0 || relativeY < 0 ||
-				relativeX >= frame->w || relativeY >= frame->h)
+		const Graphics::Surface *frame = _pngFrames[(uint)_currentFrame];
+		if (!frame || frame->w <= 0 || frame->h <= 0)
+			return false;
+
+		const int sourceX = relativeX * frame->w / bounds.width();
+		const int sourceY = relativeY * frame->h / bounds.height();
+
+		if (sourceX < 0 || sourceY < 0 ||
+				sourceX >= frame->w || sourceY >= frame->h)
 			return false;
 
 		if (frame->format.bytesPerPixel == 4) {
 			const byte *pixelBytes =
-				(const byte *)frame->getBasePtr(relativeX, relativeY);
-			const uint32 alpha = pixelBytes[frame->format.aShift / 8];
-			return alpha != 0;
+				(const byte *)frame->getBasePtr(sourceX, sourceY);
+			return pixelBytes[frame->format.aShift / 8] != 0;
 		}
 
 		return true;
 	}
 
-	const AbmFrame &frame = _frames[(uint)_currentFrame];
+	// Classic ABM animation frame.
+	if (!_frames.empty() && _currentFrame >= 0 &&
+			(uint)_currentFrame < _frames.size()) {
+		const AbmFrame &frame = _frames[(uint)_currentFrame];
 
-	if (relativeX < 0 || relativeY < 0 ||
-			relativeX >= (int)frame.width ||
-			relativeY >= (int)frame.height)
-		return false;
+		if (frame.width == 0 || frame.height == 0)
+			return false;
 
-	return frame.pixels[(uint)relativeY * frame.width +
-		(uint)relativeX] != 0;
+		const int sourceX = relativeX * frame.width / bounds.width();
+		const int sourceY = relativeY * frame.height / bounds.height();
+
+		if (sourceX < 0 || sourceY < 0 ||
+				sourceX >= (int)frame.width ||
+				sourceY >= (int)frame.height)
+			return false;
+
+		return frame.pixels[(uint)sourceY * frame.width +
+			(uint)sourceX] != 0;
+	}
+
+	return false;
 }
+
 
 bool Entity::hitTest(const Common::Point &point) const {
 	if (!_visible)
