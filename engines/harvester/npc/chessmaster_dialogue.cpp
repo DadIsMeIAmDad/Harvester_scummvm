@@ -154,7 +154,9 @@ static void advancePngIfNeeded(ChessmasterPngAnim &anim, bool loop) {
 }
 
 
-static void blitTransparentFrame(Graphics::Screen &screen, const Graphics::Surface &frame, int x, int y) {
+
+static void blitTransparentFrame(Graphics::Screen &screen,
+		const Graphics::Surface &frame, int x, int y) {
 	if (frame.w <= 0 || frame.h <= 0)
 		return;
 
@@ -165,6 +167,7 @@ static void blitTransparentFrame(Graphics::Screen &screen, const Graphics::Surfa
 	int width = frame.w;
 	int height = frame.h;
 
+	// Clip the left and top edges.
 	if (destX < 0) {
 		srcX = -destX;
 		width += destX;
@@ -175,57 +178,112 @@ static void blitTransparentFrame(Graphics::Screen &screen, const Graphics::Surfa
 		height += destY;
 		destY = 0;
 	}
-	if (destX >= screen.w || destY >= screen.h || width <= 0 || height <= 0)
+
+	// Reject frames completely outside the screen.
+	if (destX >= screen.w || destY >= screen.h ||
+			width <= 0 || height <= 0)
 		return;
 
+	// Clip the right and bottom edges.
 	width = MIN(width, screen.w - destX);
 	height = MIN(height, screen.h - destY);
+
 	if (width <= 0 || height <= 0)
 		return;
 
-	// True-color PNG with alpha
-	if (frame.format.bytesPerPixel == 4 && frame.format.aBits() > 0) {
+	// Blend true-color PNG pixels using their actual alpha values.
+	if (frame.format.bytesPerPixel == 4 &&
+			frame.format.aBits() > 0) {
+		// Alpha blending requires a true-color destination.
+		if (screen.format.bytesPerPixel != 2 &&
+				screen.format.bytesPerPixel != 4)
+			return;
+
 		for (int row = 0; row < height; ++row) {
-			const byte *src = (const byte *)frame.getBasePtr(srcX, srcY + row);
-			byte *dst = (byte *)screen.getBasePtr(destX, destY + row);
+			const byte *src = (const byte *)
+				frame.getBasePtr(srcX, srcY + row);
+			byte *dst = (byte *)
+				screen.getBasePtr(destX, destY + row);
 
 			for (int col = 0; col < width; ++col) {
-				const uint32 pixel = READ_UINT32(src);
-				src += 4;
+				const uint32 srcPixel = READ_UINT32(src);
+				src += frame.format.bytesPerPixel;
 
-				byte r, g, b, a;
-				frame.format.colorToARGB(pixel, a, r, g, b); // or colorToARGB depending on ScummVM version
-				if (a == 0)
-					continue;
+				byte a, r, g, b;
+				frame.format.colorToARGB(srcPixel, a, r, g, b);
 
-				if (screen.format.bytesPerPixel == 1) {
-					// Screen still indexed: nearest palette match is engine-specific;
-					// prefer converting screen to RGB for HD path. Skip or map as needed.
+				// Fully transparent pixels leave the background untouched.
+				if (a == 0) {
+					dst += screen.format.bytesPerPixel;
 					continue;
 				}
 
-				const uint32 out = screen.format.ARGBToColor(a, r, g, b);
+				// Fully opaque pixels do not need blending.
+				if (a == 255) {
+					const uint32 out =
+						screen.format.ARGBToColor(255, r, g, b);
+
+					if (screen.format.bytesPerPixel == 2)
+						WRITE_UINT16(dst, (uint16)out);
+					else
+						WRITE_UINT32(dst, out);
+
+					dst += screen.format.bytesPerPixel;
+					continue;
+				}
+
+				// Read the existing destination pixel in its own format.
+				uint32 dstPixel;
+				if (screen.format.bytesPerPixel == 2)
+					dstPixel = READ_UINT16(dst);
+				else
+					dstPixel = READ_UINT32(dst);
+
+				byte da, dr, dg, db;
+				screen.format.colorToARGB(
+					dstPixel, da, dr, dg, db);
+
+				// Composite the PNG pixel over the existing background.
+				const uint invA = 255 - a;
+
+				const byte outR = (byte)(
+					((uint)r * a + (uint)dr * invA + 127) / 255);
+				const byte outG = (byte)(
+					((uint)g * a + (uint)dg * invA + 127) / 255);
+				const byte outB = (byte)(
+					((uint)b * a + (uint)db * invA + 127) / 255);
+
+				const uint32 out =
+					screen.format.ARGBToColor(255, outR, outG, outB);
+
 				if (screen.format.bytesPerPixel == 2)
 					WRITE_UINT16(dst, (uint16)out);
-				else if (screen.format.bytesPerPixel == 4)
+				else
 					WRITE_UINT32(dst, out);
+
 				dst += screen.format.bytesPerPixel;
 			}
 		}
 		return;
 	}
 
-	// Legacy 8-bit (old FLC path): key color 0
-	if (frame.format.bytesPerPixel == 1 && screen.format.bytesPerPixel == 1) {
-		const byte *src = (const byte *)frame.getBasePtr(srcX, srcY);
-		byte *dst = (byte *)screen.getBasePtr(destX, destY);
-		Graphics::keyBlit(dst, src, screen.pitch, frame.pitch, width, height,
-			screen.format.bytesPerPixel, kTransparentPaletteIndex);
+	// Preserve the original indexed-color FLC behavior.
+	if (frame.format.bytesPerPixel == 1 &&
+			screen.format.bytesPerPixel == 1) {
+		const byte *src = (const byte *)
+			frame.getBasePtr(srcX, srcY);
+		byte *dst = (byte *)
+			screen.getBasePtr(destX, destY);
+
+		Graphics::keyBlit(dst, src, screen.pitch, frame.pitch,
+			width, height, screen.format.bytesPerPixel,
+			kTransparentPaletteIndex);
 		return;
 	}
 
-	// Same format, no key: plain copy clipped
-	screen.blitFrom(frame, Common::Rect(srcX, srcY, srcX + width, srcY + height),
+	// Other formats use ScummVM's normal clipped blit.
+	screen.blitFrom(frame,
+		Common::Rect(srcX, srcY, srcX + width, srcY + height),
 		Common::Point(destX, destY));
 }
 
