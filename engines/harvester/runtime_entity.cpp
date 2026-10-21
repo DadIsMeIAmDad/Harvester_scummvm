@@ -1244,17 +1244,28 @@ bool Entity::getOpaquePixelHorizontalCenter(int &centerX) const {
 
 
 
+
 bool Entity::hasOpaqueFrame() const {
+	if (_pngSurface)
+		return true;
+
 	if (!_pngFrames.empty()) {
 		return _currentFrame >= 0 &&
 			(uint)_currentFrame < _pngFrames.size() &&
 			_pngFrames[(uint)_currentFrame] != nullptr;
 	}
 
+	if (!_basePngFrames.empty()) {
+		return _currentFrame >= 0 &&
+			(uint)_currentFrame < _basePngFrames.size() &&
+			_basePngFrames[(uint)_currentFrame] != nullptr;
+	}
+
 	return !_frames.empty() &&
 		_currentFrame >= 0 &&
 		(uint)_currentFrame < _frames.size();
 }
+
 
 
 bool Entity::isOpaqueAt(const Common::Point &point) const {
