@@ -747,32 +747,16 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 
 	for (const ObjectRecord &object : sceneObjects) {
 		const Entity *entity = entityManager->findSceneEntityByName(object.objectName);
-
-
-
-		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName)) {
-			const bool overlaps = playerEntity.overlapsMovementEntity(*entity);
-
-			warning("MOVEMENT COLLISION: player=%s entity=%s overlap=%d "
-				"playerZ=%.2f entityZ=%.2f entityExtent=%.2f",
-				playerEntity.getName().c_str(),
-				entity->getName().c_str(),
-				overlaps ? 1 : 0,
-				playerEntity.getZ(),
-				entity->getZ(),
-				entity->getZExtent());
-
-			if (overlaps)
-				return entity;
-		
-
+		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
+				playerEntity.overlapsEntity(*entity)) {
+			return entity;
 		}
 	}
 
 	for (const AnimRecord &anim : sceneAnimations) {
 		const Entity *entity = entityManager->findSceneEntityByName(anim.animName);
 		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
-				playerEntity.overlapsMovementEntity(*entity)) {
+				playerEntity.overlapsEntity(*entity)) {
 			return entity;
 		}
 	}
@@ -827,7 +811,6 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
 		*playerState.entity, ignoredBlockerName);
-
 	(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
 	if (blockerOut)
 		*blockerOut = blocker;
@@ -1920,18 +1903,11 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 		candidateCenterX, candidateBottomY, candidateZ);
 
 
-
 	if (!moved) {
-		playerState.centerX = previousCenterX;
-		playerState.bottomY = previousBottomY;
-		playerState.z = previousZ;
 		playerState.hasMoveTarget = false;
-
-		const int idleFacing =
-			playerState.facing >= 0 ? playerState.facing : 0;
-		return setIdleAnimation(playerState, idleFacing);
+		return setIdleAnimation(
+			playerState, playerState.facing >= 0 ? playerState.facing : 0);
 	}
-
 
 
 
