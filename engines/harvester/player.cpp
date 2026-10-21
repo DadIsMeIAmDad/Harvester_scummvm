@@ -751,7 +751,7 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 
 
 		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName)) {
-			const bool overlaps = playerEntity.overlapsMovementEntity(*entity);
+			const bool overlaps = playerEntity.overlapsEntity(*entity);
 
 			warning("MOVEMENT COLLISION: player=%s entity=%s overlap=%d "
 				"playerZ=%.2f entityZ=%.2f entityExtent=%.2f",
@@ -772,7 +772,7 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 	for (const AnimRecord &anim : sceneAnimations) {
 		const Entity *entity = entityManager->findSceneEntityByName(anim.animName);
 		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
-				playerEntity.overlapsMovementEntity(*entity)) {
+				playerEntity.overlapsEntity(*entity)) {
 			return entity;
 		}
 	}
@@ -827,29 +827,6 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
 		*playerState.entity, ignoredBlockerName);
-
-	// DEBUG: Check player and Tucker depth values.
-	EntityManager *entityManager = engine.getRuntimeEntities();
-	const Entity *tucker = entityManager
-		? entityManager->findSceneEntityByName("MRJ_TUCKR")
-		: nullptr;
-
-	if (tucker) {
-		warning("PLAYER Z CHECK: player z=%.2f extent=%.2f "
-				"Tucker z=%.2f extent=%.2f",
-				playerState.entity->getZ(),
-				playerState.entity->getZExtent(),
-				tucker->getZ(),
-				tucker->getZExtent());
-				
-		warning("TUCKER COLLISION CHECK: overlap=%d",
-			playerState.entity->overlapsEntity(*tucker));
-	}
-
-
-
-
-
 	(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
 	if (blockerOut)
 		*blockerOut = blocker;
