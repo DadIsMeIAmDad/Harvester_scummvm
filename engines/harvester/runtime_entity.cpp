@@ -1336,6 +1336,7 @@ bool Entity::hitTest(const Common::Point &point) const {
 	return isOpaqueAt(point);
 }
 
+
 bool Entity::overlapsEntity(const Entity &other) const {
 	if (this == &other || !_visible || !other._visible)
 		return false;
@@ -1349,6 +1350,7 @@ bool Entity::overlapsEntity(const Entity &other) const {
 
 	const float thisZMax = _z + _zExtent;
 	const float otherZMax = other._z + other._zExtent;
+
 	if (thisZMax < other._z || otherZMax < _z) {
 		warning("OVERLAP FAIL Z: %s z=%.2f extent=%.2f, %s z=%.2f extent=%.2f",
 			getName().c_str(), _z, _zExtent,
@@ -1356,47 +1358,65 @@ bool Entity::overlapsEntity(const Entity &other) const {
 		return false;
 	}
 
+	const bool debugMovementOverlap =
+		other.getName() == "MRJ_TUCKR" ||
+		other.getName() == "MRJ_TUCKER_HS";
+
 	const Common::Rect thisRect = getFrameRect();
 	const Common::Rect otherRect = other.getFrameRect();
+
+	if (debugMovementOverlap) {
+		warning("TUCKER OVERLAP: player=%s rect=(%d,%d)-(%d,%d), "
+		        "entity=%s rect=(%d,%d)-(%d,%d)",
+		        getName().c_str(),
+		        thisRect.left, thisRect.top, thisRect.right, thisRect.bottom,
+		        other.getName().c_str(),
+		        otherRect.left, otherRect.top,
+		        otherRect.right, otherRect.bottom);
+	}
+
 	const int left = MAX(thisRect.left, otherRect.left);
 	const int top = MAX(thisRect.top, otherRect.top);
 	const int right = MIN(thisRect.right, otherRect.right);
 	const int bottom = MIN(thisRect.bottom, otherRect.bottom);
 
-
 	if (left >= right || top >= bottom) {
-		warning("OVERLAP FAIL RECT: %s rect=(%d,%d,%d,%d), %s rect=(%d,%d,%d,%d)",
-			getName().c_str(),
-			thisRect.left, thisRect.top, thisRect.right, thisRect.bottom,
-			other.getName().c_str(),
-			otherRect.left, otherRect.top, otherRect.right, otherRect.bottom);
+		if (debugMovementOverlap) {
+			warning("TUCKER OVERLAP FAIL RECT: intersection=(%d,%d)-(%d,%d)",
+			        left, top, right, bottom);
+		}
 		return false;
 	}
-
 
 	if (_classId == kRuntimeEntityClassDisabledHotspot ||
 			other._classId == kRuntimeEntityClassDisabledHotspot) {
 		return true;
 	}
 
-	if (!hasOpaqueFrame() || !other.hasOpaqueFrame())
+	if (!hasOpaqueFrame() || !other.hasOpaqueFrame()) {
+		if (debugMovementOverlap) {
+			warning("TUCKER OVERLAP FAIL: one or both entities have no opaque frame");
+		}
 		return false;
+	}
 
 	for (int y = top; y < bottom; ++y) {
 		for (int x = left; x < right; ++x) {
 			const Common::Point point(x, y);
+
 			if (isOpaqueAt(point) && other.isOpaqueAt(point))
 				return true;
 		}
 	}
 
-
-	warning("OVERLAP FAIL PIXELS: %s and %s have no shared opaque pixels",
-		getName().c_str(), other.getName().c_str());
-
+	if (debugMovementOverlap) {
+		warning("TUCKER OVERLAP FAIL PIXELS: rectangles intersect, "
+		        "but no shared opaque pixels were found");
+	}
 
 	return false;
 }
+
 
 bool Entity::measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transparentPixels,
 		uint32 &preservedPixels) const {
