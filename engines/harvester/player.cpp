@@ -804,6 +804,7 @@ static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerS
 	}
 }
 
+
 static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
 		const Common::Array<AnimRecord> &sceneAnimations,
@@ -818,18 +819,69 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	const int oldCenterX = playerState.centerX;
 	const int oldBottomY = playerState.bottomY;
 	const float oldZ = playerState.z;
+
 	candidateBottomY = clampRoomMovementY(state, candidateBottomY);
+
 	if (!applyRoomActorPlacement(state, *playerState.entity,
 			candidateCenterX, candidateBottomY, candidateZ)) {
-		(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
+		(void)applyRoomActorPlacement(state, *playerState.entity,
+			oldCenterX, oldBottomY, oldZ);
 		return true;
 	}
 
-	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
-		*playerState.entity, ignoredBlockerName);
-	(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
+	Entity *playerEntity = playerState.entity;
+	EntityManager *entityManager = engine.getRuntimeEntities();
+
+	const Entity *blocker = nullptr;
+
+	// First retain the existing collision behavior for all room entities.
+	blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
+		*playerEntity, ignoredBlockerName);
+
+	// Additional movement-only collision check for the visible Tucker mask.
+	// Do not use the interaction hotspot: MRJ_TUCKR is the visible PNG.
+	if (!blocker && entityManager &&
+			(!ignoredBlockerName || *ignoredBlockerName != "MRJ_TUCKR")) {
+		const Entity *tucker = entityManager->findSceneEntityByName("MRJ_TUCKR");
+
+		if (tucker && tucker != playerEntity &&
+				tucker->isVisible() &&
+				playerEntity->getZ() + playerEntity->getZExtent() >= tucker->getZ() &&
+				tucker->getZ() + tucker->getZExtent() >= playerEntity->getZ()) {
+
+			// Check whether any opaque pixels are shared between the
+			// player's candidate sprite and Tucker's visible PNG.
+			const Common::Rect playerRect = playerEntity->getFrameRect();
+			const Common::Rect tuckerRect = tucker->getFrameRect();
+
+			const int left = MAX(playerRect.left, tuckerRect.left);
+			const int top = MAX(playerRect.top, tuckerRect.top);
+			const int right = MIN(playerRect.right, tuckerRect.right);
+			const int bottom = MIN(playerRect.bottom, tuckerRect.bottom);
+
+			if (left < right && top < bottom &&
+					playerEntity->hasOpaqueFrame() && tucker->hasOpaqueFrame()) {
+				for (int y = top; y < bottom && !blocker; ++y) {
+					for (int x = left; x < right; ++x) {
+						const Common::Point point(x, y);
+
+						if (playerEntity->isOpaqueAt(point) &&
+								tucker->isOpaqueAt(point)) {
+							blocker = tucker;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	(void)applyRoomActorPlacement(state, *playerEntity,
+		oldCenterX, oldBottomY, oldZ);
+
 	if (blockerOut)
 		*blockerOut = blocker;
+
 	return blocker != nullptr;
 }
 
