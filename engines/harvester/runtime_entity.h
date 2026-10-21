@@ -135,7 +135,6 @@ public:
 	void draw(Graphics::Screen &screen) const;
 	bool hitTest(const Common::Point &point) const;
 	bool overlapsEntity(const Entity &other) const;
-	bool overlapsEntity(const Entity &other) const;
 	bool overlapsMovementEntity(const Entity &other) const;
 	bool measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transparentPixels,
 		uint32 &preservedPixels) const;
