@@ -616,14 +616,14 @@ Common::Error ChessmasterDialogueHandler::handleDialogue(DialogueRuntime &runtim
 		return lineError;
 
 	InteractionResult interaction;
-	// C125.FST already shows the chessmaster death; do not queue the room death bank again.
-	if (runtime.startupScript().finalizeRuntimeNpcDeathOrMonsterfy(
+	// Queue so the room loop can dispatch on_death=ADD_CHESS_CU
+	// (reveals the CHESSM body mask). C125 already showed the death visuals.
+	if (runtime.startupScript().queueRuntimeNpcDeathOrMonsterfy(
 			kChessmasterNpc, kChessmasterSlashDamageType)) {
 		interaction.mutatedRuntimeState = true;
 		interaction.visualRuntimeStateChanged = true;
 	}
 	runtime.queueDialogueInteractionIfNeeded(interaction);
 	return Common::kNoError;
-}
 
 } // End of namespace Harvester
