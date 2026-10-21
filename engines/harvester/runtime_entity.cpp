@@ -1257,11 +1257,9 @@ bool Entity::hasOpaqueFrame() const {
 }
 
 
-
 bool Entity::isOpaqueAt(const Common::Point &point) const {
 	const Common::Rect bounds = getFrameRect();
-	if (!bounds.contains(point) || bounds.width() <= 0 ||
-			bounds.height() <= 0)
+	if (!bounds.contains(point))
 		return false;
 
 	const int relativeX = point.x - bounds.left;
@@ -1269,74 +1267,54 @@ bool Entity::isOpaqueAt(const Common::Point &point) const {
 
 	// Static true-color PNG resource.
 	if (_pngSurface) {
-		if (_pngSurface->w <= 0 || _pngSurface->h <= 0)
-			return false;
-
-		const int sourceX = relativeX * _pngSurface->w / bounds.width();
-		const int sourceY = relativeY * _pngSurface->h / bounds.height();
-
-		if (sourceX < 0 || sourceY < 0 ||
-				sourceX >= _pngSurface->w || sourceY >= _pngSurface->h)
+		if (relativeX < 0 || relativeY < 0 ||
+				relativeX >= _pngSurface->w ||
+				relativeY >= _pngSurface->h)
 			return false;
 
 		if (_pngSurface->format.bytesPerPixel == 4) {
 			const byte *pixelBytes =
-				(const byte *)_pngSurface->getBasePtr(sourceX, sourceY);
-			return pixelBytes[_pngSurface->format.aShift / 8] != 0;
+				(const byte *)_pngSurface->getBasePtr(relativeX, relativeY);
+			const uint32 alpha =
+				pixelBytes[_pngSurface->format.aShift / 8];
+			return alpha != 0;
 		}
 
 		return true;
 	}
 
-	// PNG animation frame.
+	if (!hasOpaqueFrame())
+		return false;
+
 	if (!_pngFrames.empty()) {
-		if (_currentFrame < 0 ||
-				(uint)_currentFrame >= _pngFrames.size())
-			return false;
-
 		const Graphics::Surface *frame = _pngFrames[(uint)_currentFrame];
-		if (!frame || frame->w <= 0 || frame->h <= 0)
+		if (!frame)
 			return false;
 
-		const int sourceX = relativeX * frame->w / bounds.width();
-		const int sourceY = relativeY * frame->h / bounds.height();
-
-		if (sourceX < 0 || sourceY < 0 ||
-				sourceX >= frame->w || sourceY >= frame->h)
+		if (relativeX < 0 || relativeY < 0 ||
+				relativeX >= frame->w || relativeY >= frame->h)
 			return false;
 
 		if (frame->format.bytesPerPixel == 4) {
 			const byte *pixelBytes =
-				(const byte *)frame->getBasePtr(sourceX, sourceY);
-			return pixelBytes[frame->format.aShift / 8] != 0;
+				(const byte *)frame->getBasePtr(relativeX, relativeY);
+			const uint32 alpha = pixelBytes[frame->format.aShift / 8];
+			return alpha != 0;
 		}
 
 		return true;
 	}
 
-	// Classic ABM animation frame.
-	if (!_frames.empty() && _currentFrame >= 0 &&
-			(uint)_currentFrame < _frames.size()) {
-		const AbmFrame &frame = _frames[(uint)_currentFrame];
+	const AbmFrame &frame = _frames[(uint)_currentFrame];
 
-		if (frame.width == 0 || frame.height == 0)
-			return false;
+	if (relativeX < 0 || relativeY < 0 ||
+			relativeX >= (int)frame.width ||
+			relativeY >= (int)frame.height)
+		return false;
 
-		const int sourceX = relativeX * frame.width / bounds.width();
-		const int sourceY = relativeY * frame.height / bounds.height();
-
-		if (sourceX < 0 || sourceY < 0 ||
-				sourceX >= (int)frame.width ||
-				sourceY >= (int)frame.height)
-			return false;
-
-		return frame.pixels[(uint)sourceY * frame.width +
-			(uint)sourceX] != 0;
-	}
-
-	return false;
+	return frame.pixels[(uint)relativeY * frame.width +
+		(uint)relativeX] != 0;
 }
-
 
 bool Entity::hitTest(const Common::Point &point) const {
 	if (!_visible)
@@ -1371,8 +1349,12 @@ bool Entity::overlapsEntity(const Entity &other) const {
 
 	const float thisZMax = _z + _zExtent;
 	const float otherZMax = other._z + other._zExtent;
-	if (thisZMax < other._z || otherZMax < _z)
+	if (thisZMax < other._z || otherZMax < _z) {
+		warning("OVERLAP FAIL Z: %s z=%.2f extent=%.2f, %s z=%.2f extent=%.2f",
+			getName().c_str(), _z, _zExtent,
+			other.getName().c_str(), other._z, other._zExtent);
 		return false;
+	}
 
 	const Common::Rect thisRect = getFrameRect();
 	const Common::Rect otherRect = other.getFrameRect();
@@ -1380,8 +1362,17 @@ bool Entity::overlapsEntity(const Entity &other) const {
 	const int top = MAX(thisRect.top, otherRect.top);
 	const int right = MIN(thisRect.right, otherRect.right);
 	const int bottom = MIN(thisRect.bottom, otherRect.bottom);
-	if (left >= right || top >= bottom)
+
+
+	if (left >= right || top >= bottom) {
+		warning("OVERLAP FAIL RECT: %s rect=(%d,%d,%d,%d), %s rect=(%d,%d,%d,%d)",
+			getName().c_str(),
+			thisRect.left, thisRect.top, thisRect.right, thisRect.bottom,
+			other.getName().c_str(),
+			otherRect.left, otherRect.top, otherRect.right, otherRect.bottom);
 		return false;
+	}
+
 
 	if (_classId == kRuntimeEntityClassDisabledHotspot ||
 			other._classId == kRuntimeEntityClassDisabledHotspot) {
@@ -1398,6 +1389,11 @@ bool Entity::overlapsEntity(const Entity &other) const {
 				return true;
 		}
 	}
+
+
+	warning("OVERLAP FAIL PIXELS: %s and %s have no shared opaque pixels",
+		getName().c_str(), other.getName().c_str());
+
 
 	return false;
 }
