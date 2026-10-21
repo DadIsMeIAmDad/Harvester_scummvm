@@ -828,13 +828,25 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
 		*playerState.entity, ignoredBlockerName);
 
-	warning("PLAYER Z CHECK: player z=%.2f extent=%.2f "
-        "Tucker z=%.2f extent=%.2f",
-        playerState.entity->getZ(),
-        playerState.entity->getZExtent(),
-        tucker ? tucker->getZ() : -999.0f,
-        tucker ? tucker->getZExtent() : -999.0f);
-		
+	// DEBUG: Check player and Tucker depth values.
+	EntityManager *entityManager = engine.getRuntimeEntities();
+	const Entity *tucker = entityManager
+		? entityManager->findSceneEntityByName("MRJ_TUCKR")
+		: nullptr;
+
+	if (tucker) {
+		warning("PLAYER Z CHECK: player z=%.2f extent=%.2f "
+				"Tucker z=%.2f extent=%.2f",
+				playerState.entity->getZ(),
+				playerState.entity->getZExtent(),
+				tucker->getZ(),
+				tucker->getZExtent());
+	}
+
+
+
+
+
 	(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
 	if (blockerOut)
 		*blockerOut = blocker;
