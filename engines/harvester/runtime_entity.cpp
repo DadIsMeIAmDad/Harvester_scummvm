@@ -1352,9 +1352,8 @@ bool Entity::overlapsEntity(const Entity &other) const {
 	const float otherZMax = other._z + other._zExtent;
 
 	if (thisZMax < other._z || otherZMax < _z) {
-		warning("OVERLAP FAIL Z: %s z=%.2f extent=%.2f, %s z=%.2f extent=%.2f",
-			getName().c_str(), _z, _zExtent,
-			other.getName().c_str(), other._z, other._zExtent);
+		warning("MOVE DEPTH REJECT: %s vs %s",
+				getName().c_str(), other.getName().c_str());
 		return false;
 	}
 
