@@ -1355,6 +1355,18 @@ bool Entity::overlapsEntity(const Entity &other) const {
 		warning("MOVE DEPTH REJECT: %s vs %s",
 				getName().c_str(), other.getName().c_str());
 		return false;
+		
+		
+		if (debugMovementOverlap) {
+			warning("TUCKER OVERLAP: player=%s rect=(%d,%d)-(%d,%d), "
+					"entity=%s rect=(%d,%d)-(%d,%d)",
+					getName().c_str(),
+					thisRect.left, thisRect.top, thisRect.right, thisRect.bottom,
+					other.getName().c_str(),
+					otherRect.left, otherRect.top,
+					otherRect.right, otherRect.bottom);
+		}
+		
 	}
 
 	const bool debugMovementOverlap =
@@ -1364,15 +1376,7 @@ bool Entity::overlapsEntity(const Entity &other) const {
 	const Common::Rect thisRect = getFrameRect();
 	const Common::Rect otherRect = other.getFrameRect();
 
-	if (debugMovementOverlap) {
-		warning("TUCKER OVERLAP: player=%s rect=(%d,%d)-(%d,%d), "
-		        "entity=%s rect=(%d,%d)-(%d,%d)",
-		        getName().c_str(),
-		        thisRect.left, thisRect.top, thisRect.right, thisRect.bottom,
-		        other.getName().c_str(),
-		        otherRect.left, otherRect.top,
-		        otherRect.right, otherRect.bottom);
-	}
+
 
 	const int left = MAX(thisRect.left, otherRect.left);
 	const int top = MAX(thisRect.top, otherRect.top);
