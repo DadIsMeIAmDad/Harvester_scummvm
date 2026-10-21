@@ -625,5 +625,5 @@ Common::Error ChessmasterDialogueHandler::handleDialogue(DialogueRuntime &runtim
 	}
 	runtime.queueDialogueInteractionIfNeeded(interaction);
 	return Common::kNoError;
-
+}
 } // End of namespace Harvester
