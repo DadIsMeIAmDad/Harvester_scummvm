@@ -2476,7 +2476,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			npcEntity->setCurrentFrame(combatState.deathLastFrame);
 			npcEntity->setAnimationEnabled(false);
 			npcEntity->setHitTestMode(kRuntimeEntityHitTestNone);
-			npcEntity->setVisible(true);
+			if (npc.npcName == "CHESSMASTER" ) {
+				npcEntity->setVisible(false);			
+			} else {
+				npcEntity->setVisible(true);
+			}
+
+
+
 		} else {
 			removeSceneEntityByName(npc.npcName);
 		}
