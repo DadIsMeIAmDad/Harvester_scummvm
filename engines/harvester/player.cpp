@@ -825,7 +825,19 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	}
 
 
+	if (!blocker && entityManager) {
+		for (const MonsterRecord &monster : state.roomMonsters) {
+			const Entity *entity =
+				entityManager->findSceneEntityByName(monster.monsterName);
 
+			if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
+					entity->isVisible() &&
+					playerState.entity->overlapsEntity(*entity)) {
+				blocker = entity;
+				break;
+			}
+		}
+	}
 
 
 	(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
