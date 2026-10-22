@@ -811,6 +811,23 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
 		*playerState.entity, ignoredBlockerName);
+
+	EntityManager *entityManager = engine.getRuntimeEntities();
+	if (!blocker && entityManager) {
+		for (const NpcRecord &npc : state.roomNpcs) {
+			const Entity *entity = entityManager->findSceneEntityByName(npc.npcName);
+			if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
+					playerState.entity->overlapsEntity(*entity)) {
+				blocker = entity;
+				break;
+			}
+		}
+	}
+
+
+
+
+
 	(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
 	if (blockerOut)
 		*blockerOut = blocker;
