@@ -845,7 +845,6 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
 		*playerState.entity, ignoredBlockerName);
 
-	EntityManager *entityManager = engine.getRuntimeEntities();
 	if (!blocker && entityManager) {
 		for (const NpcRecord &npc : state.roomNpcs) {
 			const Entity *entity = entityManager->findSceneEntityByName(npc.npcName);
