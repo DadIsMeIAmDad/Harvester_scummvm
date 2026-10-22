@@ -792,7 +792,7 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 		const Common::Array<ObjectRecord> &sceneObjects,
 		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
-		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr) {
+		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr, bool allowDeadMonsterOverlap = false) {
 	if (!playerState.entity)
 		return true;
 
@@ -830,14 +830,28 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 			const Entity *entity =
 				entityManager->findSceneEntityByName(monster.monsterName);
 
-			if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
-					entity->isVisible() &&
-					playerState.entity->overlapsEntity(*entity)) {
-				blocker = entity;
-				break;
+			if (!entity || shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) ||
+					!entity->isVisible() ||
+					!playerState.entity->overlapsEntity(*entity)) {
+				continue;
 			}
+
+			if (monster.currentHitPoints <= 0 && allowDeadMonsterOverlap) {
+				// Escape mode: ignore this overlapping dead monster.
+				continue;
+			}
+
+			blocker = entity;
+			break;
 		}
 	}
+
+	if (isPlayerMovementBlocked(engine, state, sceneObjects, sceneAnimations,
+			playerState, candidateCenterX, candidateBottomY, candidateZ,
+			ignoredBlockerName, blockerOut, allowDeadMonsterOverlap)) {
+		return false;
+	}
+
 
 
 	(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
@@ -850,7 +864,7 @@ static bool tryApplyPlayerMovement(HarvesterEngine &engine, const RoomSetupState
 		const Common::Array<ObjectRecord> &sceneObjects,
 		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
-		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr) {
+		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr, bool allowDeadMonsterOverlap = false) {
 	if (!playerState.entity)
 		return false;
 
@@ -883,39 +897,79 @@ static bool tryApplyPlayerMovement(HarvesterEngine &engine, const RoomSetupState
 	return true;
 }
 
+
 static bool tryApplyPlayerMovementWithFallbacks(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
 		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState,
 		int previousCenterX, int previousBottomY, float previousZ,
 		int candidateCenterX, int candidateBottomY, float candidateZ) {
+
+	// First pass: normal collision for every candidate.
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
-			playerState, candidateCenterX, candidateBottomY, candidateZ)) {
+			playerState, candidateCenterX, candidateBottomY, candidateZ))
 		return true;
-	}
+
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
-			playerState, candidateCenterX, previousBottomY, candidateZ)) {
+			playerState, candidateCenterX, previousBottomY, candidateZ))
 		return true;
-	}
+
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
-			playerState, candidateCenterX, candidateBottomY, previousZ)) {
+			playerState, candidateCenterX, candidateBottomY, previousZ))
 		return true;
-	}
+
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
-			playerState, candidateCenterX, previousBottomY, previousZ)) {
+			playerState, candidateCenterX, previousBottomY, previousZ))
 		return true;
-	}
+
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
-			playerState, previousCenterX, candidateBottomY, candidateZ)) {
+			playerState, previousCenterX, candidateBottomY, candidateZ))
 		return true;
-	}
+
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
-			playerState, previousCenterX, candidateBottomY, previousZ)) {
+			playerState, previousCenterX, candidateBottomY, previousZ))
 		return true;
-	}
+
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
+			playerState, previousCenterX, previousBottomY, candidateZ))
+		return true;
+
+	// Second pass: if completely trapped, allow overlap with dead monsters.
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
+			playerState, candidateCenterX, candidateBottomY, candidateZ,
+			nullptr, nullptr, true))
+		return true;
+
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
+			playerState, candidateCenterX, previousBottomY, candidateZ,
+			nullptr, nullptr, true))
+		return true;
+
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
+			playerState, candidateCenterX, candidateBottomY, previousZ,
+			nullptr, nullptr, true))
+		return true;
+
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
+			playerState, candidateCenterX, previousBottomY, previousZ,
+			nullptr, nullptr, true))
+		return true;
+
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
+			playerState, previousCenterX, candidateBottomY, candidateZ,
+			nullptr, nullptr, true))
+		return true;
+
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
+			playerState, previousCenterX, candidateBottomY, previousZ,
+			nullptr, nullptr, true))
+		return true;
+
 	return tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
-		playerState, previousCenterX, previousBottomY, candidateZ);
+		playerState, previousCenterX, previousBottomY, candidateZ,
+		nullptr, nullptr, true);
 }
+
 
 static bool isPathfindingDebugEnabled() {
 	return g_engine && g_engine->isPathfindingDebugEnabled();
