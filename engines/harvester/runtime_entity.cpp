@@ -1275,56 +1275,57 @@ bool Entity::isOpaqueAt(const Common::Point &point) const {
 
 	const int relativeX = point.x - bounds.left;
 	const int relativeY = point.y - bounds.top;
+	const int boundsW = bounds.width();
+	const int boundsH = bounds.height();
+	if (boundsW <= 0 || boundsH <= 0)
+		return false;
 
-	// Static true-color PNG resource.
-	if (_pngSurface) {
-		if (relativeX < 0 || relativeY < 0 ||
-				relativeX >= _pngSurface->w ||
-				relativeY >= _pngSurface->h)
+	auto sampleSurface = [&](const Graphics::Surface *surface) -> bool {
+		if (!surface || surface->w <= 0 || surface->h <= 0)
 			return false;
 
-		if (_pngSurface->format.bytesPerPixel == 4) {
-			const byte *pixelBytes =
-				(const byte *)_pngSurface->getBasePtr(relativeX, relativeY);
-			const uint32 alpha =
-				pixelBytes[_pngSurface->format.aShift / 8];
+		// Map scaled hit coords ? source pixel coords
+		const int srcX = (relativeX * surface->w) / boundsW;
+		const int srcY = (relativeY * surface->h) / boundsH;
+		if (srcX < 0 || srcY < 0 || srcX >= surface->w || srcY >= surface->h)
+			return false;
+
+		if (surface->format.bytesPerPixel == 4) {
+			const byte *pixelBytes = (const byte *)surface->getBasePtr(srcX, srcY);
+			const uint32 alpha = pixelBytes[surface->format.aShift / 8];
 			return alpha != 0;
 		}
-
 		return true;
-	}
+	};
+
+	if (_pngSurface)
+		return sampleSurface(_pngSurface);
 
 	if (!hasOpaqueFrame())
 		return false;
 
 	if (!_pngFrames.empty()) {
-		const Graphics::Surface *frame = _pngFrames[(uint)_currentFrame];
-		if (!frame)
+		if (_currentFrame < 0 ||
+				(uint)_currentFrame >= _pngFrames.size())
 			return false;
 
-		if (relativeX < 0 || relativeY < 0 ||
-				relativeX >= frame->w || relativeY >= frame->h)
-			return false;
-
-		if (frame->format.bytesPerPixel == 4) {
-			const byte *pixelBytes =
-				(const byte *)frame->getBasePtr(relativeX, relativeY);
-			const uint32 alpha = pixelBytes[frame->format.aShift / 8];
-			return alpha != 0;
-		}
-
-		return true;
+		return sampleSurface(_pngFrames[(uint)_currentFrame]);
 	}
 
+	if (!_basePngFrames.empty()) {
+		if (_currentFrame < 0 ||
+				(uint)_currentFrame >= _basePngFrames.size())
+			return false;
+
+		return sampleSurface(_basePngFrames[(uint)_currentFrame]);
+	}
+
+	// ABM (already scaled)
 	const AbmFrame &frame = _frames[(uint)_currentFrame];
-
 	if (relativeX < 0 || relativeY < 0 ||
-			relativeX >= (int)frame.width ||
-			relativeY >= (int)frame.height)
+			relativeX >= (int)frame.width || relativeY >= (int)frame.height)
 		return false;
-
-	return frame.pixels[(uint)relativeY * frame.width +
-		(uint)relativeX] != 0;
+	return frame.pixels[(uint)relativeY * frame.width + (uint)relativeX] != 0;
 }
 
 bool Entity::hitTest(const Common::Point &point) const {
