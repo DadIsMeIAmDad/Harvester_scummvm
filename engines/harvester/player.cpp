@@ -832,7 +832,7 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 			if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
 					entity->isVisible() &&
-					playerState.entity->overlapsEntity(*entity)) {
+					playerState.entity->overlapsEntity(*entity) && monster.currentHitPoints > 0) {
 				blocker = entity;
 				break;
 			}
