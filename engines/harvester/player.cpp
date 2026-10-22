@@ -848,7 +848,17 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	EntityManager *entityManager = engine.getRuntimeEntities();
 	if (!blocker && entityManager) {
 		for (const NpcRecord &npc : state.roomNpcs) {
-			const Entity *entity = entityManager->findSceneEntityByName(npc.npcName);
+			const bool isCorpse = !npc.active &&
+				npc.runtimeSpawned &&
+				npc.deathDamageType != 0 &&
+				npc.runtimeState >= 0;
+	
+			if (isCorpse)
+				continue;
+
+			const Entity *entity =
+				entityManager->findSceneEntityByName(npc.npcName);
+
 			if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
 					playerState.entity->overlapsEntity(*entity)) {
 				blocker = entity;
