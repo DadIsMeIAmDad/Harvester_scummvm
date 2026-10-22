@@ -860,22 +860,17 @@ static bool tryApplyPlayerMovementWithFallbacks(HarvesterEngine &engine, const R
 		RoomPlayerState &playerState,
 		int previousCenterX, int previousBottomY, float previousZ,
 		int candidateCenterX, int candidateBottomY, float candidateZ) {
+
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, candidateCenterX, candidateBottomY, candidateZ)) {
 		return true;
 	}
-	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
-			playerState, candidateCenterX, previousBottomY, candidateZ)) {
-		return true;
-	}
+
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, candidateCenterX, candidateBottomY, previousZ)) {
 		return true;
 	}
-	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
-			playerState, candidateCenterX, previousBottomY, previousZ)) {
-		return true;
-	}
+
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, previousCenterX, candidateBottomY, candidateZ)) {
 		return true;
@@ -887,6 +882,8 @@ static bool tryApplyPlayerMovementWithFallbacks(HarvesterEngine &engine, const R
 	return tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 		playerState, previousCenterX, previousBottomY, candidateZ);
 }
+
+
 
 static bool isPathfindingDebugEnabled() {
 	return g_engine && g_engine->isPathfindingDebugEnabled();
