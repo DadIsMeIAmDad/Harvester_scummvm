@@ -845,6 +845,7 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
 		*playerState.entity, ignoredBlockerName);
 
+	EntityManager *entityManager = engine.getRuntimeEntities();
 	if (!blocker && entityManager) {
 		for (const NpcRecord &npc : state.roomNpcs) {
 			const Entity *entity = entityManager->findSceneEntityByName(npc.npcName);
@@ -857,33 +858,19 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	}
 
 
-
 	if (!blocker && entityManager) {
 		for (const MonsterRecord &monster : state.roomMonsters) {
 			const Entity *entity =
 				entityManager->findSceneEntityByName(monster.monsterName);
 
-			if (!entity || !entity->isVisible() ||
-					shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) ||
-					!playerState.entity->overlapsEntity(*entity)) {
-				continue;
-			}
-
-			// Living monsters always block movement.
-			if (monster.currentHitPoints > 0) {
-				blocker = entity;
-				break;
-			}
-
-			// Dead monsters block normally, unless the player was
-			// already overlapping a corpse before this movement attempt.
-			if (!wasOverlappingDeadMonster) {
+			if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
+					entity->isVisible() &&
+					playerState.entity->overlapsEntity(*entity) && monster.currentHitPoints > 0) {
 				blocker = entity;
 				break;
 			}
 		}
 	}
-
 
 
 	(void)applyRoomActorPlacement(state, *playerState.entity, oldCenterX, oldBottomY, oldZ);
