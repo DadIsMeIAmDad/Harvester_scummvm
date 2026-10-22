@@ -860,17 +860,22 @@ static bool tryApplyPlayerMovementWithFallbacks(HarvesterEngine &engine, const R
 		RoomPlayerState &playerState,
 		int previousCenterX, int previousBottomY, float previousZ,
 		int candidateCenterX, int candidateBottomY, float candidateZ) {
-
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, candidateCenterX, candidateBottomY, candidateZ)) {
 		return true;
 	}
-
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
+			playerState, candidateCenterX, previousBottomY, candidateZ)) {
+		return true;
+	}
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, candidateCenterX, candidateBottomY, previousZ)) {
 		return true;
 	}
-
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
+			playerState, candidateCenterX, previousBottomY, previousZ)) {
+		return true;
+	}
 	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, previousCenterX, candidateBottomY, candidateZ)) {
 		return true;
@@ -1829,6 +1834,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 	return true;
 }
 
+
 bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
 		const Common::Array<AnimRecord> &sceneAnimations,
@@ -1843,81 +1849,35 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	if (playerState.turnActive || playerState.hitActive)
 		return false;
 
-	const int previousCenterX = playerState.centerX;
-	const int previousBottomY = playerState.bottomY;
-	const float previousZ = playerState.z;
-	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
-	const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
-	const float depthStep = computeRoomPlayerDepthStep(state);
-	int candidateCenterX = clampPlayerCenterXToNativeBounds(
-		playerState, playerState.centerX + horizontalInput * horizontalStep);
-	int candidateBottomY = playerState.bottomY;
-	float candidateZ = playerState.z;
-	bool depthBoundaryReached = false;
+	// If a short keyboard target is already active, let the normal
+	// mouse-walking movement code advance it.
+	if (playerState.hasMoveTarget)
+		return stepMoveTarget(engine, state, sceneObjects, sceneAnimations, playerState);
+
+	const int targetX = clampPlayerCenterXToNativeBounds(
+		playerState, playerState.centerX + horizontalInput * 20);
+	int targetBottomY = playerState.bottomY;
+	float targetZ = playerState.z;
+
 	if (verticalInput != 0) {
-		// update_actor_runtime_state (0x4d750) only emits the paired screen-Y and Z
-		// steps for state 0x04 while min_z < z and state 0x0b while z < max_z.
-		// At either depth limit it zeros both steps and returns to the facing idle state.
-		depthBoundaryReached = verticalInput < 0
-			? playerState.z >= (float)state.roomMaxZ
-			: playerState.z <= (float)state.roomMinZ;
-		if (!depthBoundaryReached) {
-			candidateBottomY = clampRoomMovementY(state,
-				playerState.bottomY + verticalInput * verticalStep);
-			candidateZ = clampRoomDepth(state, playerState.z - verticalInput * depthStep);
-		}
-	}
-	if (candidateCenterX == playerState.centerX &&
-			candidateBottomY == playerState.bottomY &&
-			fabsf(candidateZ - playerState.z) <= kRoomDepthCompareEpsilon) {
-		playerState.hasMoveTarget = false;
-		if (depthBoundaryReached) {
-			const bool stopped = setIdleAnimation(
-				playerState, playerState.facing >= 0 ? playerState.facing : 0);
-			if (stopped) {
-				debugC(3, kDebugPathfinding,
-					"Harvester: player keyboard depth boundary room='%s' input_y=%d pos=(%d,%d,z=%.2f) bounds=(%d,%d)",
-					state.roomName.c_str(), verticalInput,
-					playerState.centerX, playerState.bottomY, (double)playerState.z,
-					state.roomMinZ, state.roomMaxZ);
-			}
-			return stopped;
-		}
-		return false;
+		if (verticalInput < 0 && playerState.z >= (float)state.roomMaxZ)
+			return setIdleAnimation(playerState, playerState.facing >= 0 ? playerState.facing : 0);
+		if (verticalInput > 0 && playerState.z <= (float)state.roomMinZ)
+			return setIdleAnimation(playerState, playerState.facing >= 0 ? playerState.facing : 0);
+
+		const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
+		const float depthStep = computeRoomPlayerDepthStep(state);
+
+		targetBottomY = clampRoomMovementY(
+			state, playerState.bottomY + verticalInput * verticalStep * 4);
+		targetZ = clampRoomDepth(
+			state, playerState.z - verticalInput * depthStep * 4);
 	}
 
-	const int desiredFacing = resolveFacingFromRoomMovement(
-		playerState.centerX, playerState.bottomY, candidateCenterX, candidateBottomY);
-	if (desiredFacing != playerState.facing && startTurnAnimation(playerState, desiredFacing))
-		return true;
-
-	if (!consumePlayerMovementTick(playerState))
-		return false;
-
-	playerState.hasMoveTarget = false;
-	bool moved = tryApplyPlayerMovementWithFallbacks(engine, state, sceneObjects, sceneAnimations,
-		playerState, previousCenterX, previousBottomY, previousZ,
-		candidateCenterX, candidateBottomY, candidateZ);
-
-
-	if (!moved) {
-		playerState.hasMoveTarget = false;
-		return setIdleAnimation(
-			playerState, playerState.facing >= 0 ? playerState.facing : 0);
-	}
-
-
-
-	const int actualFacing = resolveFacingFromRoomMovement(
-		previousCenterX, previousBottomY, playerState.centerX, playerState.bottomY);
-	(void)setPlayerWalkAnimation(playerState, actualFacing);
-	debugC(2, kDebugPlayer,
-		"Harvester: player keyboard move room='%s' input=(%d,%d) pos=(%d,%d,z=%.2f) facing=%d frame=%d moved=%d",
-		state.roomName.c_str(), horizontalInput, verticalInput,
-		playerState.centerX, playerState.bottomY, (double)playerState.z,
-		playerState.facing, playerState.entity->getCurrentFrame(), moved);
-	return true;
+	setMoveTargetInternal(state, playerState, targetX, targetZ, targetBottomY);
+	return stepMoveTarget(engine, state, sceneObjects, sceneAnimations, playerState);
 }
+
 
 bool Player::requestIdleAnimationExit(const RoomSetupState &state,
 		RoomPlayerState &playerState, RoomIdleAnimationState &idleState) {
