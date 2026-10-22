@@ -802,6 +802,39 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	const int oldCenterX = playerState.centerX;
 	const int oldBottomY = playerState.bottomY;
 	const float oldZ = playerState.z;
+
+
+
+
+	bool wasOverlappingDeadMonster = false;
+
+	EntityManager *entityManager = engine.getRuntimeEntities();
+	if (entityManager) {
+		// Temporarily restore the player's old position to test the overlap there.
+		if (applyRoomActorPlacement(state, *playerState.entity,
+				oldCenterX, oldBottomY, oldZ)) {
+			for (const MonsterRecord &monster : state.roomMonsters) {
+				if (monster.currentHitPoints > 0)
+					continue;
+
+				const Entity *entity =
+					entityManager->findSceneEntityByName(monster.monsterName);
+
+				if (entity && entity->isVisible() &&
+						!shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
+						playerState.entity->overlapsEntity(*entity)) {
+					wasOverlappingDeadMonster = true;
+					break;
+				}
+			}
+		}
+	}
+
+
+
+
+
+
 	candidateBottomY = clampRoomMovementY(state, candidateBottomY);
 	if (!applyRoomActorPlacement(state, *playerState.entity,
 			candidateCenterX, candidateBottomY, candidateZ)) {
