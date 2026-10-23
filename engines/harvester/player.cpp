@@ -783,7 +783,7 @@ static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerS
 
 static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects, RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
-		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr, bool allowDeadMonsterOverlap = false, const Common::Array<AnimRecord> *sceneAnimations = nullptr) {
+		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr, bool allowDeadMonsterOverlap = false) {
 	if (!playerState.entity)
 		return true;
 
@@ -835,7 +835,7 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 	
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects,
-		sceneAnimations, *playerState.entity, ignoredBlockerName);
+		*playerState.entity, ignoredBlockerName);
 
 	if (blocker && entityManager) {
 		// Measure overlap at the candidate position.
@@ -880,25 +880,6 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 			}
 		}
 	}
-
-
-
-	if (!blocker && entityManager && sceneAnimations) {
-		for (const AnimRecord &anim : *sceneAnimations) {
-			const Entity *entity =
-				entityManager->findSceneEntityByName(anim.animName);
-
-			if (entity &&
-					!shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
-					playerState.entity->overlapsEntity(*entity)) {
-				blocker = entity;
-				break;
-			}
-		}
-	}
-
-
-
 
 
 	if (!blocker && entityManager) {
