@@ -737,12 +737,10 @@ static void setPlayerCurrentBlocker(RoomPlayerState &playerState, const Entity *
 	clearPlayerBlockerHistory(playerState);
 }
 
-
 static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Entity &playerEntity,
+		const Common::Array<AnimRecord> &sceneAnimations, const Entity &playerEntity,
 		const Common::String *ignoredBlockerName) {
-
 	EntityManager *entityManager = engine.getRuntimeEntities();
 	if (!entityManager)
 		return nullptr;
@@ -761,6 +759,7 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 
 static void refreshPlayerCurrentBlocker(HarvesterEngine &engine,
 		const Common::Array<ObjectRecord> &sceneObjects,
+		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState) {
 	if (!playerState.entity) {
 		clearPlayerBlockerHistory(playerState);
@@ -768,7 +767,7 @@ static void refreshPlayerCurrentBlocker(HarvesterEngine &engine,
 	}
 
 	setPlayerCurrentBlocker(playerState, findPlayerRoomBlocker(engine, sceneObjects,
-		*playerState.entity, nullptr));
+		sceneAnimations, *playerState.entity, nullptr));
 }
 
 static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerState &playerState) {
@@ -783,8 +782,12 @@ static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerS
 }
 
 static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupState &state,
-		const Common::Array<ObjectRecord> &sceneObjects, RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
-		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr, bool allowDeadMonsterOverlap = false) {
+        const Common::Array<ObjectRecord> &sceneObjects,
+        const Common::Array<AnimRecord> &sceneAnimations,
+        RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
+        const Common::String *ignoredBlockerName = nullptr,
+        const Entity **blockerOut = nullptr,
+        bool allowDeadMonsterOverlap = false) {
 	if (!playerState.entity)
 		return true;
 
@@ -882,6 +885,19 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 		}
 	}
 
+	if (!blocker && entityManager) {
+		for (const AnimRecord &anim : sceneAnimations) {
+			const Entity *entity =
+				entityManager->findSceneEntityByName(anim.animName);
+
+			if (entity &&
+					!shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
+					playerState.entity->overlapsEntity(*entity)) {
+				blocker = entity;
+				break;
+			}
+		}
+	}
 
 	if (!blocker && entityManager) {
 		for (const MonsterRecord &monster : state.roomMonsters) {
@@ -906,6 +922,7 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 static bool tryApplyPlayerMovement(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
+		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
 		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr) {
 	if (!playerState.entity)
@@ -942,34 +959,35 @@ static bool tryApplyPlayerMovement(HarvesterEngine &engine, const RoomSetupState
 
 static bool tryApplyPlayerMovementWithFallbacks(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
+		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState,
 		int previousCenterX, int previousBottomY, float previousZ,
 		int candidateCenterX, int candidateBottomY, float candidateZ) {
-	if (tryApplyPlayerMovement(engine, state, sceneObjects,
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, candidateCenterX, candidateBottomY, candidateZ)) {
 		return true;
 	}
-	if (tryApplyPlayerMovement(engine, state, sceneObjects,
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, candidateCenterX, previousBottomY, candidateZ)) {
 		return true;
 	}
-	if (tryApplyPlayerMovement(engine, state, sceneObjects,
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, candidateCenterX, candidateBottomY, previousZ)) {
 		return true;
 	}
-	if (tryApplyPlayerMovement(engine, state, sceneObjects,
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, candidateCenterX, previousBottomY, previousZ)) {
 		return true;
 	}
-	if (tryApplyPlayerMovement(engine, state, sceneObjects,
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, previousCenterX, candidateBottomY, candidateZ)) {
 		return true;
 	}
-	if (tryApplyPlayerMovement(engine, state, sceneObjects,
+	if (tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 			playerState, previousCenterX, candidateBottomY, previousZ)) {
 		return true;
 	}
-	return tryApplyPlayerMovement(engine, state, sceneObjects,
+	return tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 		playerState, previousCenterX, previousBottomY, candidateZ);
 }
 
@@ -1336,6 +1354,7 @@ void Player::setMoveTargetFromScreenPoint(const RoomSetupState &state,
 
 bool Player::resolveBlockedStartupSpawn(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
+		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState) {
 	if (!playerState.entity)
 		return false;
@@ -1609,6 +1628,7 @@ bool Player::startHitAnimation(HarvesterEngine &engine, RoomPlayerState &playerS
 
 bool Player::updateHitAnimationState(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
+		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState) {
 	if (!playerState.hitActive || !playerState.entity)
 		return false;
@@ -1620,7 +1640,7 @@ bool Player::updateHitAnimationState(HarvesterEngine &engine, const RoomSetupSta
 			? MIN(playerState.hitKnockbackRemainingX, step)
 			: MAX(playerState.hitKnockbackRemainingX, -step);
 		if (knockbackStep != 0) {
-			if (!tryApplyPlayerMovement(engine, state, sceneObjects,
+			if (!tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 					playerState, playerState.centerX + knockbackStep, playerState.bottomY, playerState.z)) {
 				playerState.hitKnockbackRemainingX = 0;
 			} else {
@@ -1770,11 +1790,12 @@ bool Player::updateTurnAnimationState(RoomPlayerState &playerState) {
 
 bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
+		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState) {
 	if (!playerState.entity || !playerState.hasMoveTarget || playerState.turnActive || playerState.hitActive)
 		return false;
 
-	refreshPlayerCurrentBlocker(engine, sceneObjects, playerState);
+	refreshPlayerCurrentBlocker(engine, sceneObjects, sceneAnimations, playerState);
 
 	updatePlayerMoveTargetProgress(state, playerState);
 	if (hasPlayerReachedMoveTarget(playerState)) {
@@ -1855,7 +1876,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 	}
 
 	const Entity *blocker = nullptr;
-	bool moved = tryApplyPlayerMovement(engine, state, sceneObjects,
+	bool moved = tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 		playerState, candidateCenterX, candidateBottomY, candidateZ,
 		nullptr, &blocker);
 	if (!moved) {
@@ -1892,7 +1913,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 	const int actualFacing = resolveFacingFromRoomMovement(
 		previousCenterX, previousBottomY, playerState.centerX, playerState.bottomY);
 	(void)setPlayerWalkAnimation(playerState, actualFacing);
-	refreshPlayerCurrentBlocker(engine, sceneObjects, playerState);
+	refreshPlayerCurrentBlocker(engine, sceneObjects, sceneAnimations, playerState);
 	if (engine.isPathfindingDebugEnabled()) {
 		debugC(1, kDebugPathfinding,
 			"Harvester: pathfinding applied room='%s' previous=(%d,%d) current=(%d,%d,z=%.2f) facing=%d",
@@ -1916,6 +1937,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
+		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState, bool moveLeft, bool moveRight, bool moveUp, bool moveDown) {
 	if (!playerState.entity || !supportsMovementBand(state))
 		return false;
@@ -1979,7 +2001,7 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 		return false;
 
 	playerState.hasMoveTarget = false;
-	bool moved = tryApplyPlayerMovement(engine, state, sceneObjects,
+	bool moved = tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 		playerState, candidateCenterX, candidateBottomY, candidateZ);
 
 
