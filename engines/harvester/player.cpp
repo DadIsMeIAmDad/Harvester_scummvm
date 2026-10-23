@@ -909,8 +909,27 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 				entityManager->findSceneEntityByName(monster.monsterName);
 
 			if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
-					entity->isVisible() &&
-					playerState.entity->overlapsEntity(*entity) && monster.currentHitPoints > 0) {
+					entity->isVisible() && monster.currentHitPoints > 0 &&
+					playerState.entity->overlapsEntity(*entity)) {
+
+				const uint candidateOverlap =
+					playerState.entity->countOpaqueOverlapPixels(*entity);
+
+				// Restore the old position to measure the original overlap.
+				(void)applyRoomActorPlacement(state, *playerState.entity,
+					oldCenterX, oldBottomY, oldZ);
+
+				const uint oldOverlap =
+					playerState.entity->countOpaqueOverlapPixels(*entity);
+
+				// Restore the candidate position.
+				(void)applyRoomActorPlacement(state, *playerState.entity,
+					candidateCenterX, candidateBottomY, candidateZ);
+
+				// Allow escape if the player was already overlapping this monster.
+				if (oldOverlap > 0 && candidateOverlap < oldOverlap)
+					continue;
+
 				blocker = entity;
 				break;
 			}
