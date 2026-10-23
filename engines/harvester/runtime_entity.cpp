@@ -1392,6 +1392,45 @@ bool Entity::overlapsEntity(const Entity &other) const {
 	return false;
 }
 
+
+
+uint Entity::countOpaqueOverlapPixels(const Entity &other) const {
+	if (this == &other || !_visible || !other._visible)
+		return 0;
+
+	const float thisZMax = _z + _zExtent;
+	const float otherZMax = other._z + other._zExtent;
+	if (thisZMax < other._z || otherZMax < _z)
+		return 0;
+
+	const Common::Rect thisRect = getFrameRect();
+	const Common::Rect otherRect = other.getFrameRect();
+
+	const int left = MAX(thisRect.left, otherRect.left);
+	const int top = MAX(thisRect.top, otherRect.top);
+	const int right = MIN(thisRect.right, otherRect.right);
+	const int bottom = MIN(thisRect.bottom, otherRect.bottom);
+
+	if (left >= right || top >= bottom)
+		return 0;
+
+	if (!hasOpaqueFrame() || !other.hasOpaqueFrame())
+		return 0;
+
+	uint count = 0;
+
+	for (int y = top; y < bottom; ++y) {
+		for (int x = left; x < right; ++x) {
+			const Common::Point point(x, y);
+			if (isOpaqueAt(point) && other.isOpaqueAt(point))
+				++count;
+		}
+	}
+
+	return count;
+}
+
+
 bool Entity::measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transparentPixels,
 		uint32 &preservedPixels) const {
 	framePixels = 0;
