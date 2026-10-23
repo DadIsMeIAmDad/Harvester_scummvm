@@ -867,17 +867,38 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 				npc.deathDamageType != 0 &&
 				npc.runtimeState >= 0;
 	
-			if (isCorpse)
+			if (isCorpse) {
 				continue;
+			}
 
 			const Entity *entity =
 				entityManager->findSceneEntityByName(npc.npcName);
 
 			if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
 					playerState.entity->overlapsEntity(*entity)) {
+				const uint candidateOverlap =
+					playerState.entity->countOpaqueOverlapPixels(*entity);
+
+				// Restore the old position to measure the original overlap.
+				(void)applyRoomActorPlacement(state, *playerState.entity,
+					oldCenterX, oldBottomY, oldZ);
+
+				const uint oldOverlap =
+					playerState.entity->countOpaqueOverlapPixels(*entity);
+	
+				// Restore the candidate position.
+				(void)applyRoomActorPlacement(state, *playerState.entity,
+					candidateCenterX, candidateBottomY, candidateZ);
+
+				// Allow movement that reduces an existing NPC overlap.
+				if (oldOverlap > 0 && candidateOverlap < oldOverlap)
+					continue;
+
 				blocker = entity;
 				break;
 			}
+
+
 		}
 	}
 
