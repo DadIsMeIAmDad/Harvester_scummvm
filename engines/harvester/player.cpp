@@ -842,8 +842,31 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 		return true;
 	}
 
+	
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
 		*playerState.entity, ignoredBlockerName);
+
+	if (blocker && entityManager) {
+		// Measure overlap at the candidate position.
+		const uint candidateOverlap =
+			playerState.entity->countOpaqueOverlapPixels(*blocker);
+
+		// Restore the old position and measure the original overlap.
+		(void)applyRoomActorPlacement(state, *playerState.entity,
+			oldCenterX, oldBottomY, oldZ);
+
+		const uint oldOverlap =
+			playerState.entity->countOpaqueOverlapPixels(*blocker);
+
+		// Allow movement that reduces an existing overlap.
+		if (oldOverlap > 0 && candidateOverlap < oldOverlap)
+			blocker = nullptr;
+
+		// Restore the candidate position for the remaining collision checks.
+		(void)applyRoomActorPlacement(state, *playerState.entity,
+			candidateCenterX, candidateBottomY, candidateZ);
+	}
+
 
 	
 	if (!blocker && entityManager) {
