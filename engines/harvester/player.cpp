@@ -835,7 +835,7 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 	
 	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects,
-		*playerState.entity, ignoredBlockerName);
+		sceneAnimations, *playerState.entity, ignoredBlockerName);
 
 	if (blocker && entityManager) {
 		// Measure overlap at the candidate position.
