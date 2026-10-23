@@ -170,12 +170,7 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
 
-		lineError = runtime.clearScreenToBlack();
-		if (lineError.getCode() != Common::kNoError)
-			return lineError;
-		lineError = runtime.playDialogueFst(kDialogueC076FstPath);
-		if (lineError.getCode() != Common::kNoError)
-			return lineError;
+
 
 		// ADD REMOVE ALL INVENTORY EXCEPT HARVWEAP.png --   OBJECT "INVENTORY" "HARVEST_BLADE" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "" "HARVWEAP_STEXT" "" "" "F" "T" "" "Harvest_blade"
 
@@ -224,21 +219,6 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 			return lineError;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-		lineError = runtime.showCdChangePrompt(3);
-		if (lineError.getCode() != Common::kNoError)
-			return lineError;
 
 		// Native prompt_for_cdrom_disc_change(3, 0) latches a main-loop room rebuild.
 		InteractionResult interaction;
