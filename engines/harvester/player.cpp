@@ -761,7 +761,6 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 
 static void refreshPlayerCurrentBlocker(HarvesterEngine &engine,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState) {
 	if (!playerState.entity) {
 		clearPlayerBlockerHistory(playerState);
@@ -907,7 +906,6 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 static bool tryApplyPlayerMovement(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
 		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr) {
 	if (!playerState.entity)
@@ -944,7 +942,6 @@ static bool tryApplyPlayerMovement(HarvesterEngine &engine, const RoomSetupState
 
 static bool tryApplyPlayerMovementWithFallbacks(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState,
 		int previousCenterX, int previousBottomY, float previousZ,
 		int candidateCenterX, int candidateBottomY, float candidateZ) {
@@ -1339,7 +1336,6 @@ void Player::setMoveTargetFromScreenPoint(const RoomSetupState &state,
 
 bool Player::resolveBlockedStartupSpawn(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState) {
 	if (!playerState.entity)
 		return false;
@@ -1613,7 +1609,6 @@ bool Player::startHitAnimation(HarvesterEngine &engine, RoomPlayerState &playerS
 
 bool Player::updateHitAnimationState(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState) {
 	if (!playerState.hitActive || !playerState.entity)
 		return false;
@@ -1775,7 +1770,6 @@ bool Player::updateTurnAnimationState(RoomPlayerState &playerState) {
 
 bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState) {
 	if (!playerState.entity || !playerState.hasMoveTarget || playerState.turnActive || playerState.hitActive)
 		return false;
@@ -1922,7 +1916,6 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations,
 		RoomPlayerState &playerState, bool moveLeft, bool moveRight, bool moveUp, bool moveDown) {
 	if (!playerState.entity || !supportsMovementBand(state))
 		return false;
