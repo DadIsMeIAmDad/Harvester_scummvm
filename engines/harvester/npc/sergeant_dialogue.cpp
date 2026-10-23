@@ -176,6 +176,66 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		lineError = runtime.playDialogueFst(kDialogueC076FstPath);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
+
+		// ADD REMOVE ALL INVENTORY EXCEPT HARVWEAP.png --   OBJECT "INVENTORY" "HARVEST_BLADE" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "" "HARVWEAP_STEXT" "" "" "F" "T" "" "Harvest_blade"
+
+
+		lineError = runtime.clearScreenToBlack();
+		if (lineError.getCode() != Common::kNoError)
+			return lineError;
+		lineError = runtime.playDialogueFst(kDialogueC076FstPath);
+		if (lineError.getCode() != Common::kNoError)
+			return lineError;
+
+		// Keep only HARVEST_BLADE in inventory when moving to Disk 3.
+		{
+			static const char *const kHarvestBladeName = "HARVEST_BLADE";
+			static const char *const kInventoryOwner = "INVENTORY";
+
+			Common::Array<ObjectRecord> inventoryObjects;
+			runtime.startupScript().getVisibleInventoryObjects(inventoryObjects);
+
+			for (const ObjectRecord &item : inventoryObjects) {
+				// Skip status icons / exit button / the blade itself.
+				if (item.objectName.hasPrefixIgnoreCase("INV_STAT") ||
+						item.objectName.equalsIgnoreCase("INV_EXIT") ||
+						item.objectName.equalsIgnoreCase(kHarvestBladeName)) {
+					continue;
+				}
+
+				// Preferred: return item to its original room/owner and hide it.
+				(void)runtime.startupScript().resetRuntimeObjectToInitialState(item.objectName);
+				(void)runtime.startupScript().setRuntimeObjectVisible(
+					item.initialOwnerOrRoom, item.objectName, false);
+
+				// Fallback if you only want it gone from inventory:
+				// (void)runtime.startupScript().setRuntimeObjectVisible(
+				//     kInventoryOwner, item.objectName, false);
+			}
+
+			// Ensure the Harvest Blade is present and visible.
+			(void)runtime.startupScript().addRuntimeObjectToInventory(kHarvestBladeName);
+			(void)runtime.startupScript().setRuntimeObjectVisible(
+				kInventoryOwner, kHarvestBladeName, true);
+		}
+
+		lineError = runtime.showCdChangePrompt(3);
+		if (lineError.getCode() != Common::kNoError)
+			return lineError;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		lineError = runtime.showCdChangePrompt(3);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
