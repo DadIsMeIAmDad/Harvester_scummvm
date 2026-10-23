@@ -739,7 +739,7 @@ static void setPlayerCurrentBlocker(RoomPlayerState &playerState, const Entity *
 
 static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations, const Entity &playerEntity,
+		const Entity &playerEntity,
 		const Common::String *ignoredBlockerName) {
 	EntityManager *entityManager = engine.getRuntimeEntities();
 	if (!entityManager)
@@ -767,7 +767,7 @@ static void refreshPlayerCurrentBlocker(HarvesterEngine &engine,
 	}
 
 	setPlayerCurrentBlocker(playerState, findPlayerRoomBlocker(engine, sceneObjects,
-		sceneAnimations, *playerState.entity, nullptr));
+		*playerState.entity, nullptr));
 }
 
 static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerState &playerState) {
