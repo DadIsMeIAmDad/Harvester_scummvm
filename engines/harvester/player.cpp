@@ -782,12 +782,8 @@ static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerS
 }
 
 static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupState &state,
-        const Common::Array<ObjectRecord> &sceneObjects,
-        const Common::Array<AnimRecord> &sceneAnimations,
-        RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
-        const Common::String *ignoredBlockerName = nullptr,
-        const Entity **blockerOut = nullptr,
-        bool allowDeadMonsterOverlap = false) {
+		const Common::Array<ObjectRecord> &sceneObjects, RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
+		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr, bool allowDeadMonsterOverlap = false, const Common::Array<AnimRecord> *sceneAnimations = nullptr) {
 	if (!playerState.entity)
 		return true;
 
@@ -885,8 +881,10 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 		}
 	}
 
-	if (!blocker && entityManager) {
-		for (const AnimRecord &anim : sceneAnimations) {
+
+
+	if (!blocker && entityManager && sceneAnimations) {
+		for (const AnimRecord &anim : *sceneAnimations) {
 			const Entity *entity =
 				entityManager->findSceneEntityByName(anim.animName);
 
@@ -898,6 +896,10 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 			}
 		}
 	}
+
+
+
+
 
 	if (!blocker && entityManager) {
 		for (const MonsterRecord &monster : state.roomMonsters) {
