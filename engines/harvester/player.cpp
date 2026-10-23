@@ -753,13 +753,6 @@ static const Entity *findPlayerRoomBlocker(HarvesterEngine &engine,
 		}
 	}
 
-	for (const AnimRecord &anim : sceneAnimations) {
-		const Entity *entity = entityManager->findSceneEntityByName(anim.animName);
-		if (entity && !shouldIgnoreMovementBlocker(*entity, ignoredBlockerName) &&
-				playerEntity.overlapsEntity(*entity)) {
-			return entity;
-		}
-	}
 
 	return nullptr;
 }
@@ -789,9 +782,7 @@ static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerS
 }
 
 static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupState &state,
-		const Common::Array<ObjectRecord> &sceneObjects,
-		const Common::Array<AnimRecord> &sceneAnimations,
-		RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
+		const Common::Array<ObjectRecord> &sceneObjects, RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
 		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr, bool allowDeadMonsterOverlap = false) {
 	if (!playerState.entity)
 		return true;
@@ -843,7 +834,7 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	}
 
 	
-	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects, sceneAnimations,
+	const Entity *blocker = findPlayerRoomBlocker(engine, sceneObjects,
 		*playerState.entity, ignoredBlockerName);
 
 	if (blocker && entityManager) {
@@ -931,7 +922,7 @@ static bool tryApplyPlayerMovement(HarvesterEngine &engine, const RoomSetupState
 			fabsf(candidateZ - playerState.z) <= kRoomDepthCompareEpsilon) {
 		return false;
 	}
-	if (isPlayerMovementBlocked(engine, state, sceneObjects, sceneAnimations,
+	if (isPlayerMovementBlocked(engine, state, sceneObjects, 
 			playerState, candidateCenterX, candidateBottomY, candidateZ,
 			ignoredBlockerName, blockerOut)) {
 		return false;
@@ -1351,7 +1342,7 @@ bool Player::resolveBlockedStartupSpawn(HarvesterEngine &engine, const RoomSetup
 	if (!playerState.entity)
 		return false;
 
-	if (!isPlayerMovementBlocked(engine, state, sceneObjects, sceneAnimations,
+	if (!isPlayerMovementBlocked(engine, state, sceneObjects, 
 			playerState, playerState.centerX, playerState.bottomY, playerState.z)) {
 		return false;
 	}
@@ -1368,7 +1359,7 @@ bool Player::resolveBlockedStartupSpawn(HarvesterEngine &engine, const RoomSetup
 			if (candidateX == originalCenterX || candidateX == previousCandidateX)
 				continue;
 			previousCandidateX = candidateX;
-			if (isPlayerMovementBlocked(engine, state, sceneObjects, sceneAnimations,
+			if (isPlayerMovementBlocked(engine, state, sceneObjects,
 					playerState, candidateX, playerState.bottomY, playerState.z)) {
 				continue;
 			}
