@@ -1359,17 +1359,51 @@ bool doesPlayerFacingMatchRegion(int playerFacing, const RegionRecord &region) {
 	return region.desiredFacing < 0 || playerFacing == region.desiredFacing;
 }
 
+
+
+static Common::Rect getPlayerOpaqueBounds(const Entity &playerEntity) {
+	const Common::Rect bounds = playerEntity.getScreenRect();
+	if (bounds.isEmpty())
+		return bounds;
+
+	int minX = bounds.right;
+	int minY = bounds.bottom;
+	int maxX = bounds.left - 1;
+	int maxY = bounds.top - 1;
+
+	for (int y = bounds.top; y < bounds.bottom; ++y) {
+		for (int x = bounds.left; x < bounds.right; ++x) {
+			if (!playerEntity.isOpaqueAt(Common::Point(x, y)))
+				continue;
+
+			minX = MIN(minX, x);
+			minY = MIN(minY, y);
+			maxX = MAX(maxX, x);
+			maxY = MAX(maxY, y);
+		}
+	}
+
+	if (maxX < minX || maxY < minY)
+		return Common::Rect();
+
+	// Include the last opaque pixel.
+	return Common::Rect(minX, minY, maxX + 1, maxY + 1);
+}
+
+
+
+
 bool doesPlayerOverlapRegion(const Entity &playerEntity, const RegionRecord &region) {
 	const Common::Rect regionBounds = getRegionBounds(region);
 	if (regionBounds.isEmpty()) {
 		return false;
-}
+	}
 
 	// Native do_entity_screen_bounds_overlap (0x4b700) compares each entity's
 	// origin plus width/height and rejects only when one edge is strictly before
 	// the other. Common::Rect uses exclusive right/bottom edges, so intersects()
 	// would incorrectly reject the edge contact that activates narrow exits.
-	const Common::Rect playerBounds = playerEntity.getScreenRect();
+	const Common::Rect playerBounds = getPlayerOpaqueBounds(playerEntity);
 	if (playerBounds.right < regionBounds.left ||
 			regionBounds.right < playerBounds.left ||
 			playerBounds.bottom < regionBounds.top ||
