@@ -1348,6 +1348,7 @@ bool Entity::hitTest(const Common::Point &point) const {
 	return isOpaqueAt(point);
 }
 
+
 bool Entity::overlapsEntity(const Entity &other) const {
 	if (this == &other || !_visible || !other._visible)
 		return false;
@@ -1373,9 +1374,32 @@ bool Entity::overlapsEntity(const Entity &other) const {
 	if (left >= right || top >= bottom)
 		return false;
 
-	if (_classId == kRuntimeEntityClassDisabledHotspot ||
-			other._classId == kRuntimeEntityClassDisabledHotspot) {
-		return true;
+	// DisabledHotspot is a solid rectangle. Test the other entity's
+	// opaque pixels against it, ignoring transparent animation padding.
+	if (_classId == kRuntimeEntityClassDisabledHotspot) {
+		if (!other.hasOpaqueFrame())
+			return true;
+
+		for (int y = top; y < bottom; ++y) {
+			for (int x = left; x < right; ++x) {
+				if (other.isOpaqueAt(Common::Point(x, y)))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	if (other._classId == kRuntimeEntityClassDisabledHotspot) {
+		if (!hasOpaqueFrame())
+			return true;
+
+		for (int y = top; y < bottom; ++y) {
+			for (int x = left; x < right; ++x) {
+				if (isOpaqueAt(Common::Point(x, y)))
+					return true;
+			}
+		}
+		return false;
 	}
 
 	if (!hasOpaqueFrame() || !other.hasOpaqueFrame())
@@ -1391,6 +1415,7 @@ bool Entity::overlapsEntity(const Entity &other) const {
 
 	return false;
 }
+
 
 
 
@@ -1414,6 +1439,37 @@ uint Entity::countOpaqueOverlapPixels(const Entity &other) const {
 	if (left >= right || top >= bottom)
 		return 0;
 
+	// For a DisabledHotspot, count only opaque pixels of the other
+	// entity that fall inside its solid rectangle.
+	if (other._classId == kRuntimeEntityClassDisabledHotspot) {
+		if (!hasOpaqueFrame())
+			return 0;
+
+		uint count = 0;
+		for (int y = top; y < bottom; ++y) {
+			for (int x = left; x < right; ++x) {
+				if (isOpaqueAt(Common::Point(x, y)))
+					++count;
+			}
+		}
+		return count;
+	}
+
+	// Mirror the test when this entity is the DisabledHotspot.
+	if (_classId == kRuntimeEntityClassDisabledHotspot) {
+		if (!other.hasOpaqueFrame())
+			return 0;
+
+		uint count = 0;
+		for (int y = top; y < bottom; ++y) {
+			for (int x = left; x < right; ++x) {
+				if (other.isOpaqueAt(Common::Point(x, y)))
+					++count;
+			}
+		}
+		return count;
+	}
+
 	if (!hasOpaqueFrame() || !other.hasOpaqueFrame())
 		return 0;
 
@@ -1429,6 +1485,7 @@ uint Entity::countOpaqueOverlapPixels(const Entity &other) const {
 
 	return count;
 }
+
 
 
 bool Entity::measureCurrentFrameTransparency(uint32 &framePixels, uint32 &transparentPixels,
