@@ -984,7 +984,7 @@ void Entity::draw(Graphics::Screen &screen) const {
 		// Entities anchored to the TOP-LEFT corner.
 		else if (_name == "CABNET" ||
 				_name == "SWELL" ||
-				_name == "NOODY") {
+				_name == "PLAYER") {
 
 			anchorLeft = true;
 		}
