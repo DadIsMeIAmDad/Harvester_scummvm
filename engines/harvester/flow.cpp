@@ -578,7 +578,18 @@ static const MapLocationRecord *findTownMapLocationAt(
 
 static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY, float z,
 		int width, int height, int xOffset, int yOffset) {
-	entity.setPosition(centerX - xOffset - width / 2, bottomY - height - yOffset, z);
+
+
+	if (entity.getName().equalsIgnoreCase("PLAYER")) {
+		bottomPad = 20;
+	} else {
+		bottomPad = 0;
+	}
+	entity.setPosition(
+	centerX - xOffset - width / 2,
+	bottomY - height - yOffset + bottomPad,
+	z);
+	
 }
 
 static float computeRoomActorRenderZ(float z, const Entity &entity) {
