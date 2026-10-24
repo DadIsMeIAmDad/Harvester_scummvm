@@ -669,9 +669,16 @@ static int clampPlayerCenterXToNativeBounds(const RoomPlayerState &playerState, 
 	if (!playerState.entity->getCurrentFrameMetrics(width, height, xOffset, yOffset))
 		return CLIP<int>(centerX, 0, 639);
 
-	const int minCenterX = kRoomPlayerMinOpaqueLeftX + width / 2;
-	const int maxCenterX = MAX(minCenterX,
-		kRoomPlayerMaxOpaqueRightX - (width - width / 2));
+
+
+
+
+	const int minCenterX = kRoomPlayerMinOpaqueLeftX + width / 2 - 40;
+	const int maxCenterX = MAX(minCenterX, kRoomPlayerMaxOpaqueRightX - (width - width / 2) + 20);
+
+
+
+
 	return CLIP<int>(centerX, minCenterX, maxCenterX);
 }
 
