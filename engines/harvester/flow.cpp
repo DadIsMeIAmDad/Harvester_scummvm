@@ -576,21 +576,21 @@ static const MapLocationRecord *findTownMapLocationAt(
 	return nullptr;
 }
 
+
 static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY, float z,
 		int width, int height, int xOffset, int yOffset) {
-
+	int bottomPad = 0;
 
 	if (entity.getName().equalsIgnoreCase("PLAYER")) {
 		bottomPad = 20;
-	} else {
-		bottomPad = 0;
 	}
+
 	entity.setPosition(
-	centerX - xOffset - width / 2,
-	bottomY - height - yOffset + bottomPad,
-	z);
-	
+		centerX - xOffset - width / 2,
+		bottomY - height - yOffset + bottomPad,
+		z);
 }
+
 
 static float computeRoomActorRenderZ(float z, const Entity &entity) {
 	// Native actor spawns lower the render-list depth anchor by half the z extent
