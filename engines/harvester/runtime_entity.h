@@ -69,6 +69,7 @@ public:
 	bool loadPngResource(ResourceManager &resources, const Common::String &path);
 	bool loadPngAnimationResource(ResourceManager &resources, const Common::String &path);
 	bool loadPngAnimationZipResource(ResourceManager &resources, const Common::String &path);
+	bool isOpaqueAt(const Common::Point &point) const;
 
 	void setName(const Common::String &name) { _name = name; }
 	const Common::String &getName() const { return _name; }
@@ -156,7 +157,6 @@ private:
 	Common::Point getDrawOrigin() const;
 	Common::Rect getFrameRect() const;
 	bool hasOpaqueFrame() const;
-	bool isOpaqueAt(const Common::Point &point) const;
 	void advanceAnimationFrame(int directive);
 	void updateBoundsFromCurrentFrame();
 	void updateScreenBaseFromCurrentFrame();
