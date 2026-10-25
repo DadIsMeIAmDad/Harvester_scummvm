@@ -2890,8 +2890,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			}
 		}
 		if (playerState.attackTargetClassId == kRuntimeEntityClassNpc) {
-			const bool isProjectile =
-				Player::isProjectileCombatLoadout(playerState.combatLoadout);
 
 			NpcRecord *npc = findRoomNpcRecordByName(
 				playerState.attackTargetName);
