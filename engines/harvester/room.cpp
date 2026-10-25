@@ -2374,7 +2374,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
                 const bool projectileZOverlap =
                     doRuntimeEntityDepthExtentsOverlap(
                         *playerState.entity, *entity) ||
-                    ABS(playerState.z - entity->getZ()) <= 10.0f;
+                    ABS(playerState.z - entity->getZ()) <= 30.0f;
 
                 if (!projectileZOverlap)
                     continue;
