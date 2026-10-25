@@ -2361,10 +2361,25 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					continue;
 
 				Entity *entity = findSceneRuntimeEntity(monster.monsterName);
-				if (!entity || !entity->isVisible() ||
-						!doRuntimeEntityDepthExtentsOverlap(*playerState.entity, *entity)) {
-					continue;
-				}
+
+
+
+
+
+                if (!entity || !entity->isVisible())
+                    continue;
+
+                // Gunshots can hit monsters across a wider Z range.
+                // This affects only projectile target selection for monsters.
+                const bool projectileZOverlap =
+                    doRuntimeEntityDepthExtentsOverlap(
+                        *playerState.entity, *entity) ||
+                    ABS(playerState.z - entity->getZ()) <= 10.0f;
+
+                if (!projectileZOverlap)
+                    continue;
+
+
 
 				const Common::Rect targetRect = entity->getScreenRect();
 				const int targetLeft = targetRect.left;
@@ -3109,32 +3124,18 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return Common::kNoError;
 			}
 
-			
-			// Melee attacks require actual sprite-rectangle overlap.
+			// Melee attacks require actual opaque-pixel overlap.
 			// Projectile attacks keep their existing contact rules.
-			if (!Player::isProjectileCombatLoadout(playerState.combatLoadout)) {
-				const Common::Rect meleePlayerRect =
-					playerState.entity->getScreenRect();
-				const Common::Rect meleeTargetRect =
-					monsterEntity->getScreenRect();
-
-				const bool meleeSpritesOverlap =
-					meleePlayerRect.left < meleeTargetRect.right &&
-					meleePlayerRect.right > meleeTargetRect.left &&
-					meleePlayerRect.top < meleeTargetRect.bottom &&
-					meleePlayerRect.bottom > meleeTargetRect.top;
-
-				if (!meleeSpritesOverlap) {
+			if (!Player::isProjectileCombatLoadout(
+					playerState.combatLoadout)) {
+				if (!playerState.entity->overlapsEntity(*monsterEntity)) {
 					debugC(1, kDebugCombat,
-						"Harvester: combat player attack missed target='%s' reason='melee sprites do not overlap'",
+						"Harvester: combat player attack missed target='%s' reason='melee opaque pixels do not overlap'",
 						monster->monsterName.c_str());
 					return Common::kNoError;
 				}
-			}
 
-			// A confirmed melee contact consumes this attack.
-			if (!Player::isProjectileCombatLoadout(
-					playerState.combatLoadout)) {
+				// A confirmed melee contact consumes this attack.
 				playerState.attackContactResolved = true;
 			}
 
