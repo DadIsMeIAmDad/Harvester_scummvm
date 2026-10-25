@@ -592,7 +592,7 @@ static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
 	// and update_actor_runtime_state copies abs(+0x1140) into frame_y_step for
 	// the vertical walk states instead of remapping screen Y from depth.
 	
-	if (state.roomName == "MR_JOHNS" || state.roomName == "PCKIT" || state.roomName == "FIRENSIDE" || state.roomName == "MTPLNT" || state.roomName == "CHESSROOM" || state.roomName == "STORE_IN" || state.roomName == "POST" || state.roomName == "SCHLHL") {
+	if (state.roomName == "MR_JOHNS" || state.roomName == "PCKIT" || state.roomName == "FIRENSIDE" || state.roomName == "MTPLNT" || state.roomName == "CHESSROOM" || state.roomName == "STORE_IN" || state.roomName == "POST" || state.roomName == "MORT") {
 		return kRoomPlayerVerticalScreenStep3;
 	} else if (state.roomName == "CHAP1" || state.roomName == "MORTHALL" || state.roomName == "PCHOUSE" || state.roomName == "ST_LIVRM" || state.roomName == "STHOUSE" || state.roomName == "CEM10" || state.roomName == "CEM" || state.roomName == "DNALFT" || state.roomName == "TV_OUT") {
 		return kRoomPlayerVerticalScreenStep2;
