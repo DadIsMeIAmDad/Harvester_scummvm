@@ -2846,15 +2846,33 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			needsRedraw = true;
 		};
 		auto resolvePlayerAttackContact = [&]() -> Common::Error {
-		if (!playerState.attackActive || playerState.attackContactResolved || !playerState.entity ||
-				playerState.attackContactFrame < 0 ||
-				playerState.entity->getCurrentFrame() < playerState.attackContactFrame) {
-			return Common::kNoError;
-		}
+			if (!playerState.attackActive ||
+					playerState.attackContactResolved ||
+					!playerState.entity) {
+				return Common::kNoError;
+			}
 
-		playerState.attackContactResolved = true;
-		const int damageType = Player::resolveCombatLoadoutDamageType(playerState.combatLoadout);
-		const int damageAmount = Player::resolveCombatLoadoutDamageAmount(playerState.combatLoadout);
+			const bool isProjectile =
+				Player::isProjectileCombatLoadout(playerState.combatLoadout);
+
+			// Projectiles retain their original contact-frame timing.
+			// Melee attacks can connect on any frame of the attack animation.
+			if (isProjectile &&
+					(playerState.attackContactFrame < 0 ||
+					playerState.entity->getCurrentFrame() <
+						playerState.attackContactFrame)) {
+				return Common::kNoError;
+			}
+
+			// Projectile contact is resolved once at its designated frame.
+			// Melee contact is resolved only after an actual hit is confirmed.
+			if (isProjectile)
+				playerState.attackContactResolved = true;
+
+			const int damageType =
+				Player::resolveCombatLoadoutDamageType(playerState.combatLoadout);
+			const int damageAmount =
+				Player::resolveCombatLoadoutDamageAmount(playerState.combatLoadout);
 		debugC(1, kDebugCombat,
 			"Harvester: combat player attack contact frame=%d loadout=%d weapon='%s' damage=%d damage_type='%s' target_class='%s' target='%s'",
 			playerState.entity->getCurrentFrame(), playerState.combatLoadout,
@@ -2950,6 +2968,8 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 						npc->npcName.c_str());
 					return Common::kNoError;
 				}
+				// A confirmed melee contact consumes this attack.
+				playerState.attackContactResolved = true;
 			}
 
 			// Keep the existing NPC-specific death and monsterfy behavior.
@@ -3113,7 +3133,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					return Common::kNoError;
 				}
 			}
-			
+
+			// A confirmed melee contact consumes this attack.
+			if (!Player::isProjectileCombatLoadout(
+					playerState.combatLoadout)) {
+				playerState.attackContactResolved = true;
+			}
+
 			const int hitPointsBefore = monster->currentHitPoints;
 			monster->currentHitPoints = MAX(0,
 				monster->currentHitPoints - damageAmount);
