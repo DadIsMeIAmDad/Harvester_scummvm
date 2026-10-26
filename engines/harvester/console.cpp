@@ -559,6 +559,21 @@ bool Console::Cmd_gotoRoom(int argc, const char **argv) {
 		return true;
 	}
 
+	// Always refresh town script from the active disc before listing/changing rooms.
+	// This picks up disc-specific HARVEST.SCR changes without replaying the game.
+	if (g_engine) {
+		ResourceManager *resources = g_engine->getResources();
+		if (resources) {
+			if (!script->reloadTownWorld(*resources)) {
+				debugPrintf("Warning: unable to reload HARVEST.SCR from active disc %d\n",
+					resources->getCurrentDisc());
+				// Continue anyway so listing/room change still works with the old script.
+			} else {
+				debugPrintf("Reloaded HARVEST.SCR from disc %d\n", resources->getCurrentDisc());
+			}
+		}
+	}
+
 	Common::Array<Common::String> roomNames;
 	collectSortedRoomNames(*script, roomNames);
 	if (roomNames.empty()) {
