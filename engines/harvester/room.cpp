@@ -2386,21 +2386,23 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				const int targetCenterX = targetLeft + targetRect.width() / 2;
 				bool matchesDirection = false;
 				if (attackSide == kNativeAttackSideLeft) {
-					if (attackBand == kNativeAttackBandMid)
+					if (attackBand == kNativeAttackBandMid) {
 						matchesDirection = targetLeft < playerCenterX;
-					else
-						matchesDirection =
-							targetLeft < playerCenterX && targetCenterX > playerLeft - kNativeAttackSideWindow;
-					if (!matchesDirection || targetLeft <= bestLeadingEdge)
+					} else {
+						matchesDirection = targetLeft < playerCenterX;
+					}	
+					if (!matchesDirection || targetLeft <= bestLeadingEdge) {
 						continue;
+					}
 				} else {
-					if (attackBand == kNativeAttackBandMid)
+					if (attackBand == kNativeAttackBandMid) {
 						matchesDirection = playerCenterX < targetLeft;
-					else
-						matchesDirection =
-							playerCenterX < targetLeft && targetCenterX < playerRight + kNativeAttackSideWindow;
-					if (!matchesDirection || targetLeft >= bestLeadingEdge)
+					} else {
+						matchesDirection = playerCenterX < targetLeft;
+					}
+					if (!matchesDirection || targetLeft >= bestLeadingEdge) {
 						continue;
+					}
 				}
 
 				bestMonster = &monster;
@@ -2868,10 +2870,10 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			}
 
 			const bool isProjectile =
-				Player::isProjectileCombatLoadout(playerState.combatLoadout);
+				Player::isProjectileCombatLoadout(
+					playerState.combatLoadout);
 
-			// Projectiles retain their original contact-frame timing.
-			// Melee attacks can connect on any frame of the attack animation.
+			// Projectiles retain their designated contact-frame timing.
 			if (isProjectile &&
 					(playerState.attackContactFrame < 0 ||
 					playerState.entity->getCurrentFrame() <
@@ -2879,15 +2881,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return Common::kNoError;
 			}
 
-			// Projectile contact is resolved once at its designated frame.
-			// Melee contact is resolved only after an actual hit is confirmed.
-			if (isProjectile)
-				playerState.attackContactResolved = true;
-
 			const int damageType =
-				Player::resolveCombatLoadoutDamageType(playerState.combatLoadout);
+				Player::resolveCombatLoadoutDamageType(
+					playerState.combatLoadout);
 			const int damageAmount =
-				Player::resolveCombatLoadoutDamageAmount(playerState.combatLoadout);
+				Player::resolveCombatLoadoutDamageAmount(
+					playerState.combatLoadout);
+
 		debugC(1, kDebugCombat,
 			"Harvester: combat player attack contact frame=%d loadout=%d weapon='%s' damage=%d damage_type='%s' target_class='%s' target='%s'",
 			playerState.entity->getCurrentFrame(), playerState.combatLoadout,
