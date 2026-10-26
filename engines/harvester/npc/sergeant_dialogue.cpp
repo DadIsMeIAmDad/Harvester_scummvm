@@ -182,45 +182,31 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
 
-		// Keep only HARVEST_BLADE in inventory when moving to Disk 3.
-		{
-			static const char *const kHarvestBladeName = "HARVEST_BLADE";
-			static const char *const kInventoryOwner = "INVENTORY";
-
-			Common::Array<ObjectRecord> inventoryObjects;
-			runtime.startupScript().getVisibleInventoryObjects(inventoryObjects);
-
-			for (const ObjectRecord &item : inventoryObjects) {
-				// Skip status icons / exit button / the blade itself.
-				if (item.objectName.hasPrefixIgnoreCase("INV_STAT") ||
-						item.objectName.equalsIgnoreCase("INV_EXIT") ||
-						item.objectName.equalsIgnoreCase(kHarvestBladeName)) {
-					continue;
-				}
-
-				// Preferred: return item to its original room/owner and hide it.
-				(void)runtime.startupScript().resetRuntimeObjectToInitialState(item.objectName);
-				(void)runtime.startupScript().setRuntimeObjectVisible(
-					item.initialOwnerOrRoom, item.objectName, false);
-
-				// Fallback if you only want it gone from inventory:
-				// (void)runtime.startupScript().setRuntimeObjectVisible(
-				//     kInventoryOwner, item.objectName, false);
-			}
-
-			// Ensure the Harvest Blade is present and visible.
-			(void)runtime.startupScript().addRuntimeObjectToInventory(kHarvestBladeName);
-			(void)runtime.startupScript().setRuntimeObjectVisible(
-				kInventoryOwner, kHarvestBladeName, true);
-		}
-
+		// Activate disc 3 (prompt / archive mount).
 		lineError = runtime.showCdChangePrompt(3);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
 
+		// NEW GAME-style reset on disc 3: reload HARVEST.SCR from the active disc
+		// and reset runtime (flags, regions/blockers, objects, etc.).
+		// Do NOT use reloadTownWorld() here — it preserves old runtime and leaves blockers off.
+		Script &script = runtime.startupScript();
+		ResourceManager *resources = g_engine ? g_engine->getResources() : nullptr;
+		if (!resources || !script.load(*resources)) {
+			warning("Harvester: disc-3 handoff failed to hard-reload HARVEST.SCR");
+			return Common::kReadingFailed;
+		}
 
+		// Disc 3 starts clean except for the Harvest Blade.
+		{
+			static const char *const kHarvestBladeName = "HARVEST_BLADE";
+			static const char *const kInventoryOwner = "INVENTORY";
 
-		// Native prompt_for_cdrom_disc_change(3, 0) latches a main-loop room rebuild.
+			(void)script.addRuntimeObjectToInventory(kHarvestBladeName);
+			(void)script.setRuntimeObjectVisible(kInventoryOwner, kHarvestBladeName, true);
+		}
+
+		// Native disc-3 prompt rebuilds into START (lodge reception path).
 		InteractionResult interaction;
 		interaction.requestRoomRestart = true;
 		interaction.roomRestartTargetName = "START";
