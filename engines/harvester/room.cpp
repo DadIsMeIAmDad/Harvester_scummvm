@@ -2737,6 +2737,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				attackBand = kNativeAttackBandLower;
 			}
 		}
+
 		if (attackSide == kNativeAttackSideNone) {
 			debugC(1, kDebugCombat,
 				"Harvester: combat player keyboard target capture class='none' input=(L=%d R=%d U=%d D=%d) facing=%d reason='no native attack family'",
@@ -2747,12 +2748,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		const Common::Rect playerRect = playerState.entity->getScreenRect();
 		const int playerLeft = playerRect.left;
 		const int playerRight = playerRect.right;
-		const int playerCenterX = playerState.centerX;
+		const int playerCenterX = playerRect.left + playerRect.width() / 2;
+
 		Entity *bestEntity = nullptr;
 		Common::String bestName;
 		int bestClassId = -1;
 		int bestLeadingEdge = attackSide == kNativeAttackSideLeft ? -0x7fffffff : 0x7fffffff;
 
+		
 		auto considerTarget = [&](Entity *targetEntity, const Common::String &targetName, int classId) {
 			if (!targetEntity || !targetEntity->isVisible() ||
 					!doRuntimeEntityDepthExtentsOverlap(*playerState.entity, *targetEntity)) {
@@ -2958,9 +2961,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					npcEntity->getScreenRect().left +
 					npcEntity->getScreenRect().width() / 2;
 
-				// Use visible-pixel centers instead of transparent canvas centers.
-				playerState.entity->getOpaquePixelHorizontalCenter(playerCenterX);
-				npcEntity->getOpaquePixelHorizontalCenter(targetCenterX);
+
 
 				bool matchesDirection = false;
 
