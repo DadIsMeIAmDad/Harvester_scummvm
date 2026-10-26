@@ -553,26 +553,27 @@ bool Console::Cmd_gotoRoom(int argc, const char **argv) {
 		return true;
 	}
 
-	Script *script = getActiveStartupScript();
-	if (!script) {
+	if (!g_engine) {
 		debugPrintf("Harvester engine is not active\n");
 		return true;
 	}
 
-	// Always refresh town script from the active disc before listing/changing rooms.
-	// This picks up disc-specific HARVEST.SCR changes without replaying the game.
-	if (g_engine) {
-		ResourceManager *resources = g_engine->getResources();
-		if (resources) {
-			if (!script->reloadTownWorld(*resources)) {
-				debugPrintf("Warning: unable to reload HARVEST.SCR from active disc %d\n",
-					resources->getCurrentDisc());
-				// Continue anyway so listing/room change still works with the old script.
-			} else {
-				debugPrintf("Reloaded HARVEST.SCR from disc %d\n", resources->getCurrentDisc());
-			}
-		}
+	Script *script = g_engine->getScript();
+	ResourceManager *resources = g_engine->getResources();
+	if (!script || !resources) {
+		debugPrintf("Script/resources not available\n");
+		return true;
 	}
+
+	// Hard reload from active disc SCR + full runtime reset (blockers back).
+	// Same shape as Script::load(), but keeps the current disc mounted.
+	if (!script->load(*resources)) {
+		debugPrintf("Unable to reload HARVEST.SCR from disc %d\n",
+			resources->getCurrentDisc());
+		return true;
+	}
+	debugPrintf("Hard-reloaded HARVEST.SCR from disc %d (runtime reset)\n",
+		resources->getCurrentDisc());
 
 	Common::Array<Common::String> roomNames;
 	collectSortedRoomNames(*script, roomNames);
@@ -588,7 +589,7 @@ bool Console::Cmd_gotoRoom(int argc, const char **argv) {
 		return true;
 	}
 
-	if (!g_engine || !g_engine->hasCurrentSaveRoomState()) {
+	if (!g_engine->hasCurrentSaveRoomState()) {
 		debugPrintf("GOTO_ROOM is only available while a room is active\n");
 		return true;
 	}
