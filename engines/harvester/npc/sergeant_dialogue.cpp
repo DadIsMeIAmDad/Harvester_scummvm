@@ -21,7 +21,7 @@
 
 
 #include "harvester/npc/sergeant_dialogue.h"
-
+#include "harvester/harvester.h"
 #include "common/array.h"
 #include "harvester/npc/dialogue_runtime.h"
 
