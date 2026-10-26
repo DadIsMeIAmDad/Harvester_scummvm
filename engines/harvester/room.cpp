@@ -2881,6 +2881,10 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return Common::kNoError;
 			}
 
+            // A projectile can damage a target only once per shot.
+            if (isProjectile)
+                playerState.attackContactResolved = true;
+
 			const int damageType =
 				Player::resolveCombatLoadoutDamageType(
 					playerState.combatLoadout);
@@ -3109,11 +3113,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (attackSide == kNativeAttackSideLeft) {
 				matchesDirection =
 					targetCenterX < playerCenterX &&
-					targetCenterX > playerLeft - kNativeAttackSideWindow;
+					(isProjectile ||
+					targetCenterX > playerLeft - kNativeAttackSideWindow);
 			} else if (attackSide == kNativeAttackSideRight) {
 				matchesDirection =
 					targetCenterX > playerCenterX &&
-					targetCenterX < playerRight + kNativeAttackSideWindow;
+					(isProjectile ||
+					targetCenterX < playerRight + kNativeAttackSideWindow);
 			}
 
 
