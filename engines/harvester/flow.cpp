@@ -602,7 +602,9 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 	if (entity.getName().equalsIgnoreCase("STATUE3")) {
 		bottomPad = 18;
 	}
-
+	if (entity.getName().equalsIgnoreCase("ZOMBIE1")) {
+		bottomPad = 8;
+	}
 
 
 
