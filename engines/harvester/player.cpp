@@ -594,7 +594,7 @@ static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
 	
 	if (state.roomName == "MR_JOHNS" || state.roomName == "PCKIT" || state.roomName == "FIRENSIDE" || state.roomName == "MTPLNT" || state.roomName == "CHESSROOM" || state.roomName == "STORE_IN" || state.roomName == "POST") {
 		return kRoomPlayerVerticalScreenStep3;
-	} else if (state.roomName == "CHAP1" || state.roomName == "MORTHALL" || state.roomName == "PCHOUSE" || state.roomName == "ST_LIVRM" || state.roomName == "STHOUSE" || state.roomName == "CEM10" || state.roomName == "CEM" || state.roomName == "DNALFT" || state.roomName == "TV_OUT" || state.roomName == "THEATRE1") {
+	} else if (state.roomName == "CHAP1" || state.roomName == "MORTHALL" || state.roomName == "PCHOUSE" || state.roomName == "ST_LIVRM" || state.roomName == "STHOUSE" || state.roomName == "CEM10" || state.roomName == "CEM" || state.roomName == "DNALFT" || state.roomName == "TV_OUT" || state.roomName == "THEATRE1" || state.roomName == "THEATRE2") {
 		return kRoomPlayerVerticalScreenStep2;
 	} else {
 		return kRoomPlayerVerticalScreenStep;
