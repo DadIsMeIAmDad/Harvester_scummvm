@@ -606,9 +606,14 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 		bottomPad = 8;
 	}
 	if (entity.getName().equalsIgnoreCase("GENCOP")) {
-		bottomPad = 35;
+		bottomPad = 38;
 	}
-
+	if (entity.getName().equalsIgnoreCase("ELVIS_MON")) {
+		bottomPad = 8;
+	}
+	if (entity.getName().equalsIgnoreCase("AUTH_MON")) {
+		bottomPad = 8;
+	}
 
 	entity.setPosition(
 		centerX - xOffset - width / 2,
