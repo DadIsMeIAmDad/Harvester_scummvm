@@ -159,8 +159,15 @@ Common::Error DarkWomanDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 
 	if (responseIndex == 1)
 		return runDarkWomanMonsterfyBranch();
-	if (!hasHandMirror)
-		return playDarkWomanLine(0x4cfc, 2);
+
+	if (!hasHandMirror) {
+		Common::Error lineError = playDarkWomanLine(0x4cfc, 2);
+		if (lineError.getCode() != Common::kNoError)
+			return lineError;
+
+		queueDarkWomanMonsterfyTransition();
+		return Common::kNoError;
+	}
 
 	return runMirrorRevealBranch();
 }
