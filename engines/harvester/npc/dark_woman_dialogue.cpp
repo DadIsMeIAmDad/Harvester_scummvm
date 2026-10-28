@@ -161,7 +161,7 @@ Common::Error DarkWomanDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		return runDarkWomanMonsterfyBranch();
 
 	if (!hasHandMirror) {
-		Common::Error lineError = playDarkWomanLine(0x4cfc, 2);
+		lineError = playDarkWomanLine(0x4cfc, 2);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
 
