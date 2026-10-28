@@ -642,7 +642,7 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 		bottomPad = 25;
 	}
 	if (entity.getName().equalsIgnoreCase("INQUIS_MONSTER")) {
-		bottomPad = 10;
+		bottomPad = 7;
 	}
 
 
