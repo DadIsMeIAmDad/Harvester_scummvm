@@ -247,6 +247,7 @@ static bool clearPendingVideoInput(HarvesterEngine &vm) {
 	return !vm.shouldQuit();
 }
 
+
 static bool pumpVideoEvents(HarvesterEngine &vm, bool &skipRequested, bool &deferredSkipRequested, bool allowSkipInput) {
 	Common::Event event;
 	while (g_system->getEventManager()->pollEvent(event)) {
@@ -254,15 +255,12 @@ static bool pumpVideoEvents(HarvesterEngine &vm, bool &skipRequested, bool &defe
 		case Common::EVENT_QUIT:
 		case Common::EVENT_RETURN_TO_LAUNCHER:
 			return false;
+
 		case Common::EVENT_KEYDOWN:
-		case Common::EVENT_LBUTTONDOWN:
-		case Common::EVENT_RBUTTONDOWN:
-			if (allowSkipInput) {
+			if (event.kbd.keycode == Common::KEYCODE_ESCAPE)
 				skipRequested = true;
-			} else {
-				deferredSkipRequested = true;
-			}
 			break;
+
 		default:
 			break;
 		}
