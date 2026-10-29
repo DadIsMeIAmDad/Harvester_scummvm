@@ -333,47 +333,9 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 			}
 
 			if (frame) {
-				const Graphics::PixelFormat screenFormat =
-					g_system->getScreenFormat();
-
-				Graphics::Surface *converted = nullptr;
-				const Graphics::Surface *displayFrame = frame;
-
-				if (frame->format != screenFormat) {
-					converted = frame->convertTo(
-						screenFormat, decoder.getPalette());
-
-					displayFrame = converted;
-				}
-
-				if (displayFrame) {
-					const int screenW = g_system->getWidth();
-					const int screenH = g_system->getHeight();
-
-					// Center the video on the current screen.
-					int x = (screenW - displayFrame->w) / 2;
-					int y = (screenH - displayFrame->h) / 2;
-
-					int srcX = MAX(0, -x);
-					int srcY = MAX(0, -y);
-					int dstX = MAX(0, x);
-					int dstY = MAX(0, y);
-
-					int copyW = MIN(displayFrame->w - srcX,
-						screenW - dstX);
-					int copyH = MIN(displayFrame->h - srcY,
-						screenH - dstY);
-
-					if (copyW > 0 && copyH > 0) {
-						g_system->copyRectToScreen(
-							displayFrame->getBasePtr(srcX, srcY),
-							displayFrame->pitch,
-							dstX, dstY, copyW, copyH);
-
-						g_system->updateScreen();
-					}
-				}
-
+				debug("Harvester AVI: decoded frame %dx%d successfully",
+					frame->w, frame->h);
+			}
 				if (converted) {
 					converted->free();
 					delete converted;
