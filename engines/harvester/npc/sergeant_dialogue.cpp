@@ -112,6 +112,7 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		state.day5ExitLinePlayed = true;
 		return playSergeantLine(0x4324, 1);
 	};
+
 	auto handleRemainsBranch = [&]() -> Common::Error {
 		sharedState.dialogueStateD2f08 = true;
 		sharedState.dialogueStateD2f00 = true;
@@ -129,9 +130,11 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		Common::Error lineError = playSergeantLine(0x4333, 1);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
+
 		lineError = runtime.playDialogueFst(kDialogueC150FstPath);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
+
 		const DialogueLineEntry remainsIntroLines[] = {
 			{ 0x433f, "SERGEANT", 0 },
 			{ 0x4344, "PC", 2 },
@@ -139,16 +142,17 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 			{ 0x434f, "PC", 0 },
 			{ 0x4353, "SERGEANT", 1 }
 		};
+	
 		lineError = playSequence(remainsIntroLines, ARRAYSIZE(remainsIntroLines));
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
-
+	
 		int responseIndex = 0;
 		Common::Error responseError = runtime.runResponseMenu(
 			kSergeantRemainsResponseLine, responseIndex);
 		if (responseError.getCode() != Common::kNoError)
 			return responseError;
-
+	
 		if (responseIndex == 1) {
 			lineError = playSergeantLine(0x435f, 3);
 			if (lineError.getCode() != Common::kNoError)
@@ -158,7 +162,7 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 			if (lineError.getCode() != Common::kNoError)
 				return lineError;
 		}
-
+	
 		const DialogueLineEntry remainsExitLines[] = {
 			{ 0x4368, "SERGEANT", 0 },
 			{ 0x4372, "PC", 2 },
@@ -166,27 +170,28 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 			{ 0x4381, "PC", 2 },
 			{ 0x4385, "SERGEANT", 0 }
 		};
+	
 		lineError = playSequence(remainsExitLines, ARRAYSIZE(remainsExitLines));
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
-
-
-
-		// ADD REMOVE ALL INVENTORY EXCEPT HARVWEAP.png --   OBJECT "INVENTORY" "HARVEST_BLADE" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "" "HARVWEAP_STEXT" "" "" "F" "T" "" "Harvest_blade"
-
-
+	
 		lineError = runtime.clearScreenToBlack();
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
+	
 		lineError = runtime.playDialogueFst(kDialogueC076FstPath);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
-
+	
 		// Activate disc 3 (prompt / archive mount).
 		lineError = runtime.showCdChangePrompt(3);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
-
+	
+		// Preserve the Whaley Herrill photo flag across the disc-3 reset.
+		const bool preserveWhaleyPhotoFlag =
+			sharedState.discussedWhaleyHerrillPhoto != 0;
+	
 		// NEW GAME-style reset on disc 3: reload HARVEST.SCR from the active disc
 		// and reset runtime (flags, regions/blockers, objects, etc.).
 		// Do NOT use reloadTownWorld() here — it preserves old runtime and leaves blockers off.
@@ -196,23 +201,47 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 			warning("Harvester: disc-3 handoff failed to hard-reload HARVEST.SCR");
 			return Common::kReadingFailed;
 		}
-
+	
+		// Restore the Whaley Herrill photo flag after the disc-3 reset.
+		sharedState.discussedWhaleyHerrillPhoto =
+			preserveWhaleyPhotoFlag ? 1 : 0;
+	
+		(void)script.setRuntimeFlagValue(
+			DialogueFlags::kShownPhotoOfWhaleyHerrill,
+			preserveWhaleyPhotoFlag);
+	
 		// Disc 3 starts clean except for the Harvest Blade.
 		{
 			static const char *const kHarvestBladeName = "HARVEST_BLADE";
 			static const char *const kInventoryOwner = "INVENTORY";
-
+	
+			// Hide all other inventory objects.
+			for (const RuntimeObject &object : script.getRuntimeObjects()) {
+				if (object.ownerName != kInventoryOwner)
+					continue;
+	
+				if (object.name == kHarvestBladeName)
+					continue;
+	
+				(void)script.setRuntimeObjectVisible(
+					kInventoryOwner, object.name.c_str(), false);
+			}
+	
+			// Restore the Harvest Blade.
 			(void)script.addRuntimeObjectToInventory(kHarvestBladeName);
-			(void)script.setRuntimeObjectVisible(kInventoryOwner, kHarvestBladeName, true);
+			(void)script.setRuntimeObjectVisible(
+				kInventoryOwner, kHarvestBladeName, true);
 		}
-
+	
 		// Native disc-3 prompt rebuilds into START (lodge reception path).
 		InteractionResult interaction;
 		interaction.requestRoomRestart = true;
 		interaction.roomRestartTargetName = "START";
 		runtime.queueDialogueInteractionIfNeeded(interaction);
+	
 		return Common::kNoError;
 	};
+
 	auto handleInviteBranch = [&]() -> Common::Error {
 		sharedState.dialogueStateD2f08 = true;
 		sharedState.dialogueStateD2f00 = true;
