@@ -114,6 +114,9 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 		state.day5ExitLinePlayed = true;
 		return playSergeantLine(0x4324, 1);
 	};
+	auto shownWhaleyHerrillPhoto = [&]() {
+		return runtime.startupScript().getFlagValue(DialogueFlags::kShownPhotoOfWhaleyHerrill);
+	};
 	auto handleRemainsBranch = [&]() -> Common::Error {
 		sharedState.dialogueStateD2f08 = true;
 		sharedState.dialogueStateD2f00 = true;
@@ -175,9 +178,9 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 
 
 		// ADD REMOVE ALL INVENTORY EXCEPT HARVWEAP.png --   OBJECT "INVENTORY" "HARVEST_BLADE" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "" "HARVWEAP_STEXT" "" "" "F" "T" "" "Harvest_blade"
-		
-		int SaveHarrill = sharedState.discussedWhaleyHerrillPhoto;
-
+		if (shownWhaleyHerrillPhoto()) {
+			int SaveHarrill = 1;
+		}
 		lineError = runtime.clearScreenToBlack();
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
@@ -210,6 +213,7 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 			
 			if (SaveHarrill == 1) {
 				(void)runtime.startupScript().setRuntimeFlagValue(DialogueFlags::kShownPhotoOfWhaleyHerrill, true);
+
 			}
 		}
 
