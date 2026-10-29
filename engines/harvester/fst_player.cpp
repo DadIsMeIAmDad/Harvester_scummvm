@@ -20,7 +20,8 @@
  */
 
 #include "harvester/fst_player.h"
-
+#include "video/avi_decoder.h"
+#include <string.h>
 #include "audio/audiostream.h"
 #include "audio/decoders/raw.h"
 #include "audio/mixer.h"
@@ -269,6 +270,122 @@ static bool pumpVideoEvents(HarvesterEngine &vm, bool &skipRequested, bool &defe
 	return !vm.shouldQuit();
 }
 
+static bool tryPlayReplacementVideo(HarvesterEngine &vm,
+                                   const Common::String &fstPath) {
+	Common::String normalized = normalizeHarvesterResourcePath(fstPath);
+	Common::String filename = Common::lastPathComponent(normalized, '/');
+
+	const char *dot = strrchr(filename.c_str(), '.');
+	if (dot)
+		filename = Common::String(filename.c_str(), dot);
+
+	Common::String aviPath =
+		Common::String::format("4:/GRAPHIC/FST/%s.AVI", filename.c_str());
+
+	Common::SeekableReadStream *stream =
+		vm.getResources()->openFile(aviPath);
+
+	if (!stream) {
+		aviPath = Common::String::format("GRAPHIC/FST/%s.AVI",
+			filename.c_str());
+		stream = vm.getResources()->openFile(aviPath);
+	}
+
+	if (!stream)
+		return false;
+
+	Video::AVIDecoder decoder;
+	if (!decoder.loadStream(stream)) {
+		warning("Harvester: unable to load replacement AVI '%s'",
+			aviPath.c_str());
+		return false;
+	}
+
+	if (!clearPendingVideoInput(vm)) {
+		decoder.close();
+		return true;
+	}
+
+	const bool resumeMusic = vm.isMusicPlaying();
+	if (resumeMusic)
+		vm.pauseMusic(true);
+
+	decoder.setSoundType(Audio::Mixer::kSFXSoundType);
+	decoder.start();
+
+	bool skipRequested = false;
+	bool deferredSkipRequested = false;
+
+	while (!decoder.endOfVideo() && !vm.shouldQuit() && !skipRequested) {
+		if (!pumpVideoEvents(vm, skipRequested,
+				deferredSkipRequested, true))
+			break;
+
+		if (decoder.needsUpdate()) {
+			const Graphics::Surface *frame = decoder.decodeNextFrame();
+
+			if (frame) {
+				const Graphics::PixelFormat screenFormat =
+					g_system->getScreenFormat();
+
+				Graphics::Surface *converted = nullptr;
+				const Graphics::Surface *displayFrame = frame;
+
+				if (frame->format != screenFormat) {
+					converted = frame->convertTo(
+						screenFormat, decoder.getPalette());
+
+					displayFrame = converted;
+				}
+
+				if (displayFrame) {
+					const int screenW = g_system->getWidth();
+					const int screenH = g_system->getHeight();
+
+					// Center the video on the current screen.
+					int x = (screenW - displayFrame->w) / 2;
+					int y = (screenH - displayFrame->h) / 2;
+
+					int srcX = MAX(0, -x);
+					int srcY = MAX(0, -y);
+					int dstX = MAX(0, x);
+					int dstY = MAX(0, y);
+
+					int copyW = MIN(displayFrame->w - srcX,
+						screenW - dstX);
+					int copyH = MIN(displayFrame->h - srcY,
+						screenH - dstY);
+
+					if (copyW > 0 && copyH > 0) {
+						g_system->copyRectToScreen(
+							displayFrame->getBasePtr(srcX, srcY),
+							displayFrame->pitch,
+							dstX, dstY, copyW, copyH);
+
+						g_system->updateScreen();
+					}
+				}
+
+				if (converted) {
+					converted->free();
+					delete converted;
+				}
+			}
+
+		}
+
+		decoder.delayMillis(10);
+	}
+
+	decoder.stop();
+	decoder.close();
+
+	if (resumeMusic)
+		vm.pauseMusic(false);
+
+	return true;
+}
+
 static bool waitForAudioSync(HarvesterEngine &vm, Audio::Mixer &mixer, Audio::SoundHandle audioHandle,
 		uint64 targetPlaybackBytes, uint32 audioByteRate, bool &skipRequested,
 		bool &deferredSkipRequested, bool allowSkipInput) {
@@ -375,7 +492,13 @@ static bool decodeFrame(const FstHeader &header, const byte *frameData, uint32 f
 FstPlayer::FstPlayer(HarvesterEngine &vm) : _vm(vm) {}
 
 bool FstPlayer::play(const Common::String &path) {
+
+
+	if (tryPlayReplacementVideo(path)) {
+		return !_vm.shouldQuit();
+	}
 	Common::ScopedPtr<Common::SeekableReadStream> stream(_vm.getResources()->openFile(path));
+	
 	if (!stream) {
 		warning("Harvester: unable to open FST '%s'", path.c_str());
 		return false;
