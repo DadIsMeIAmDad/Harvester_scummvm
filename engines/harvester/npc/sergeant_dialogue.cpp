@@ -176,10 +176,10 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 			return lineError;
 
 
-
+		int SaveHarrill = 0;
 		// ADD REMOVE ALL INVENTORY EXCEPT HARVWEAP.png --   OBJECT "INVENTORY" "HARVEST_BLADE" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "" "HARVWEAP_STEXT" "" "" "F" "T" "" "Harvest_blade"
 		if (shownWhaleyHerrillPhoto()) {
-			int SaveHarrill = 1;
+			SaveHarrill = 1;
 		}
 		lineError = runtime.clearScreenToBlack();
 		if (lineError.getCode() != Common::kNoError)
