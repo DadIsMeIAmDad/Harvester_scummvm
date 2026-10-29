@@ -24,6 +24,8 @@
 #include "harvester/harvester.h"
 #include "common/array.h"
 #include "harvester/npc/dialogue_runtime.h"
+#include "harvester/npc/dialogue_flags.h"
+
 
 namespace Harvester {
 
@@ -173,7 +175,8 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 
 
 		// ADD REMOVE ALL INVENTORY EXCEPT HARVWEAP.png --   OBJECT "INVENTORY" "HARVEST_BLADE" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "4:\GRAPHIC\INVENTRY\HARVWEAP.png" "" "HARVWEAP_STEXT" "" "" "F" "T" "" "Harvest_blade"
-
+		
+		int SaveHarrill = sharedState.discussedWhaleyHerrillPhoto;
 
 		lineError = runtime.clearScreenToBlack();
 		if (lineError.getCode() != Common::kNoError)
@@ -204,6 +207,10 @@ Common::Error SergeantDialogueHandler::handleDialogue(DialogueRuntime &runtime,
 
 			(void)script.addRuntimeObjectToInventory(kHarvestBladeName);
 			(void)script.setRuntimeObjectVisible(kInventoryOwner, kHarvestBladeName, true);
+			
+			if (SaveHarrill == 1) {
+				(void)runtime.startupScript().setRuntimeFlagValue(DialogueFlags::kShownPhotoOfWhaleyHerrill, true);
+			}
 		}
 
 		// Native disc-3 prompt rebuilds into START (lodge reception path).
