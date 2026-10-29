@@ -494,7 +494,7 @@ FstPlayer::FstPlayer(HarvesterEngine &vm) : _vm(vm) {}
 bool FstPlayer::play(const Common::String &path) {
 
 
-	if (tryPlayReplacementVideo(path)) {
+	if (tryPlayReplacementVideo(_vm, path)) {
 		return !_vm.shouldQuit();
 	}
 	Common::ScopedPtr<Common::SeekableReadStream> stream(_vm.getResources()->openFile(path));
