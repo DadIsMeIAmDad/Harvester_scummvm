@@ -322,7 +322,9 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 			break;
 
 		if (decoder.needsUpdate()) {
+			warning("AVI: BEFORE decode");
 			const Graphics::Surface *frame = decoder.decodeNextFrame();
+			warning("AVI: AFTER decode");
 			if (!frame) {
 				debug("Harvester AVI: decodeNextFrame returned nullptr");
 				continue;
@@ -337,7 +339,9 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 
 			if (frame->format != screenFormat) {
 				// IMPORTANT: do NOT pass a palette for true-color frames
+				warning("AVI: BEFORE convert");
 				converted = frame->convertTo(screenFormat);
+				warning("AVI: AFTER convert");
 				if (!converted) {
 					warning("Harvester: convertTo failed on frame %d", decoder.getCurFrame());
 					break;
@@ -358,11 +362,12 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 			int copyH = MIN(displayFrame->h - srcY, screenH - dstY);
 
 			if (copyW > 0 && copyH > 0) {
+				warning("AVI: BEFORE copy");
 				g_system->copyRectToScreen(
 					displayFrame->getBasePtr(srcX, srcY),
 					displayFrame->pitch,
 					dstX, dstY, copyW, copyH);
-				g_system->updateScreen();
+				debug("AVI: AFTER copy");
 			}
 
 			if (converted) {
@@ -675,8 +680,9 @@ bool FstPlayer::play(const Common::String &path) {
 
 		g_system->getPaletteManager()->setPalette(palette, 0, 256);
 		g_system->copyRectToScreen(pixels.data(), header.width, 0, 0, header.width, header.height);
+		warning("AVI: BEFORE update");
 		g_system->updateScreen();
-
+		warning("AVI: AFTER update");
 		if (audioStarted && audioBytesPerFrame != 0) {
 			nextAudioSyncBytes += audioBytesPerFrame;
 		} else {
