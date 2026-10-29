@@ -325,6 +325,14 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 			const Graphics::Surface *frame = decoder.decodeNextFrame();
 
 			if (frame) {
+				debug("Harvester AVI: frame %dx%d, %d bytes per pixel, pitch %d",
+					frame->w, frame->h, frame->format.bytesPerPixel,
+					frame->pitch);
+			} else {
+				debug("Harvester AVI: decodeNextFrame returned nullptr");
+			}
+
+			if (frame) {
 				const Graphics::PixelFormat screenFormat =
 					g_system->getScreenFormat();
 
