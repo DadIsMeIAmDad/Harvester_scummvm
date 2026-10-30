@@ -1536,17 +1536,18 @@ private:
 				if (DialogueFlowAccess::handleSystemEvent(_flow, event, result))
 					return result;
 
+
+
+
 				if (event.type == Common::EVENT_KEYDOWN) {
 					if (event.kbd.keycode == Common::KEYCODE_ESCAPE) {
-						if (responseLineIndex >= 0) {
-							debugC(1, kDebugDialogue, "Harvester: response menu line 0x%x (%d) cancelled",
-								responseLineIndex, responseLineIndex + 1);
-						} else {
-							debugC(1, kDebugDialogue, "Harvester: response menu text cancelled");
-						}
-						return Common::kNoError;
+						// Ignore Escape: player must select a response.
+						continue;
 					}
+
 					if (event.kbd.ascii >= '1' && event.kbd.ascii <= '9') {
+
+
 						const int menuIndex = event.kbd.ascii - '0';
 						if (menuIndex >= 1 && menuIndex <= (int)options.size()) {
 							selectedIndex = menuIndex;
