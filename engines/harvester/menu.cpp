@@ -1061,13 +1061,11 @@ MenuSystem::MenuSystem(HarvesterEngine &engine, Common::Point &mousePos,
 }
 
 Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
-    warning("HARVESTER: ENTER runMainMenuStub");
 	const Art *art = _engine.getArt();
 	if (!art) {
 		warning("HARVESTER: Art is invalid");
 		return Common::kReadingFailed;
 		}
-	warning("HARVESTER: Art is valid");
 	ScopedSceneTimerPause pausedTimers(_engine);
 
 	Common::Array<Common::String> mainMenuItems;
@@ -1076,7 +1074,6 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 		_engine.canLoadGameStateCurrently(),
 		mainMenuItems);
 	if (flow.takePendingGameOverReturn()) {
-		warning("HARVESTER: BEFORE pending game-over check");
 		Common::Error gameOverError = showGameOverBackdrop(flow);
 		if (gameOverError.getCode() != Common::kNoError) {
 			return gameOverError;
@@ -1084,17 +1081,14 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	} else {
 		clearMainMenuBackdrop();
 	}
-	warning("HARVESTER: AFTER pending game-over check");
 	Graphics::FrameLimiter limiter(g_system, 60);
 	int selectedItem = mainMenuItems.empty() ? -1 : 0;
 	Common::String statusMessage;
 	bool needsRedraw = true;
 
 	auto captureMenuBackdrop = [&](IndexedBitmap &backdrop) -> bool {
-		warning("HARVESTER: ENTER captureMenuBackdrop!");
 		Graphics::Screen *screen = _engine.getScreen();
 		if (!screen) {
-			warning("if !screen captureMenuBackdrop!");
 			return false;
 		}
 
@@ -2149,14 +2143,11 @@ Common::Error MenuSystem::runConfirmPrompt(
 	HarvesterCftFont choiceFont(*choiceFontResource);
 	if (!promptFont.isValid() || !choiceFont.isValid())
 		return Common::kReadingFailed;
-    warning("HARVESTER CONFIRM: FONT FOR PROMT LOADED");
 	const MenuTextConfig &config = flow._menuTextConfig;
-	warning("HARVESTER CONFIRM: BEFORE getTextboxBitmap");
 	const Graphics::Surface *textboxSurface = art->getTextboxSurface(3);
 	if (!textboxSurface || !textboxSurface->getPixels())
 		return Common::kReadingFailed;
 
-	warning("HARVESTER CONFIRM: TEXBOX SURFACE FOR PROMPT LOADED");
 	confirmed = false;
 	flow.resetCursorAnimationSequence();
 	bool needsRedraw = true;
@@ -2170,7 +2161,6 @@ Common::Error MenuSystem::runConfirmPrompt(
 				: static_cast<const Graphics::Font &>(choiceFont);
 			const Graphics::Font &noFont = hoverNo ? static_cast<const Graphics::Font &>(promptFont)
 				: static_cast<const Graphics::Font &>(choiceFont);
-			warning("HARVESTER CONFIRM: BEFORE renderConfirmPromptScreen");
 			renderConfirmPromptScreen(
 				_engine,
 				backdrop,
@@ -2185,7 +2175,6 @@ Common::Error MenuSystem::runConfirmPrompt(
 				config);
 			needsRedraw = false;
 		}
-		warning("HARVESTER CONFIRM: AFTER renderConfirmPromptScreen");
 
 		Common::Event event;
 		while (g_system->getEventManager()->pollEvent(event)) {
@@ -2225,8 +2214,8 @@ Common::Error MenuSystem::runConfirmPrompt(
 		if (EntityManager *entityManager = _engine.getRuntimeEntities())
 			(void)entityManager->syncCursorEntityPosition(_mousePos);
 		
-		if (flow.tickRuntimeEntities())
-			needsRedraw = true;
+		flow.tickRuntimeEntities();
+		needsRedraw = true;
 
 		limiter.delayBeforeSwap();
 		limiter.startFrame();
@@ -2394,20 +2383,17 @@ Common::Error MenuSystem::runOptionsMenu(
 		const byte *palette,
 		float paletteBrightness,
 		Flow &flow) {
-	warning("HARVESTER OPTIONS: ENTER runOptionsMenu");
 	const Art *art = _engine.getArt();
 	Script *script = _engine.getScript();
 	ResourceManager *resources = _engine.getResources();
 	const CftFontResource *selectedFontResource = findStartupFontByName(_engine, "HARVFONT");
 	const CftFontResource *unselectedFontResource = findStartupFontByName(_engine, "HARVFNT2");
 	if (!art || !script || !resources || !selectedFontResource || !unselectedFontResource) {
-		warning("HARVESTER OPTIONS: ENTER runOptionsMenu 1");
 		return Common::kReadingFailed;
 	}
 	HarvesterCftFont selectedFont(*selectedFontResource);
 	HarvesterCftFont unselectedFont(*unselectedFontResource);
 	if (!selectedFont.isValid() || !unselectedFont.isValid()) {
-		warning("HARVESTER OPTIONS: ENTER runOptionsMenu 2");
 		return Common::kReadingFailed;
 	}
 	const MenuTextConfig &config = flow._menuTextConfig;
@@ -2418,9 +2404,7 @@ Common::Error MenuSystem::runOptionsMenu(
 	Graphics::Surface *indicatorSurface = nullptr;
 
 	if (!loadPngAsMenuSurface(*resources, kOptionsVolumeBitmapPath, volumeBarSurface)) {
-		warning("HARVESTER: Options volume PNG failed; trying original VOLUME.BM");
 		if (!loadBitmapResource(*resources, "1:/GRAPHIC/OTHER/VOLUME.BM", volumeBar)) {
-			warning("HARVESTER: Options VOLUME.BM failed to load");
 			return Common::kReadingFailed;
 		}
 	} else {
@@ -2881,15 +2865,8 @@ void MenuSystem::renderMainMenuStub(const Common::Array<Common::String> &menuIte
 
 void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &statusMessage,
 		bool drawCursor, const Common::Array<Common::String> &menuItems) const {
-	warning("HARVESTER: USING renderMainMenuScreen");
 	Graphics::Screen *screen = _engine.getScreen();
-	warning(
-		"HARVESTER MENU SCREEN: %dx%d bpp=%u pitch=%d",
-		screen->w,
-		screen->h,
-		screen->format.bytesPerPixel,
-		screen->pitch
-	);
+
 	const Art *art = _engine.getArt();
 	const Graphics::Font *titleFont = FontMan.getFontByUsage(Graphics::FontManager::kBigGUIFont);
 	const Graphics::Font *bodyFont = FontMan.getFontByUsage(Graphics::FontManager::kGUIFont);
@@ -2905,13 +2882,6 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 	const Graphics::Surface *inventorySurface = art->getInventorySurface();
 
 	if (inventorySurface) {
-		warning(
-			"HARVESTER INVENTORY PNG: %dx%d bpp=%u pitch=%d",
-			inventorySurface->w,
-			inventorySurface->h,
-			inventorySurface->format.bytesPerPixel,
-			inventorySurface->pitch
-		);
 		screen->copyRectToSurface(
 			inventorySurface->getPixels(),
 			inventorySurface->pitch,
@@ -2921,7 +2891,6 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 			inventorySurface->h
 		);
 	} else {
-		warning("ATTEMPTIN INVENTORY BLIT");
 		blitBitmap(*screen, art->getInventoryBitmap(), kInventoryX, kInventoryY);
 	}
 
@@ -2968,14 +2937,12 @@ void MenuSystem::renderMainMenuScreen(int selectedItem, const Common::String &st
 void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const byte *palette,
 		float paletteBrightness, const Common::Array<Common::String> &menuItems,
 		int selectedItem) const {
-	warning("HARVESTER: USING renderBackdropMenuScreen");
 	Graphics::Screen *screen = _engine.getScreen();
     
 	if (screen && screen->format.bytesPerPixel != 1 && !_mainMenuBackdropSurface) {
 		const_cast<MenuSystem *>(this)->_mainMenuBackdropSurface = new Graphics::Surface();
 		const_cast<MenuSystem *>(this)->_mainMenuBackdropSurface->copyFrom(*screen);
 
-		warning("HARVESTER: CAPTURED MENU SCREEN %dx%d bpp=%u",
 			_mainMenuBackdropSurface->w,
 			_mainMenuBackdropSurface->h,
 			_mainMenuBackdropSurface->format.bytesPerPixel);
@@ -2993,7 +2960,6 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 	}
 
 	applyMenuPalette(*screen, _engine, palette, paletteBrightness);
-	warning("HARVESTER: MENU RESTORE surface=%p", (void *)_mainMenuBackdropSurface);
 	//blitBitmap(*screen, backdrop, 0, 0);
 	if (_mainMenuBackdropSurface) {
 		screen->copyRectToSurface(
