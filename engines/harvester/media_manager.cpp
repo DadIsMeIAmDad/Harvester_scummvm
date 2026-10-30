@@ -462,12 +462,56 @@ bool MediaManager::loadSound(int slot, const Common::String &path) {
 	_loadedSoundPaths[slot].clear();
 	_loadedSoundData[slot].clear();
 
-	if (!_resources.loadFile(path, _loadedSoundData[slot])) {
-		warning("Harvester: unable to load startup sound '%s' into slot %d", path.c_str(), slot);
+	// Remove the original drive prefix, if present.
+	Common::String relativePath = path;
+
+	if (relativePath.size() >= 3 && relativePath[1] == ':' &&
+			(relativePath[2] == '\\' || relativePath[2] == '/'))
+		relativePath = relativePath.substr(3);
+
+	// Always check drive 4 first.
+	Common::String replacementPath =
+		Common::String::format("4:\\%s", relativePath.c_str());
+
+	Common::String loadedPath = replacementPath;
+
+	bool loaded = _resources.loadFile(loadedPath, _loadedSoundData[slot]);
+
+	// If not found, try the alternate CMP/WAV extension.
+	if (!loaded && relativePath.size() >= 4) {
+		Common::String extension = relativePath.substr(relativePath.size() - 4);
+
+		if (extension.equalsIgnoreCase(".cmp") ||
+				extension.equalsIgnoreCase(".wav")) {
+
+			Common::String alternatePath =
+				replacementPath.substr(0, replacementPath.size() - 4);
+
+			if (extension.equalsIgnoreCase(".cmp"))
+				alternatePath += ".wav";
+			else
+				alternatePath += ".cmp";
+
+			_loadedSoundData[slot].clear();
+			loadedPath = alternatePath;
+			loaded = _resources.loadFile(loadedPath, _loadedSoundData[slot]);
+		}
+	}
+
+	// Fall back to the original game file.
+	if (!loaded) {
+		_loadedSoundData[slot].clear();
+		loadedPath = path;
+		loaded = _resources.loadFile(loadedPath, _loadedSoundData[slot]);
+	}
+
+	if (!loaded) {
+		warning("Harvester: unable to load startup sound '%s' into slot %d",
+			path.c_str(), slot);
 		return false;
 	}
 
-	_loadedSoundPaths[slot] = _resources.normalizeResourcePath(path);
+	_loadedSoundPaths[slot] = _resources.normalizeResourcePath(loadedPath);
 	return true;
 }
 
