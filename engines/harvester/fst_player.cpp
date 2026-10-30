@@ -19,9 +19,8 @@
  *
  */
 
-#include "video/mkv_decoder.h"
 #include "harvester/fst_player.h"
-
+#include "video/avi_decoder.h"
 #include <string.h>
 #include "audio/audiostream.h"
 #include "audio/decoders/raw.h"
@@ -271,9 +270,8 @@ static bool pumpVideoEvents(HarvesterEngine &vm, bool &skipRequested, bool &defe
 	return !vm.shouldQuit();
 }
 
-
-
-static bool tryPlayReplacementVideo(HarvesterEngine &vm, const Common::String &fstPath) {
+static bool tryPlayReplacementVideo(HarvesterEngine &vm,
+                                   const Common::String &fstPath) {
 	Common::String normalized = normalizeHarvesterResourcePath(fstPath);
 	Common::String filename = Common::lastPathComponent(normalized, '/');
 
@@ -281,21 +279,25 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm, const Common::String &f
 	if (dot)
 		filename = Common::String(filename.c_str(), dot);
 
-	// Look for .mkv first
-	Common::String mkvPath = Common::String::format("4:/GRAPHIC/FST/%s.mkv", filename.c_str());
-	Common::SeekableReadStream *stream = vm.getResources()->openFile(mkvPath);
+	Common::String aviPath =
+		Common::String::format("4:/GRAPHIC/FST/%s.AVI", filename.c_str());
+
+	Common::SeekableReadStream *stream =
+		vm.getResources()->openFile(aviPath);
 
 	if (!stream) {
-		mkvPath = Common::String::format("GRAPHIC/FST/%s.mkv", filename.c_str());
-		stream = vm.getResources()->openFile(mkvPath);
+		aviPath = Common::String::format("GRAPHIC/FST/%s.AVI",
+			filename.c_str());
+		stream = vm.getResources()->openFile(aviPath);
 	}
 
 	if (!stream)
-		return false;   // no replacement ? fall back to original FST
+		return false;
 
-	Video::MKVDecoder decoder;
+	Video::AVIDecoder decoder;
 	if (!decoder.loadStream(stream)) {
-		warning("Harvester: unable to load replacement MKV '%s'", mkvPath.c_str());
+		warning("Harvester: unable to load replacement AVI '%s'",
+			aviPath.c_str());
 		return false;
 	}
 
@@ -315,22 +317,29 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm, const Common::String &f
 	bool deferredSkipRequested = false;
 
 	while (!decoder.endOfVideo() && !vm.shouldQuit() && !skipRequested) {
-		if (!pumpVideoEvents(vm, skipRequested, deferredSkipRequested, true))
+		if (!pumpVideoEvents(vm, skipRequested,
+				deferredSkipRequested, true))
 			break;
 
 		if (decoder.needsUpdate()) {
 			const Graphics::Surface *frame = decoder.decodeNextFrame();
-			if (!frame)
+			if (!frame) {
+				debug("Harvester AVI: decodeNextFrame returned nullptr");
 				continue;
+			}
+
+			debug("Harvester AVI: frame %dx%d, %d bytes per pixel, pitch %d",
+				frame->w, frame->h, frame->format.bytesPerPixel, frame->pitch);
 
 			const Graphics::PixelFormat screenFormat = g_system->getScreenFormat();
 			Graphics::Surface *converted = nullptr;
 			const Graphics::Surface *displayFrame = frame;
 
 			if (frame->format != screenFormat) {
+				// IMPORTANT: do NOT pass a palette for true-color frames
 				converted = frame->convertTo(screenFormat);
 				if (!converted) {
-					warning("Harvester: convertTo failed on MKV frame %d", decoder.getCurFrame());
+					warning("Harvester: convertTo failed on frame %d", decoder.getCurFrame());
 					break;
 				}
 				displayFrame = converted;
@@ -360,6 +369,8 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm, const Common::String &f
 				converted->free();
 				delete converted;
 			}
+		
+
 		}
 
 		decoder.delayMillis(10);
