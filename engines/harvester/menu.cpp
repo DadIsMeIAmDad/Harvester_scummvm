@@ -1397,7 +1397,7 @@ flow.resetCursorAnimationSequence();
 (void)_engine.playMusic(kGameOverMusicPath);
 
 bool needsRedraw = true;
-bool menuVisible = false;
+
 Graphics::FrameLimiter limiter(g_system, 60);
 
 while (!_engine.shouldQuit()) {
@@ -1430,23 +1430,10 @@ while (!_engine.shouldQuit()) {
 
 	Common::Event event;
 	while (g_system->getEventManager()->pollEvent(event)) {
-
-		// Escape always toggles the Game Over menu.
-		if (event.type == Common::EVENT_KEYDOWN &&
-				event.kbd.keycode == Common::KEYCODE_ESCAPE) {
-			menuVisible = !menuVisible;
-			needsRedraw = true;
-			continue;
-		}
-	
-		// Ignore all other input while the menu is hidden.
-		if (!menuVisible)
-			continue;
-	
 		Common::Error result = Common::kNoError;
-		if (flow.handleSystemEvent(event, result))
+		if (flow.handleSystemEvent(event, result)) {
 			return result;
-	
+		}
 		switch (event.type) {
 		case Common::EVENT_MOUSEMOVE:
 			needsRedraw = true;
@@ -1454,8 +1441,9 @@ while (!_engine.shouldQuit()) {
 
 		case Common::EVENT_LBUTTONDOWN:
 		case Common::EVENT_RBUTTONDOWN:
+		case Common::EVENT_KEYDOWN:
 			return Common::kNoError;
-	
+
 		default:
 			break;
 		}
