@@ -328,9 +328,6 @@ const Graphics::Surface *CinepakDecoder::decodeFrame(Common::SeekableReadStream 
 	_curFrame.width = stream.readUint16BE();
 	_curFrame.height = stream.readUint16BE();
 	_curFrame.stripCount = stream.readUint16BE();
-	
-	warning("CINEPAK: frame %d x %d, strips %d",
-		_curFrame.width, _curFrame.height, _curFrame.stripCount);
 
 	if (_curFrame.stripCount > _allocatedStripCount) {
 		delete[] _curFrame.strips;
