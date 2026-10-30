@@ -1295,8 +1295,15 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			}
 			case Common::EVENT_KEYDOWN:
 				if (event.kbd.keycode == Common::KEYCODE_ESCAPE) {
-					warning("SKIP ESC ON GAME OVER");
-					//return Common::kNoError;
+					if (_hasMainMenuBackdrop) {
+						// Restart pure Game Over screen (no menu overlay)
+						Common::Error gameOverError = showGameOverBackdrop(flow);
+						if (gameOverError.getCode() != Common::kNoError) {
+							return gameOverError;
+						}
+						needsRedraw = true;
+						break;
+					}
 				}
 				if (mainMenuItems.empty()) {
 					break;
