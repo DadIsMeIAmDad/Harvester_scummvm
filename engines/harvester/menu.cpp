@@ -1430,20 +1430,27 @@ while (!_engine.shouldQuit()) {
 
 	Common::Event event;
 	while (g_system->getEventManager()->pollEvent(event)) {
+
+		// Escape hides the visible Game Over menu.
+		if (event.type == Common::EVENT_KEYDOWN &&
+				event.kbd.keycode == Common::KEYCODE_ESCAPE) {
+			return Common::kNoError;
+		}
+	
 		Common::Error result = Common::kNoError;
 		if (flow.handleSystemEvent(event, result)) {
 			return result;
 		}
+	
 		switch (event.type) {
 		case Common::EVENT_MOUSEMOVE:
 			needsRedraw = true;
 			break;
-
+	
 		case Common::EVENT_LBUTTONDOWN:
 		case Common::EVENT_RBUTTONDOWN:
-		case Common::EVENT_KEYDOWN:
 			return Common::kNoError;
-
+	
 		default:
 			break;
 		}
