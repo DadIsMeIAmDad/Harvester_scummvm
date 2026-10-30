@@ -86,6 +86,7 @@ public:
 private:
 	CinepakFrame _curFrame;
 	int32 _y;
+	uint16 _allocatedStripCount;
 	int _bitsPerPixel;
 	Graphics::PixelFormat _pixelFormat;
 	byte *_clipTable, *_clipTableBuf;

@@ -280,6 +280,7 @@ void decodeVectorsTmpl(CinepakFrame &frame, const byte *clipTable, Common::Seeka
 } // End of anonymous namespace
 
 CinepakDecoder::CinepakDecoder(int bitsPerPixel) : Codec(), _bitsPerPixel(bitsPerPixel), _ditherPalette(0) {
+	_allocatedStripCount = 0;
 	_curFrame.surface = 0;
 	_curFrame.strips = 0;
 	_y = 0;
@@ -328,9 +329,13 @@ const Graphics::Surface *CinepakDecoder::decodeFrame(Common::SeekableReadStream 
 	_curFrame.height = stream.readUint16BE();
 	_curFrame.stripCount = stream.readUint16BE();
 
-	if (!_curFrame.strips) {
+	if (_curFrame.stripCount > _allocatedStripCount) {
+		delete[] _curFrame.strips;
+
 		_curFrame.strips = new CinepakStrip[_curFrame.stripCount];
-		for (uint16 i = 0; i < _curFrame.stripCount; i++) {
+		_allocatedStripCount = _curFrame.stripCount;
+
+		for (uint16 i = 0; i < _allocatedStripCount; i++) {
 			initializeCodebook(i, 1);
 			initializeCodebook(i, 4);
 		}
