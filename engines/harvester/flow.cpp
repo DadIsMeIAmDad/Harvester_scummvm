@@ -3048,10 +3048,13 @@ void Flow::resetCursorAnimationSequence() {
 }
 
 bool Flow::tickRuntimeEntities() {
-	EntityManager *entityManager = _engine.getRuntimeEntities();
-	if (!entityManager)
-		return false;
-	return entityManager->tickSceneEntities() || entityManager->syncCursorEntityPosition(_mousePos);
+    EntityManager *entityManager = _engine.getRuntimeEntities();
+    if (!entityManager)
+        return false;
+
+    const bool sceneChanged = entityManager->tickSceneEntities();
+    const bool cursorChanged = entityManager->syncCursorEntityPosition(_mousePos);
+    return sceneChanged || cursorChanged;
 }
 
 bool Flow::handleSystemEvent(const Common::Event &event, Common::Error &result) {
