@@ -2067,7 +2067,7 @@ Common::Error MenuSystem::runSaveGameMenu(const byte *palette, float paletteBrig
 
 		if (EntityManager *entityManager = _engine.getRuntimeEntities())
 			(void)entityManager->syncCursorEntityPosition(_mousePos);
-
+		needsRedraw = true;
 		limiter.delayBeforeSwap();
 		limiter.startFrame();
 	}
