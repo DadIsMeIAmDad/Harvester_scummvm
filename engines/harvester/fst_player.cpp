@@ -21,6 +21,7 @@
 
 #include "harvester/fst_player.h"
 #include "video/avi_decoder.h"
+#include "video/mkv_decoder.h"
 #include <string.h>
 #include "audio/audiostream.h"
 #include "audio/decoders/raw.h"
@@ -270,8 +271,9 @@ static bool pumpVideoEvents(HarvesterEngine &vm, bool &skipRequested, bool &defe
 	return !vm.shouldQuit();
 }
 
-static bool tryPlayReplacementVideo(HarvesterEngine &vm,
-                                   const Common::String &fstPath) {
+
+
+static bool tryPlayReplacementVideo(HarvesterEngine &vm, const Common::String &fstPath) {
 	Common::String normalized = normalizeHarvesterResourcePath(fstPath);
 	Common::String filename = Common::lastPathComponent(normalized, '/');
 
@@ -279,25 +281,21 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 	if (dot)
 		filename = Common::String(filename.c_str(), dot);
 
-	Common::String aviPath =
-		Common::String::format("4:/GRAPHIC/FST/%s.AVI", filename.c_str());
-
-	Common::SeekableReadStream *stream =
-		vm.getResources()->openFile(aviPath);
+	// Look for .mkv first
+	Common::String mkvPath = Common::String::format("4:/GRAPHIC/FST/%s.mkv", filename.c_str());
+	Common::SeekableReadStream *stream = vm.getResources()->openFile(mkvPath);
 
 	if (!stream) {
-		aviPath = Common::String::format("GRAPHIC/FST/%s.AVI",
-			filename.c_str());
-		stream = vm.getResources()->openFile(aviPath);
+		mkvPath = Common::String::format("GRAPHIC/FST/%s.mkv", filename.c_str());
+		stream = vm.getResources()->openFile(mkvPath);
 	}
 
 	if (!stream)
-		return false;
+		return false;   // no replacement ? fall back to original FST
 
-	Video::AVIDecoder decoder;
+	Video::MKVDecoder decoder;
 	if (!decoder.loadStream(stream)) {
-		warning("Harvester: unable to load replacement AVI '%s'",
-			aviPath.c_str());
+		warning("Harvester: unable to load replacement MKV '%s'", mkvPath.c_str());
 		return false;
 	}
 
@@ -317,33 +315,22 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 	bool deferredSkipRequested = false;
 
 	while (!decoder.endOfVideo() && !vm.shouldQuit() && !skipRequested) {
-		if (!pumpVideoEvents(vm, skipRequested,
-				deferredSkipRequested, true))
+		if (!pumpVideoEvents(vm, skipRequested, deferredSkipRequested, true))
 			break;
 
 		if (decoder.needsUpdate()) {
-			warning("AVI: BEFORE decode");
 			const Graphics::Surface *frame = decoder.decodeNextFrame();
-			warning("AVI: AFTER decode");
-			if (!frame) {
-				debug("Harvester AVI: decodeNextFrame returned nullptr");
+			if (!frame)
 				continue;
-			}
-
-			debug("Harvester AVI: frame %dx%d, %d bytes per pixel, pitch %d",
-				frame->w, frame->h, frame->format.bytesPerPixel, frame->pitch);
 
 			const Graphics::PixelFormat screenFormat = g_system->getScreenFormat();
 			Graphics::Surface *converted = nullptr;
 			const Graphics::Surface *displayFrame = frame;
 
 			if (frame->format != screenFormat) {
-				// IMPORTANT: do NOT pass a palette for true-color frames
-				warning("AVI: BEFORE convert");
 				converted = frame->convertTo(screenFormat);
-				warning("AVI: AFTER convert");
 				if (!converted) {
-					warning("Harvester: convertTo failed on frame %d", decoder.getCurFrame());
+					warning("Harvester: convertTo failed on MKV frame %d", decoder.getCurFrame());
 					break;
 				}
 				displayFrame = converted;
@@ -362,20 +349,17 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 			int copyH = MIN(displayFrame->h - srcY, screenH - dstY);
 
 			if (copyW > 0 && copyH > 0) {
-				warning("AVI: BEFORE copy");
 				g_system->copyRectToScreen(
 					displayFrame->getBasePtr(srcX, srcY),
 					displayFrame->pitch,
 					dstX, dstY, copyW, copyH);
-				debug("AVI: AFTER copy");
+				g_system->updateScreen();
 			}
 
 			if (converted) {
 				converted->free();
 				delete converted;
 			}
-		
-
 		}
 
 		decoder.delayMillis(10);
@@ -680,9 +664,8 @@ bool FstPlayer::play(const Common::String &path) {
 
 		g_system->getPaletteManager()->setPalette(palette, 0, 256);
 		g_system->copyRectToScreen(pixels.data(), header.width, 0, 0, header.width, header.height);
-		warning("AVI: BEFORE update");
 		g_system->updateScreen();
-		warning("AVI: AFTER update");
+
 		if (audioStarted && audioBytesPerFrame != 0) {
 			nextAudioSyncBytes += audioBytesPerFrame;
 		} else {
