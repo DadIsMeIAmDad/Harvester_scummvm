@@ -4801,15 +4801,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					break;
 				}
 
-				if (event.kbd.keycode == Common::KEYCODE_RETURN ||
-					event.kbd.keycode == Common::KEYCODE_KP_ENTER) {
-					if (!stowCarriedRoomItemToInventory())
-						return Common::kReadingFailed;
-					Common::Error exitError = runRoomExitCommands();
-					if (exitError.getCode() != Common::kNoError)
-						return exitError;
-					return Common::kNoError;
-				}
+
 				break;
 			case Common::EVENT_KEYUP:
 				if (event.kbd.keycode == Common::KEYCODE_LCTRL ||
