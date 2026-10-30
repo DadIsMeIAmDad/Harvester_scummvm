@@ -207,8 +207,45 @@ static Audio::SeekableAudioStream *decodeStartupAudioStream(Common::SeekableRead
 }
 
 static Audio::SeekableAudioStream *openStartupAudioStream(ResourceManager &resources,
-		const Common::String &path, FcmpWarmupMode warmupMode) {
-	return decodeStartupAudioStream(resources.openFile(path), warmupMode);
+        const Common::String &path, FcmpWarmupMode warmupMode) {
+
+    // Remove the original drive prefix, if present.
+    Common::String relativePath = path;
+
+    if (relativePath.size() >= 3 && relativePath[1] == ':' &&
+            (relativePath[2] == '\\' || relativePath[2] == '/'))
+        relativePath = relativePath.substr(3);
+
+    // Always check drive 4 first, using the original extension.
+    Common::String replacementPath =
+        Common::String::format("4:\\%s", relativePath.c_str());
+
+    Common::SeekableReadStream *stream = resources.openFile(replacementPath);
+
+    // If not found, try the alternate CMP/WAV extension.
+    if (!stream && relativePath.size() >= 4) {
+        Common::String extension = relativePath.substr(relativePath.size() - 4);
+
+        if (extension.equalsIgnoreCase(".cmp") ||
+                extension.equalsIgnoreCase(".wav")) {
+
+            Common::String alternatePath =
+                replacementPath.substr(0, replacementPath.size() - 4);
+
+            if (extension.equalsIgnoreCase(".cmp"))
+                alternatePath += ".wav";
+            else
+                alternatePath += ".cmp";
+
+            stream = resources.openFile(alternatePath);
+        }
+    }
+
+    // Nothing on drive 4? Load the original game file.
+    if (!stream)
+        stream = resources.openFile(path);
+
+    return decodeStartupAudioStream(stream, warmupMode);
 }
 
 } // End of anonymous namespace
