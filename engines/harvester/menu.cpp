@@ -1295,7 +1295,8 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			}
 			case Common::EVENT_KEYDOWN:
 				if (event.kbd.keycode == Common::KEYCODE_ESCAPE) {
-					return Common::kNoError;
+					warning("SKIP ESC ON GAME OVER");
+					//return Common::kNoError;
 				}
 				if (mainMenuItems.empty()) {
 					break;
