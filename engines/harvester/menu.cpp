@@ -1402,7 +1402,14 @@ if (!loadedPng) {
 
 _hasMainMenuBackdrop = true;
 flow.resetCursorAnimationSequence();
-(void)_engine.playMusic(kGameOverMusicPath);
+
+
+
+// Only start the music if it isn't already the Game Over track
+if (!_engine.isMusicPlaying() ||
+    !_engine.getMusicPath().equalsIgnoreCase(kGameOverMusicPath)) {
+	(void)_engine.playMusic(kGameOverMusicPath);
+}
 
 bool needsRedraw = true;
 
