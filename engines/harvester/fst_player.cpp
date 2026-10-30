@@ -19,9 +19,9 @@
  *
  */
 
-#include "harvester/fst_player.h"
-#include "video/avi_decoder.h"
 #include "video/mkv_decoder.h"
+#include "harvester/fst_player.h"
+
 #include <string.h>
 #include "audio/audiostream.h"
 #include "audio/decoders/raw.h"
