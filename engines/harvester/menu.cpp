@@ -1949,7 +1949,7 @@ Common::Error MenuSystem::runSaveGameMenu(const byte *palette, float paletteBrig
 
 			if (EntityManager *entityManager = _engine.getRuntimeEntities())
 				(void)entityManager->syncCursorEntityPosition(_mousePos);
-
+			needsRedraw = true;
 			entryLimiter.delayBeforeSwap();
 			entryLimiter.startFrame();
 		}
@@ -2224,7 +2224,7 @@ Common::Error MenuSystem::runConfirmPrompt(
 
 		if (EntityManager *entityManager = _engine.getRuntimeEntities())
 			(void)entityManager->syncCursorEntityPosition(_mousePos);
-
+		
 		if (flow.tickRuntimeEntities())
 			needsRedraw = true;
 
