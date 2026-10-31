@@ -622,8 +622,8 @@ static void resetPlayerMoveTargetProgress(RoomPlayerState &playerState) {
 
 static int resolveMoveTargetHorizontalDirection(const RoomSetupState &state,
 		const RoomPlayerState &playerState) {
-	const float slack = Player::computeDepthScale(state, playerState.z) *
-		kRoomPlayerHorizontalTargetSlackBase;
+	const float slack = MAX(1.0f,
+		Player::computeDepthScale(state, playerState.z) * kRoomPlayerHorizontalTargetSlackBase);
 	const float centerX = (float)playerState.centerX;
 	if (centerX < (float)playerState.targetX - slack)
 		return 1;
