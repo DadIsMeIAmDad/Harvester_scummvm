@@ -97,8 +97,29 @@ static const char *const kAmmoIconPaths[] = {
 
 } // End of anonymous namespace
 
+Art::~Art() {
+	freeWaitPngFrames();
+	freeTextboxSurfaces();
+	freeTipsSurface();
+	freeMenuSurfaces();
+}
+
+void Art::freeWaitPngFrames() {
+	for (uint i = 0; i < _waitPngFrames.size(); ++i) {
+		if (_waitPngFrames[i]) {
+			_waitPngFrames[i]->free();
+			delete _waitPngFrames[i];
+			_waitPngFrames[i] = nullptr;
+		}
+	}
+
+	_waitPngFrames.clear();
+}
+
+
 bool Art::load(ResourceManager &resources) {
 	_waitFrames.clear();
+	freeWaitPngFrames();
 	_textboxes.clear();
 	freeTextboxSurfaces();
 	freeTipsSurface();
@@ -111,10 +132,7 @@ bool Art::load(ResourceManager &resources) {
 	if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
 		return false;
 
-	warning("WAIT ZIP DEBUG: hasFile=%d",
-		resources.hasFile("4:/GRAPHIC/OTHER/WAIT.zip"));
-
-	if (!loadAnimation(resources, "4:/GRAPHIC/OTHER/WAIT.zip", _waitFrames))
+	if (!loadPngAnimationZip(resources, "4:/GRAPHIC/OTHER/WAIT.zip"))
 		return false;
 
 	// Prefer true-color PNG versions of the menu graphics.
