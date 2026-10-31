@@ -111,6 +111,9 @@ bool Art::load(ResourceManager &resources) {
 	if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
 		return false;
 
+	warning("WAIT ZIP DEBUG: hasFile=%d",
+		resources.hasFile("4:/GRAPHIC/OTHER/WAIT.zip"));
+
 	if (!loadAnimation(resources, "4:/GRAPHIC/OTHER/WAIT.zip", _waitFrames))
 		return false;
 
