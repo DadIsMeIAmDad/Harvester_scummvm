@@ -624,7 +624,7 @@ static int resolveMoveTargetHorizontalDirection(const RoomSetupState &state,
         const RoomPlayerState &playerState) {
 
     // ADJUST THIS VALUE: Higher = stops closer to clicked position.
-    const float targetAdjustment = 6.0f;
+    const float targetAdjustment = 10.0f;
 
     const float slack = MAX(0.0f,
         MAX(1.0f,
