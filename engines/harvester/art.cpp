@@ -111,7 +111,7 @@ bool Art::load(ResourceManager &resources) {
 	if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
 		return false;
 
-	if (!loadAnimation(resources, "1:/GRAPHIC/OTHER/WAIT.ABM", _waitFrames))
+	if (!loadAnimation(resources, "4:/GRAPHIC/OTHER/WAIT.zip", _waitFrames))
 		return false;
 
 	// Prefer true-color PNG versions of the menu graphics.
