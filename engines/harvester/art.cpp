@@ -221,50 +221,71 @@ const IndexedBitmap *Art::getQuickTipsTextboxBitmap() const {
 }
 
 void Art::drawWaitFrame(Graphics::Screen &screen) const {
-	if (_waitFrames.empty() || !_waitFrames[0].isValid())
-		return;
 
-	if (screen.format.bytesPerPixel != 1) {
-		// True-color mode: temporarily skip the old indexed wait screen.
-		screen.fillRect(
-			screen.getBounds(),
-			screen.format.RGBToColor(0, 0, 0)
-		);
-		screen.makeAllDirty();
-		screen.update();
-		return;
-	}
+    // -------------------------------------------------
+    // TRUE-COLOR PNG WAIT SCREEN
+    // -------------------------------------------------
 
-	// Original 8-bit path.
-	screen.fillRect(screen.getBounds(), kTransparentPaletteIndex);
+    if (screen.format.bytesPerPixel != 1) {
 
-	logPaletteSummary(
-		"applying wait palette",
-		"1:/GRAPHIC/PAL/WAIT.PAL",
-		_waitPalette
-	);
+        if (_waitPngFrames.empty() || !_waitPngFrames[0])
+            return;
 
-	byte displayPalette[256 * 3];
-	buildHarvesterDisplayPalette(
-		_waitPalette,
-		1.0f,
-		displayPalette
-	);
+        screen.fillRect(
+            screen.getBounds(),
+            screen.format.RGBToColor(0, 0, 0)
+        );
 
-	screen.setPalette(displayPalette);
+        const Graphics::Surface *src = _waitPngFrames[0];
 
-	blitTransparentAnimationFrame(
-		screen,
-		_waitFrames,
-		0,
-		kWaitX,
-		kWaitY
-	);
+        screen.blitFrom(
+            *src,
+            Common::Rect(0, 0, src->w, src->h),
+            Common::Point(kWaitX, kWaitY)
+        );
 
-	screen.makeAllDirty();
-	screen.update();
+        screen.makeAllDirty();
+        screen.update();
+
+        return;
+    }
+
+    // -------------------------------------------------
+    // ORIGINAL 8-BIT WAIT SCREEN
+    // -------------------------------------------------
+
+    if (_waitFrames.empty() || !_waitFrames[0].isValid())
+        return;
+
+    screen.fillRect(screen.getBounds(), kTransparentPaletteIndex);
+
+    logPaletteSummary(
+        "applying wait palette",
+        "1:/GRAPHIC/PAL/WAIT.PAL",
+        _waitPalette
+    );
+
+    byte displayPalette[256 * 3];
+
+    buildHarvesterDisplayPalette(
+        _waitPalette,
+        1.0f,
+        displayPalette
+    );
+
+    screen.setPalette(displayPalette);
+
+    blitTransparentAnimationFrame(
+        screen,
+        _waitFrames,
+        0,
+        kWaitX,
+        kWaitY
+    );
+
+    screen.makeAllDirty();
+    screen.update();
 }
-
 bool Art::loadPalette(ResourceManager &resources, const Common::String &path, byte *dest) const {
 	Common::Array<byte> data;
 	if (!resources.loadFile(path, data) || data.size() < 256 * 3) {
