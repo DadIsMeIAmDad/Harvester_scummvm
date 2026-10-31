@@ -1889,6 +1889,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 	
 				activeScreen->makeAllDirty();
 				activeScreen->update();
+				warning("LIGHTING DEBUG: BLACK SCREEN UPDATED");
 				return Common::kNoError;
 	
 			case kStartupLightingCommandFadeIn:
