@@ -1841,8 +1841,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return Common::kNoError;
 	
 			case kStartupLightingCommandDim:
-				    warning("HARVESTER: CHANGE_LIGHTING DIM EXECUTED");
-					scene.targetPaletteBrightness = 0.25f;
+					scene.targetPaletteBrightness = kDimPaletteBrightness;
 	
 				// Always draw the original artwork at full brightness first.
 				drawRoomScene(_engine, *activeScreen, scene, 1.0f);
@@ -2190,6 +2189,12 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		screen->update();
         warning("ROOM.CPP - textboxScene Updated");
 		logScenePaletteSummary("room setup fade target", scene, scene.targetPaletteBrightness);
+
+		// Apply room-entry lighting target before the first visible fade frame.
+		if (roomEntryInteraction.lightingCommand == kStartupLightingCommandDim) {
+			scene.targetPaletteBrightness = kDimPaletteBrightness;
+		}
+
 		transitionError = flow.fadeInRoomScene(scene.palette, scene.targetPaletteBrightness);
 		if (transitionError.getCode() != Common::kNoError)
 			return transitionError;
