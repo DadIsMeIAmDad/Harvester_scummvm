@@ -4963,7 +4963,18 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		const bool playerAlive = script && script->getPlayerCurrentHitPoints() > 0;
 		const bool playerControlPaused = script && script->isPlayerControlPaused();
 		const bool playerCanAct = playerAlive && !playerControlPaused;
-		if (!playerAlive && (moveLeft || moveRight || moveUp || moveDown ||
+
+		const bool npcDeathOrMonsterfyActive =
+			Common::any_of(scene.state.roomNpcs.begin(), scene.state.roomNpcs.end(),
+				[](const NpcRecord &npc) {
+					return npc.deathDamageType != 0 || npc.deathOrMonsterfyFlag;
+				});
+
+		if (npcDeathOrMonsterfyActive)
+			pendingRoomChange.clear();
+
+		if ((!playerAlive || npcDeathOrMonsterfyActive) &&
+				(moveLeft || moveRight || moveUp || moveDown ||
 				playerState.hasMoveTarget || playerState.turnActive ||
 				playerState.attackActive || playerState.hitActive)) {
 			attackModifierHeld = false;
