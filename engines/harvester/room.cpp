@@ -3952,20 +3952,21 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 
 	auto runRegionInteraction = [&](const RegionRecord &region) -> Common::Error {
-		InteractionResult interaction;
-	
-		if (!_engine.getScript()->resolveRegionInteraction(
-				region, interaction, scene.state.roomName))
-			return Common::kNoError;
-	
-		// Prevent room exits while an NPC death/monsterfy is underway.
-		if (npcDeathOrMonsterfyActive() && !interaction.nextRoomName.empty()) {
+		// Block region activation while an NPC death/monsterfy is underway.
+		if (npcDeathOrMonsterfyActive()) {
 			debugC(1, kDebugRoom,
-				"Harvester: blocked room exit during NPC death/monsterfy region='%s'",
+				"Harvester: blocked region activation during NPC death/monsterfy region='%s'",
 				region.regionName.c_str());
 			return Common::kNoError;
 		}
 	
+		InteractionResult interaction;
+	
+		if (!_engine.getScript()->resolveRegionInteraction(
+				region, interaction, scene.state.roomName)) {
+			return Common::kNoError;
+		}
+		
 		debugC(2, kDebugRoom,
 			"Harvester: region interaction room='%s' region='%s' action='%s' player=(%d,%d,z=%.2f) next_room='%s'",
 			scene.state.roomName.c_str(), region.regionName.c_str(), region.actionTag.c_str(),
