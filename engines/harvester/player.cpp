@@ -624,10 +624,10 @@ static int resolveMoveTargetHorizontalDirection(const RoomSetupState &state,
 		const RoomPlayerState &playerState) {
 	const float slack = Player::computeDepthScale(state, playerState.z) *
 		kRoomPlayerHorizontalTargetSlackBase;
-	const float frameLeftX = (float)computePlayerFrameLeftX(playerState);
-	if (frameLeftX < (float)playerState.targetX - slack)
+	const float centerX = (float)playerState.centerX;
+	if (centerX < (float)playerState.targetX - slack)
 		return 1;
-	if ((float)playerState.targetX + slack < frameLeftX)
+	if ((float)playerState.targetX + slack < centerX)
 		return -1;
 
 	return 0;
