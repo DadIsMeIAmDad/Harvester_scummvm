@@ -387,7 +387,7 @@ static inline uint32 scaleTrueColorPixel(uint32 pixel,
     return fmt.ARGBToColor(a, r, g, b);
 }
 
-static void applyTrueColorBrightnessInPlace(Graphics::Surface &surface,
+static void applyTrueColorBrightnessInPlace(Graphics::Screen &surface,
         float brightness) {
     brightness = CLIP(brightness, 0.0f, 1.0f);
 
