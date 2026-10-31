@@ -19,6 +19,8 @@
  *
  */
 
+#include "common/archive.h"
+#include "common/compression/unzip.h"
 #include "harvester/art.h"
 #include "graphics/surface.h"
 #include "common/debug.h"
@@ -471,6 +473,83 @@ bool Art::loadAnimation(ResourceManager &resources, const Common::String &path, 
 	debug(1, "Harvester: loaded %u frames from '%s'", (uint)frames.size(), path.c_str());
 	return true;
 }
+
+
+bool Art::loadPngAnimationZip(
+		ResourceManager &resources,
+		const Common::String &path) {
+
+	freeWaitPngFrames();
+
+	warning("HARVESTER WAIT PNG ZIP LOAD: %s", path.c_str());
+
+	Common::SeekableReadStream *stream = resources.openFile(path);
+	if (!stream) {
+		warning("HARVESTER WAIT PNG ZIP: could not open %s", path.c_str());
+		return false;
+	}
+
+	Common::Archive *archive = Common::makeZipArchive(stream);
+	if (!archive) {
+		warning("HARVESTER WAIT PNG ZIP: could not create archive %s", path.c_str());
+		return false;
+	}
+
+	Common::ArchiveMemberList members;
+	archive->listMembers(members);
+
+	for (int frameNumber = 1; frameNumber <= (int)members.size(); ++frameNumber) {
+		Common::String frameName =
+			Common::String::format("%03d.png", frameNumber);
+
+		Common::SeekableReadStream *frameStream =
+			archive->createReadStreamForMember(Common::Path(frameName, '/'));
+
+		if (!frameStream)
+			continue;
+
+		Image::PNGDecoder decoder;
+		if (!decoder.loadStream(*frameStream)) {
+			delete frameStream;
+			delete archive;
+			freeWaitPngFrames();
+
+			warning("HARVESTER WAIT PNG ZIP: could not decode %s",
+				frameName.c_str());
+			return false;
+		}
+		delete frameStream;
+
+		const Graphics::Surface *surface = decoder.getSurface();
+		if (!surface) {
+			delete archive;
+			freeWaitPngFrames();
+
+			warning("HARVESTER WAIT PNG ZIP: no surface for %s",
+				frameName.c_str());
+			return false;
+		}
+
+		Graphics::Surface *frame = new Graphics::Surface();
+		frame->copyFrom(*surface);
+		_waitPngFrames.push_back(frame);
+	}
+
+	delete archive;
+
+	if (_waitPngFrames.empty()) {
+		warning("Harvester: no PNG frames found in WAIT ZIP '%s'",
+			path.c_str());
+		return false;
+	}
+
+	warning("HARVESTER WAIT PNG ZIP COMPLETE: %d frames loaded",
+		(int)_waitPngFrames.size());
+
+	return true;
+}
+
+
 
 bool Art::decodeAnimationFrame(const byte *source, uint32 sourceSize, bool compressed, Common::Array<byte> &dest) const {
 	if (!compressed) {
