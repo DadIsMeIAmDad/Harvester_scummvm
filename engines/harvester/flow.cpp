@@ -117,6 +117,7 @@ static const int kTimerDebugOverlayLineSpacing = 1;
 static const int kCursorSequenceWalk = 0;
 static const int kCursorSequenceExamine = 1;
 static const int kCursorSequenceTalk = 2;
+static const int kCursorSequenceAttack = 3;
 static const int kCursorSequenceOperate = 4;
 static const int kCursorSequencePickup = 5;
 static const int kCursorSequenceTransition = 6;
@@ -1515,6 +1516,50 @@ RoomHoverState resolveRoomHoverState(HarvesterEngine &engine, const RoomSetupSta
 		hoverState.promptText = buildRoomNpcPrompt(*npc, menuTextConfig);
 		return hoverState;
 	}
+
+
+	// -------------------------------------------------
+	// MONSTER HOVER: use sequence 3 (attack cursor).
+	// Monsters have hit testing disabled, so check their
+	// screen rectangles directly.
+	// -------------------------------------------------
+	
+	if (entityManager) {
+		const MonsterRecord *bestMonster = nullptr;
+		int bestZ = -0x7fffffff;
+		int bestTop = -0x7fffffff;
+	
+		for (const MonsterRecord &monster : state.roomMonsters) {
+			if (!monster.active || !monster.visible ||
+					monster.currentHitPoints <= 0)
+				continue;
+	
+			const Entity *entity =
+				entityManager->findSceneEntityByName(monster.monsterName);
+	
+			if (!entity || !entity->isVisible() ||
+					entity->getClassId() != kRuntimeEntityClassMonster)
+				continue;
+	
+			const Common::Rect entityRect = entity->getScreenRect();
+	
+			if (!entityRect.contains(mousePos))
+				continue;
+	
+			if (!bestMonster || monster.posZ > bestZ ||
+					(monster.posZ == bestZ && entityRect.top > bestTop)) {
+				bestMonster = &monster;
+				bestZ = monster.posZ;
+				bestTop = entityRect.top;
+			}
+		}
+	
+		if (bestMonster) {
+			hoverState.cursorSequence = kCursorSequenceAttack;
+			return hoverState;
+		}
+	}
+
 
 	Script *script = engine.getScript();
 	if (!script) {
