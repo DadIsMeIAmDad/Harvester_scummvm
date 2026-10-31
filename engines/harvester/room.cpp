@@ -1874,6 +1874,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return Common::kNoError;
 	
 			case kStartupLightingCommandBlack:
+				warning("LIGHTING DEBUG: BLACK CASE EXECUTED");
 				scene.targetPaletteBrightness = 0.0f;
 	
 				if (activeScreen->format.bytesPerPixel == 1) {
