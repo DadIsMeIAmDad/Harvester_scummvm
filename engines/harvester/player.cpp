@@ -621,16 +621,25 @@ static void resetPlayerMoveTargetProgress(RoomPlayerState &playerState) {
 }
 
 static int resolveMoveTargetHorizontalDirection(const RoomSetupState &state,
-		const RoomPlayerState &playerState) {
-	const float slack = MAX(1.0f,
-		Player::computeDepthScale(state, playerState.z) * kRoomPlayerHorizontalTargetSlackBase);
-	const float centerX = (float)playerState.centerX;
-	if (centerX < (float)playerState.targetX - slack)
-		return 1;
-	if ((float)playerState.targetX + slack < centerX)
-		return -1;
+        const RoomPlayerState &playerState) {
 
-	return 0;
+    // ADJUST THIS VALUE: Higher = stops closer to clicked position.
+    const float targetAdjustment = 3.0f;
+
+    const float slack = MAX(0.0f,
+        MAX(1.0f,
+            Player::computeDepthScale(state, playerState.z) *
+            kRoomPlayerHorizontalTargetSlackBase) - targetAdjustment);
+
+    const float centerX = (float)playerState.centerX;
+
+    if (centerX < (float)playerState.targetX - slack)
+        return 1;
+
+    if ((float)playerState.targetX + slack < centerX)
+        return -1;
+
+    return 0;
 }
 
 static int resolveMoveTargetDepthDirection(const RoomPlayerState &playerState) {
