@@ -1669,7 +1669,15 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (!activeScreen)
 				return false;
 
-			drawRoomScene(_engine, *activeScreen, scene, scene.targetPaletteBrightness);
+			drawRoomScene(_engine, *activeScreen, scene, 1.0f);
+
+			if (activeScreen->format.bytesPerPixel != 1 &&
+					scene.targetPaletteBrightness < 0.999f) {
+				applyTrueColorBrightnessInPlace(
+					*activeScreen, scene.targetPaletteBrightness);
+			}
+
+
 
 			if (!captureScreenBackdrop(*activeScreen, dialogueBackdrop))
 				return false;
@@ -4146,7 +4154,18 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 						: hoverState.cursorSequence);
 			}
 
-			drawRoomScene(_engine, *activeScreen, scene, scene.targetPaletteBrightness);
+			// Draw the original room artwork at full brightness.
+			drawRoomScene(_engine, *activeScreen, scene, 1.0f);
+
+			// Reapply stored lighting to true-color graphics.
+			if (activeScreen->format.bytesPerPixel != 1 &&
+					scene.targetPaletteBrightness < 0.999f) {
+				applyTrueColorBrightnessInPlace(
+					*activeScreen, scene.targetPaletteBrightness);
+			}
+
+
+
 			drawCombatDamagePopups(*activeScreen);
 			if (_engine.getScript() && playerState.entity) {
 				drawCombatLoadoutResourceIcons(*activeScreen, *art, *_engine.getScript(),
@@ -4851,7 +4870,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					IndexedBitmap roomMenuBackdrop;
 					Graphics::Surface roomMenuBackdropSurface;
 
-					drawRoomScene(_engine, *activeScreen, scene, scene.targetPaletteBrightness);
+					drawRoomScene(_engine, *activeScreen, scene, 1.0f);
+
+					if (activeScreen->format.bytesPerPixel != 1 &&
+							scene.targetPaletteBrightness < 0.999f) {
+						applyTrueColorBrightnessInPlace(
+							*activeScreen, scene.targetPaletteBrightness);
+					}
 
 					if (!captureScreenBackdrop(*activeScreen, roomMenuBackdrop))
 						return Common::kReadingFailed;
