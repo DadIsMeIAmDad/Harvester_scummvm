@@ -2184,10 +2184,10 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		warning("ROOM.CPP - Start Draw Scene");
 		drawRoomScene(_engine, *screen, scene, 0.0f);
 		warning("ROOM.CPP - END Draw Scene");		
-		screen->makeAllDirty();
-	    warning("ROOM.CPP - Scene Make Dirty");
-		screen->update();
-        warning("ROOM.CPP - textboxScene Updated");
+		//screen->makeAllDirty();
+	    //warning("ROOM.CPP - Scene Make Dirty");
+		//screen->update();
+        //warning("ROOM.CPP - textboxScene Updated");
 		logScenePaletteSummary("room setup fade target", scene, scene.targetPaletteBrightness);
 
 		// Apply room-entry lighting target before the first visible fade frame.
