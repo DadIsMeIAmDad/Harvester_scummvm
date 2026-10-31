@@ -374,12 +374,62 @@ static void drawShadowedRoomText(Graphics::Screen &screen, const Graphics::Font 
 	font.drawString(&screen, text, x, y, width, textColor);
 }
 
-static void setScaledRoomPalette(Graphics::Screen &screen, const byte *palette, float brightness) {
-	byte scaledPalette[256 * 3];
-	const float gammaBrightness = g_engine ? g_engine->getGammaBrightnessScale() : 1.0f;
-	buildHarvesterDisplayPalette(palette, brightness * gammaBrightness, scaledPalette);
+
+static inline uint32 scaleTrueColorPixel(uint32 pixel,
+        const Graphics::PixelFormat &fmt, float brightness) {
+    byte a, r, g, b;
+    fmt.colorToARGB(pixel, a, r, g, b);
+
+    r = (byte)CLIP((int)(r * brightness + 0.5f), 0, 255);
+    g = (byte)CLIP((int)(g * brightness + 0.5f), 0, 255);
+    b = (byte)CLIP((int)(b * brightness + 0.5f), 0, 255);
+
+    return fmt.ARGBToColor(a, r, g, b);
+}
+
+static void applyTrueColorBrightnessInPlace(Graphics::Surface &surface,
+        float brightness) {
+    brightness = CLIP(brightness, 0.0f, 1.0f);
+
+    if (brightness >= 0.999f)
+        return;
+
+    for (int y = 0; y < surface.h; ++y) {
+        if (surface.format.bytesPerPixel == 4) {
+            uint32 *p = (uint32 *)surface.getBasePtr(0, y);
+
+            for (int x = 0; x < surface.w; ++x)
+                p[x] = scaleTrueColorPixel(p[x], surface.format, brightness);
+        }
+        else if (surface.format.bytesPerPixel == 2) {
+            uint16 *p = (uint16 *)surface.getBasePtr(0, y);
+
+            for (int x = 0; x < surface.w; ++x)
+                p[x] = (uint16)scaleTrueColorPixel(p[x], surface.format, brightness);
+        }
+    }
+}
+
+
+
+static void setScaledRoomPalette(Graphics::Screen &screen,
+        const byte *palette, float brightness) {
+
+    brightness = CLIP(brightness, 0.0f, 1.0f);
+
     if (screen.format.bytesPerPixel == 1) {
-	    screen.setPalette(scaledPalette);
+        byte scaledPalette[256 * 3];
+
+        const float gammaBrightness =
+            g_engine ? g_engine->getGammaBrightnessScale() : 1.0f;
+
+        buildHarvesterDisplayPalette(
+            palette, brightness * gammaBrightness, scaledPalette);
+
+        screen.setPalette(scaledPalette);
+    }
+    else {
+        applyTrueColorBrightnessInPlace(screen, brightness);
     }
 }
 
@@ -1777,17 +1827,24 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			Graphics::Screen *activeScreen = getActiveScreen();
 			if (!activeScreen)
 				return Common::kNoError;
-
+	
 			switch (lightingCommand) {
 			case kStartupLightingCommandNone:
 				return Common::kNoError;
+	
 			case kStartupLightingCommandDim:
 				scene.targetPaletteBrightness = kDimPaletteBrightness;
-				drawRoomScene(_engine, *activeScreen, scene, scene.targetPaletteBrightness);
-				setScaledRoomPalette(*activeScreen, scene.palette, scene.targetPaletteBrightness);
+	
+				// Always draw the original artwork at full brightness first.
+				drawRoomScene(_engine, *activeScreen, scene, 1.0f);
+	
+				setScaledRoomPalette(*activeScreen, scene.palette,
+					scene.targetPaletteBrightness);
+	
 				activeScreen->makeAllDirty();
 				activeScreen->update();
 				return Common::kNoError;
+	
 			case kStartupLightingCommandNormal:
 				if (ResourceManager *resources = _engine.getResources()) {
 					if (!scene.state.palettePath.empty() &&
@@ -1796,20 +1853,35 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 							scene.state.palettePath.c_str());
 					}
 				}
+	
 				scene.targetPaletteBrightness = kNormalPaletteBrightness;
-				drawRoomScene(_engine, *activeScreen, scene, scene.targetPaletteBrightness);
-				setScaledRoomPalette(*activeScreen, scene.palette, scene.targetPaletteBrightness);
+	
+				drawRoomScene(_engine, *activeScreen, scene, 1.0f);
+	
+				setScaledRoomPalette(*activeScreen, scene.palette,
+					scene.targetPaletteBrightness);
+	
 				activeScreen->makeAllDirty();
 				activeScreen->update();
 				return Common::kNoError;
-			case kStartupLightingCommandBlack: {
-				byte blackPalette[256 * 3] = { 0 };
-				activeScreen->fillRect(activeScreen->getBounds(), 0);
-				activeScreen->setPalette(blackPalette);
+	
+			case kStartupLightingCommandBlack:
+				scene.targetPaletteBrightness = 0.0f;
+	
+				if (activeScreen->format.bytesPerPixel == 1) {
+					byte blackPalette[256 * 3] = { 0 };
+					activeScreen->fillRect(activeScreen->getBounds(), 0);
+					activeScreen->setPalette(blackPalette);
+				}
+				else {
+					activeScreen->fillRect(activeScreen->getBounds(),
+						activeScreen->format.ARGBToColor(255, 0, 0, 0));
+				}
+	
 				activeScreen->makeAllDirty();
 				activeScreen->update();
 				return Common::kNoError;
-			}
+	
 			case kStartupLightingCommandFadeIn:
 				debugC(1, kDebugRoom,
 					"Harvester: CHANGE_LIGHTING FADE_IN has no direct room-side equivalent yet; preserving control flow");
