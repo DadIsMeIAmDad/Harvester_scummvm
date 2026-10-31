@@ -3938,27 +3938,55 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				playerState.targetX, playerState.targetBottomY, (double)playerState.targetZ);
 		}
 	};
+
+
+	auto npcDeathOrMonsterfyActive = [&]() {
+		for (const NpcRecord &npc : scene.state.roomNpcs) {
+			if (npc.deathDamageType != 0 || npc.deathOrMonsterfyFlag)
+				return true;
+		}
+		return false;
+	};
+
+
+
+
 	auto runRegionInteraction = [&](const RegionRecord &region) -> Common::Error {
 		InteractionResult interaction;
-		if (!_engine.getScript()->resolveRegionInteraction(region, interaction, scene.state.roomName))
+	
+		if (!_engine.getScript()->resolveRegionInteraction(
+				region, interaction, scene.state.roomName))
 			return Common::kNoError;
+	
+		// Prevent room exits while an NPC death/monsterfy is underway.
+		if (npcDeathOrMonsterfyActive() && !interaction.nextRoomName.empty()) {
+			debugC(1, kDebugRoom,
+				"Harvester: blocked room exit during NPC death/monsterfy region='%s'",
+				region.regionName.c_str());
+			return Common::kNoError;
+		}
+	
 		debugC(2, kDebugRoom,
 			"Harvester: region interaction room='%s' region='%s' action='%s' player=(%d,%d,z=%.2f) next_room='%s'",
 			scene.state.roomName.c_str(), region.regionName.c_str(), region.actionTag.c_str(),
 			playerState.centerX, playerState.bottomY, (double)playerState.z,
 			interaction.nextRoomName.c_str());
-
+	
 		bool didTransition = false;
+	
 		Common::Error interactionError =
 			interactionProcessor.handleInteractionResult(
 				interaction, didTransition, Common::String());
+	
 		if (interactionError.getCode() != Common::kNoError)
 			return interactionError;
+	
 		if (flow.hasPendingMainMenuReturn())
 			return Common::kNoError;
-
+	
 		if (!_inventory.refresh())
 			return Common::kReadingFailed;
+	
 		needsRedraw = true;
 		return Common::kNoError;
 	};
