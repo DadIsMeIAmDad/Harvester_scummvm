@@ -220,7 +220,8 @@ const IndexedBitmap *Art::getQuickTipsTextboxBitmap() const {
 	return getTextboxBitmap(kQuickTipsTextboxIndex);
 }
 
-void Art::drawWaitFrame(Graphics::Screen &screen) const {
+
+void Art::drawWaitFrame(Graphics::Screen &screen, uint frameIndex) const {
 
     // -------------------------------------------------
     // TRUE-COLOR PNG WAIT SCREEN
@@ -228,15 +229,15 @@ void Art::drawWaitFrame(Graphics::Screen &screen) const {
 
     if (screen.format.bytesPerPixel != 1) {
 
-        if (_waitPngFrames.empty() || !_waitPngFrames[0])
-            return;
+        if (frameIndex >= _waitPngFrames.size() || !_waitPngFrames[frameIndex])
+			return;
 
         screen.fillRect(
             screen.getBounds(),
             screen.format.RGBToColor(0, 0, 0)
         );
 
-        const Graphics::Surface *src = _waitPngFrames[0];
+        const Graphics::Surface *src = _waitPngFrames[frameIndex];
 
         screen.blitFrom(
             *src,

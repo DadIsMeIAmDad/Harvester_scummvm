@@ -2933,10 +2933,35 @@ Common::Error Flow::beginRoomSetupTransition() {
 	if (_engine.getRuntimeEntities())
 		_engine.getRuntimeEntities()->hideCursor();
 
+
 	const Art *art = _engine.getArt();
-	if (art && screen)
-		art->drawWaitFrame(*screen);
+
+	if (art && screen) {
+		if (screen->format.bytesPerPixel != 1) {
+			// Play the complete WAIT PNG animation.
+			for (uint i = 0; i < art->getWaitPngFrameCount(); ++i) {
+				art->drawWaitFrame(*screen, i);
+	
+				const uint32 nextTick = g_system->getMillis() + 100;
+	
+				while ((int32)(nextTick - g_system->getMillis()) > 0) {
+					Common::Error result = Common::kNoError;
+	
+					if (pumpTransitionEvents(result))
+						return result;
+	
+					g_system->delayMillis(1);
+				}
+			}
+		} else {
+			// Original indexed WAIT screen.
+			art->drawWaitFrame(*screen);
+		}
+	}
+
 	_roomSetupTransitionShownTick = g_system ? g_system->getMillis() : 0;
+
+
 
 	Common::Error result = Common::kNoError;
 	if (pumpTransitionEvents(result))

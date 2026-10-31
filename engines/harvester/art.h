@@ -51,9 +51,11 @@ struct AbmFrame : IndexedBitmap {
 class Art {
 public:
 	~Art();
+	
 	bool load(ResourceManager &resources);
 	bool loadQuickTipsResources(ResourceManager &resources, bool useTextboxPanel);
-	void drawWaitFrame(Graphics::Screen &screen) const;
+	void drawWaitFrame(Graphics::Screen &screen, uint frameIndex = 0) const;
+	uint getWaitPngFrameCount() const { return _waitPngFrames.size(); }
 
 	const byte *getWaitPalette() const { return _waitPalette; }
 	const Common::Array<AbmFrame> &getWaitFrames() const { return _waitFrames; }
