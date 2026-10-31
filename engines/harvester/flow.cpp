@@ -2961,21 +2961,122 @@ Common::Error Flow::waitForRoomSetupTransitionHold() {
 	return Common::kNoError;
 }
 
+static void applyTrueColorFade(
+	Graphics::Screen &screen,
+	const Graphics::Surface &original,
+	float brightness) {
+
+	const Graphics::PixelFormat &format = screen.format;
+
+	for (int y = 0; y < screen.h; y++) {
+		for (int x = 0; x < screen.w; x++) {
+			uint32 pixel = original.getPixel(x, y);
+
+			byte a, r, g, b;
+			format.colorToARGB(pixel, a, r, g, b);
+
+			r = (byte)(r * brightness);
+			g = (byte)(g * brightness);
+			b = (byte)(b * brightness);
+
+			screen.setPixel(
+				x, y,
+				format.ARGBToColor(a, r, g, b));
+		}
+	}
+}
+
+
 Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness) {
 	Graphics::Screen *screen = _engine.getScreen();
 	if (!screen || !palette)
 		return Common::kNoError;
 
-	for (float brightness = kPaletteFadeStep; brightness < targetBrightness; brightness += kPaletteFadeStep) {
+	// Keep brightness within the valid range.
+	if (targetBrightness < 0.0f)
+		targetBrightness = 0.0f;
+	if (targetBrightness > 1.0f)
+		targetBrightness = 1.0f;
+
+	// -------------------------------------------------
+	// TRUE-COLOR FADE: fade away a black overlay.
+	// -------------------------------------------------
+
+	if (screen->format.bytesPerPixel != 1) {
+		Graphics::Surface original;
+		original.copyFrom(*screen);
+
+		// Start completely black.
+		applyTrueColorFade(*screen, original, 0.0f);
+		screen->makeAllDirty();
+		screen->update();
+
+		const uint32 firstTick = g_system->getMillis() + kPaletteFadeTickMs;
+
+		while ((int32)(firstTick - g_system->getMillis()) > 0) {
+			Common::Error result = Common::kNoError;
+			if (pumpTransitionEvents(result)) {
+				original.free();
+				return result;
+			}
+			g_system->delayMillis(1);
+		}
+
+		// Gradually reveal the original room.
+		for (float brightness = kPaletteFadeStep;
+				brightness < targetBrightness;
+				brightness += kPaletteFadeStep) {
+
+			applyTrueColorFade(*screen, original, brightness);
+
+			screen->makeAllDirty();
+			screen->update();
+
+			const uint32 nextTick =
+				g_system->getMillis() + kPaletteFadeTickMs;
+
+			while ((int32)(nextTick - g_system->getMillis()) > 0) {
+				Common::Error result = Common::kNoError;
+				if (pumpTransitionEvents(result)) {
+					original.free();
+					return result;
+				}
+				g_system->delayMillis(1);
+			}
+		}
+
+		// Finish at the requested brightness.
+		applyTrueColorFade(*screen, original, targetBrightness);
+
+		original.free();
+
+		setScaledPalette(*screen, palette, targetBrightness);
+		screen->makeAllDirty();
+		screen->update();
+
+		return Common::kNoError;
+	}
+
+	// -------------------------------------------------
+	// ORIGINAL 8-BIT PALETTE FADE.
+	// -------------------------------------------------
+
+	for (float brightness = kPaletteFadeStep;
+			brightness < targetBrightness;
+			brightness += kPaletteFadeStep) {
+
 		setScaledPalette(*screen, palette, brightness);
 		screen->makeAllDirty();
 		screen->update();
 
-		const uint32 nextTick = g_system->getMillis() + kPaletteFadeTickMs;
+		const uint32 nextTick =
+			g_system->getMillis() + kPaletteFadeTickMs;
+
 		while ((int32)(nextTick - g_system->getMillis()) > 0) {
 			Common::Error result = Common::kNoError;
 			if (pumpTransitionEvents(result))
 				return result;
+
 			g_system->delayMillis(1);
 		}
 	}
@@ -2983,6 +3084,7 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 	setScaledPalette(*screen, palette, targetBrightness);
 	screen->makeAllDirty();
 	screen->update();
+
 	return Common::kNoError;
 }
 
