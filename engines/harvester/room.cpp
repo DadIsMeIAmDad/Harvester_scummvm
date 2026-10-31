@@ -4964,11 +4964,12 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		const bool playerControlPaused = script && script->isPlayerControlPaused();
 		const bool playerCanAct = playerAlive && !playerControlPaused;
 
-		const bool npcDeathOrMonsterfyActive =
-			Common::any_of(scene.state.roomNpcs.begin(), scene.state.roomNpcs.end(),
-				[](const NpcRecord &npc) {
-					return npc.deathDamageType != 0 || npc.deathOrMonsterfyFlag;
-				});
+		for (const NpcRecord &npc : scene.state.roomNpcs) {
+			if (npc.deathDamageType != 0 || npc.deathOrMonsterfyFlag) {
+				npcDeathOrMonsterfyActive = true;
+				break;
+			}
+		}
 
 		if (npcDeathOrMonsterfyActive)
 			pendingRoomChange.clear();
