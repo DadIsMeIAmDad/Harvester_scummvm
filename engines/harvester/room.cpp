@@ -1833,7 +1833,8 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return Common::kNoError;
 	
 			case kStartupLightingCommandDim:
-				scene.targetPaletteBrightness = kDimPaletteBrightness;
+				    warning("HARVESTER: CHANGE_LIGHTING DIM EXECUTED");
+					scene.targetPaletteBrightness = 0.25f;
 	
 				// Always draw the original artwork at full brightness first.
 				drawRoomScene(_engine, *activeScreen, scene, 1.0f);
