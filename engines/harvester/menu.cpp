@@ -867,6 +867,11 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine,
 	if (engine.getRuntimeEntities()) {
 		engine.getRuntimeEntities()->drawCursor(*screen);
 	}
+	
+	// Apply gamma after the complete save screen has been drawn.
+	applyTrueColorMenuGamma(
+		*screen, engine.getGammaBrightnessScale());
+	
 	screen->makeAllDirty();
 	screen->update();
 }
@@ -921,6 +926,12 @@ static void renderSaveGameMenuScreen(HarvesterEngine &engine,
 	if (engine.getRuntimeEntities()) {
 		engine.getRuntimeEntities()->drawCursor(*screen);
 	}
+	
+	// Apply gamma after the complete save screen has been drawn.
+	applyTrueColorMenuGamma(
+		*screen, engine.getGammaBrightnessScale());
+	
+	
 	screen->makeAllDirty();
 	screen->update();
 }
