@@ -1513,6 +1513,11 @@ while (!_engine.shouldQuit()) {
 		if (_engine.getRuntimeEntities()) {
 			_engine.getRuntimeEntities()->drawCursor(*screen);
 		}
+
+		// Apply gamma to the initial Game Over background.
+		applyTrueColorMenuGamma(
+			*screen, _engine.getGammaBrightnessScale());
+
 		screen->makeAllDirty();
 		screen->update();
 		needsRedraw = false;
