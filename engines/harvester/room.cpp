@@ -4117,7 +4117,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			const bool roomCarryActive = hasCarriedRoomItem();
 			const bool activeCarry = inventorySelectionActive || roomCarryActive;
 			const bool inventoryPanelContainsMouse = _inventory.isOpen() && inventoryPanelBounds.contains(_mousePos);
-			const bool suppressHover = showingInspectText || idleState.active || idleState.exiting ||
+			const bool suppressHover = showingInspectText || idleState.active || idleState.exiting || npcDeathOrMonsterfyActive() ||
 				isPlayerCombatLocked() ||
 				(_inventory.isOpen() && (inventoryPanelContainsMouse || !inventorySelectionActive));
 			RoomHoverState hoverState = suppressHover
