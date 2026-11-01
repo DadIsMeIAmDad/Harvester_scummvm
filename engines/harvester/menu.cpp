@@ -2265,6 +2265,14 @@ Common::Error MenuSystem::runConfirmPrompt(
 				textboxSurface,
 				promptText,
 				config);
+			
+			// Apply gamma after the complete confirmation screen has been drawn.
+			if (Graphics::Screen *screen = _engine.getScreen()) {
+				if (screen->format.bytesPerPixel == 4)
+					applyTrueColorMenuGamma(*screen, _engine.getGammaBrightnessScale());
+			}
+			
+			
 			needsRedraw = false;
 		}
 		warning("HARVESTER CONFIRM: AFTER renderConfirmPromptScreen");
