@@ -783,11 +783,33 @@ bool Script::reloadTownWorld(ResourceManager &resources) {
 }
 
 bool Script::loadConfig(ResourceManager &resources) {
+
+
 	Common::Array<byte> configData;
-	if (!resources.loadFile(kStartupConfigPath, configData)) {
-		warning("Harvester: unable to load startup config '%s', using defaults", kStartupConfigPath);
+
+	const Common::FSNode gamePathNode(ConfMan.getPath("path"));
+	const Common::FSNode configNode = gamePathNode.getChild(kStartupConfigPath);
+	
+	Common::File configFile;
+	if (!configFile.open(configNode)) {
+		warning("Harvester: unable to load startup config '%s', using defaults",
+			configNode.getPath().toString(Common::Path::kNativeSeparator).c_str());
 		return false;
 	}
+	
+	const uint32 configSize = configFile.size();
+	configData.resize(configSize);
+	
+	if (configSize > 0 && configFile.read(configData.data(), configSize) != configSize) {
+		warning("Harvester: unable to read startup config '%s'",
+			configNode.getPath().toString(Common::Path::kNativeSeparator).c_str());
+		return false;
+	}
+	
+	
+	
+	
+	
 
 	Common::MemoryReadStream stream(configData.data(), configData.size());
 	Common::INIFile config;
