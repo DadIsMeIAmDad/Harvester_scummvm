@@ -389,27 +389,16 @@ static inline uint32 scaleTrueColorPixel(uint32 pixel,
 
 
 
-static void applyTrueColorGamma(Graphics::Screen &screen, float gamma) {
-	if (screen.format.bytesPerPixel != 4 || gamma >= 0.999f)
+static void applyTrueColorGamma(Graphics::Screen &screen, float brightness) {
+	if (screen.format.bytesPerPixel != 4 ||
+			fabsf(brightness - 1.0f) < 0.001f)
 		return;
 
 	for (int y = 0; y < screen.h; ++y) {
-		byte *row = (byte *)screen.getBasePtr(0, y);
+		uint32 *p = (uint32 *)screen.getBasePtr(0, y);
 
-		for (int x = 0; x < screen.w; ++x) {
-			uint32 pixel;
-			memcpy(&pixel, row + x * 4, sizeof(pixel));
-
-			byte r, g, b;
-			screen.format.colorToRGB(pixel, r, g, b);
-
-			r = CLIP<int>((int)(r * gamma), 0, 255);
-			g = CLIP<int>((int)(g * gamma), 0, 255);
-			b = CLIP<int>((int)(b * gamma), 0, 255);
-
-			pixel = screen.format.RGBToColor(r, g, b);
-			memcpy(row + x * 4, &pixel, sizeof(pixel));
-		}
+		for (int x = 0; x < screen.w; ++x)
+			p[x] = scaleTrueColorPixel(p[x], screen.format, brightness);
 	}
 }
 
