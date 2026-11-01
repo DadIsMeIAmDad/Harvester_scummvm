@@ -1329,15 +1329,7 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 			} else {
 				renderMainMenuStub(mainMenuItems, selectedItem, statusMessage);
 			}
-
-			Graphics::Screen *screen = _engine.getScreen();
-			if (screen && screen->format.bytesPerPixel == 4) {
-				applyTrueColorMenuGamma(
-					*screen, _engine.getGammaBrightnessScale());
-				screen->makeAllDirty();
-				screen->update();
-			}
-		
+	
 			needsRedraw = false;
 		}
 
@@ -3119,6 +3111,12 @@ void MenuSystem::renderBackdropMenuScreen(const IndexedBitmap &backdrop, const b
 
 	if (_engine.getRuntimeEntities())
 		_engine.getRuntimeEntities()->drawCursor(*screen);
+
+	// Apply gamma after the complete menu has been drawn.
+	if (screen->format.bytesPerPixel == 4)
+		applyTrueColorMenuGamma(
+			*screen, _engine.getGammaBrightnessScale());
+	
 	screen->makeAllDirty();
 	screen->update();
 }
