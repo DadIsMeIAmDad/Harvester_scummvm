@@ -314,6 +314,30 @@ static void applyEuropeanBuiltInMenuText(MenuTextConfig &config) {
 		config.optionItems[i] = kEuropeanBuiltInOptionItems[i];
 }
 
+static void applyTrueColorGamma(Graphics::Surface &surface, float brightness) {
+	if (surface.format.bytesPerPixel != 4 || brightness >= 0.999f)
+		return;
+
+	for (int y = 0; y < surface.h; ++y) {
+		byte *row = (byte *)surface.getBasePtr(0, y);
+
+		for (int x = 0; x < surface.w; ++x) {
+			uint32 pixel;
+			memcpy(&pixel, row + x * 4, sizeof(pixel));
+
+			byte r, g, b;
+			surface.format.colorToRGB(pixel, r, g, b);
+
+			r = CLIP<int>((int)(r * brightness), 0, 255);
+			g = CLIP<int>((int)(g * brightness), 0, 255);
+			b = CLIP<int>((int)(b * brightness), 0, 255);
+
+			pixel = surface.format.RGBToColor(r, g, b);
+			memcpy(row + x * 4, &pixel, sizeof(pixel));
+		}
+	}
+}
+
 } // End of anonymous namespace
 
 bool loadMenuTextConfig(HarvesterEngine &engine, MenuTextConfig &config) {

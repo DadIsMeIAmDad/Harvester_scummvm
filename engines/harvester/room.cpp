@@ -387,6 +387,34 @@ static inline uint32 scaleTrueColorPixel(uint32 pixel,
     return fmt.ARGBToColor(a, r, g, b);
 }
 
+
+
+static void applyTrueColorGamma(Graphics::Screen &screen, float gamma) {
+	if (screen.format.bytesPerPixel != 4 || gamma >= 0.999f)
+		return;
+
+	for (int y = 0; y < screen.h; ++y) {
+		byte *row = (byte *)screen.getBasePtr(0, y);
+
+		for (int x = 0; x < screen.w; ++x) {
+			uint32 pixel;
+			memcpy(&pixel, row + x * 4, sizeof(pixel));
+
+			byte r, g, b;
+			screen.format.colorToRGB(pixel, r, g, b);
+
+			r = CLIP<int>((int)(r * gamma), 0, 255);
+			g = CLIP<int>((int)(g * gamma), 0, 255);
+			b = CLIP<int>((int)(b * gamma), 0, 255);
+
+			pixel = screen.format.RGBToColor(r, g, b);
+			memcpy(row + x * 4, &pixel, sizeof(pixel));
+		}
+	}
+}
+
+
+
 static void applyTrueColorBrightnessInPlace(Graphics::Screen &surface,
         float brightness) {
     brightness = CLIP(brightness, 0.0f, 1.0f);
@@ -1671,11 +1699,16 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 			drawRoomScene(_engine, *activeScreen, scene, 1.0f);
 
+			// Apply the existing gamma setting to the true-color screen.
+			if (activeScreen->format.bytesPerPixel == 4)
+				applyTrueColorGamma(
+					*activeScreen, _engine.getGammaBrightnessScale());
+
+			// Apply room DIM after gamma.
 			if (activeScreen->format.bytesPerPixel != 1 &&
-					scene.targetPaletteBrightness < 0.999f) {
+					scene.targetPaletteBrightness < 0.999f)
 				applyTrueColorBrightnessInPlace(
 					*activeScreen, scene.targetPaletteBrightness);
-			}
 
 
 
@@ -4190,15 +4223,18 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 						: hoverState.cursorSequence);
 			}
 
-			// Draw the original room artwork at full brightness.
 			drawRoomScene(_engine, *activeScreen, scene, 1.0f);
 
-			// Reapply stored lighting to true-color graphics.
+			// Apply the existing gamma setting to the true-color screen.
+			if (activeScreen->format.bytesPerPixel == 4)
+				applyTrueColorGamma(
+					*activeScreen, _engine.getGammaBrightnessScale());
+
+			// Apply room DIM after gamma.
 			if (activeScreen->format.bytesPerPixel != 1 &&
-					scene.targetPaletteBrightness < 0.999f) {
+					scene.targetPaletteBrightness < 0.999f)
 				applyTrueColorBrightnessInPlace(
 					*activeScreen, scene.targetPaletteBrightness);
-			}
 
 
 
