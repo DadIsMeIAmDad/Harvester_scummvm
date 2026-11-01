@@ -1319,14 +1319,29 @@ Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
 	};
 
 	while (!_engine.shouldQuit()) {
+
+
 		if (needsRedraw) {
 			if (_hasMainMenuBackdrop) {
-				renderBackdropMenuScreen(_mainMenuBackdrop, _mainMenuBackdropPalette, 1.0f, mainMenuItems, selectedItem);
+				renderBackdropMenuScreen(
+					_mainMenuBackdrop, _mainMenuBackdropPalette,
+					1.0f, mainMenuItems, selectedItem);
 			} else {
 				renderMainMenuStub(mainMenuItems, selectedItem, statusMessage);
-			needsRedraw = false;
 			}
+
+			Graphics::Screen *screen = _engine.getScreen();
+			if (screen && screen->format.bytesPerPixel == 4) {
+				applyTrueColorMenuGamma(
+					*screen, _engine.getGammaBrightnessScale());
+				screen->makeAllDirty();
+				screen->update();
+			}
+		
+			needsRedraw = false;
 		}
+
+
 
 		Common::Event event;
 		while (g_system->getEventManager()->pollEvent(event)) {
