@@ -531,6 +531,29 @@ static void applyMenuPalette(Graphics::Screen &screen, const HarvesterEngine &en
 	screen.setPalette(displayPalette);
 }
 
+
+static void applyTrueColorMenuGamma(Graphics::Screen &screen, float brightness) {
+	if (screen.format.bytesPerPixel != 4 ||
+			brightness <= 0.999f)
+		return;
+
+	for (int y = 0; y < screen.h; ++y) {
+		uint32 *p = (uint32 *)screen.getBasePtr(0, y);
+
+		for (int x = 0; x < screen.w; ++x) {
+			byte a, r, g, b;
+			screen.format.colorToARGB(p[x], a, r, g, b);
+
+			r = (byte)CLIP((int)(r * brightness + 0.5f), 0, 255);
+			g = (byte)CLIP((int)(g * brightness + 0.5f), 0, 255);
+			b = (byte)CLIP((int)(b * brightness + 0.5f), 0, 255);
+
+			p[x] = screen.format.ARGBToColor(a, r, g, b);
+		}
+	}
+}
+
+
 static void renderHelpScreen(HarvesterEngine &engine,
 		const IndexedBitmap &bitmap,
 		const Graphics::Surface *bitmapSurface,   // NEW
@@ -761,6 +784,11 @@ static void renderOptionsMenuScreen(HarvesterEngine &engine,
 
 	if (drawCursor && engine.getRuntimeEntities())
 		engine.getRuntimeEntities()->drawCursor(*screen);
+
+	// Apply gamma to the completed true-color menu.
+	applyTrueColorMenuGamma(
+		*screen, engine.getGammaBrightnessScale());
+
 	screen->makeAllDirty();
 	screen->update();
 }
