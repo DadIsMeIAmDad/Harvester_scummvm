@@ -2891,14 +2891,31 @@ Common::Error MenuSystem::runHelpScreen(const byte *palette, float paletteBright
 	Graphics::FrameLimiter limiter(g_system, 60);
 
 	while (!_engine.shouldQuit()) {
+
+
+
+
+
+
 		if (needsRedraw) {
 			if (page == 0) {
 				renderHelpScreen(_engine, mouseHelp, mouseHelpSurface, mouseHelpPalette);
 			} else {
 				renderHelpScreen(_engine, keysHelp, keysHelpSurface, keysHelpPalette);
 			}
+
+			// Apply gamma after the complete help page has been drawn.
+			if (Graphics::Screen *screen = _engine.getScreen()) {
+				if (screen->format.bytesPerPixel == 4)
+					applyTrueColorMenuGamma(*screen, _engine.getGammaBrightnessScale());
+			}
+
 			needsRedraw = false;
 		}
+		
+		
+		
+		
 
 		// ... existing event loop unchanged ...
 
