@@ -32,6 +32,7 @@
 #include "harvester/resources.h"
 #include "image/png.h"
 #include "common/memstream.h"
+#include "common/config-manager.h"
 
 namespace Harvester {
 
