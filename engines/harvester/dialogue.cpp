@@ -148,6 +148,8 @@ static const char *const kDialogueGameOverBitmapPath = "4:/GRAPHIC/OTHER/GAMEOVE
 static const char *const kDialogueGameOverPalettePath = "1:/GRAPHIC/PAL/GAMEOVER.PAL";
 static const char *const kDialogueGameOverMusicPath = "SOUND/MUSIC/ANXIETY.CMP";
 
+static const int kDialogueCursorSequenceTalk = 2;
+
 static const byte kTextColorNormal = 255;
 static const byte kTextColorHover = 251;
 static const byte kShadowColor = 0;
@@ -1735,6 +1737,9 @@ Common::Error DialogueSystem::runRoomNpcDialogue(
 			npc.npcName.c_str());
 		return Common::kNoError;
 	}
+
+
+
 	if (!script->isNamedNpcDeathTypeClear(npc.npcName)) {
 		const NpcRecord *runtimeNpc = script->findRuntimeNpcRecord(npc.npcName);
 		debugC(1, kDebugDialogue,
@@ -1743,7 +1748,23 @@ Common::Error DialogueSystem::runRoomNpcDialogue(
 		return Common::kNoError;
 	}
 
+
+	EntityManager *entityManager = _engine.getRuntimeEntities();
+	
+	if (entityManager) {
+		Entity *cursor = entityManager->getCursorEntity();
+	
+		if (cursor)
+			cursor->setAnimationSequence(kDialogueCursorSequenceTalk);
+	}
+
+
 	RoomNpcDialogueSession session(_engine, _mousePos, flow, backdrop, dialogueBackdropSurface, palette, paletteBrightness, npc);
+
+
+
+
+
 	if (!session.isValid())
 		//return Common::kReadingFailed;
 		warning("WARNING MARK SESSION IS INVALID");
