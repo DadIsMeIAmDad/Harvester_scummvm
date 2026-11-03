@@ -1723,7 +1723,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				if (!screen)
 					return Common::kReadingFailed;
 
-				const Common::String bitmapPath = Common::String::format("1:/GRAPHIC/OTHER/CD%d.BM", discNumber);
+				const Common::String bitmapPath = Common::String::format("4:/GRAPHIC/OTHER/CD%d.png", discNumber);
 				IndexedBitmap promptBitmap;
 				byte promptPalette[256 * 3];
 				if (!loadBitmapResource(*resources, bitmapPath, promptBitmap) ||
