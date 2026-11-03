@@ -3072,8 +3072,7 @@ Common::Error Flow::waitForRoomSetupTransitionHold() {
 
 Common::Error Flow::waitForRoomSetupTransitionHold() {
 
-    if (ConfMan.hasKey("show_wait_animation") &&
-        ConfMan.getBool("show_wait_animation")) {
+    if (ConfMan.hasKey("show_wait_animation") && ConfMan.getBool("show_wait_animation")) {
         _roomSetupTransitionShownTick = 0;
         return Common::kNoError;
     }
