@@ -4811,6 +4811,16 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			}
 			case Common::EVENT_KEYDOWN:
 				if (showingInspectText) {
+
+
+					if (event.kbd.keycode == Common::KEYCODE_F12) {
+						if (ResourceManager *resources = _engine.getResources())
+							resources->switchGraphicsZip();
+
+						break;
+					}
+
+
 					if (event.kbd.keycode == Common::KEYCODE_ESCAPE) {
 						showingInspectText = false;
 						inspectCanDismiss = false;
