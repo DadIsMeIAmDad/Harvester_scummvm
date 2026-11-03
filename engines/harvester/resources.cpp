@@ -911,8 +911,7 @@ bool ResourceManager::switchGraphicsZip() {
 
     _usingHarvest5Zip = !_usingHarvest5Zip;
 
-    debugC(1, kDebugResources,
-        "Harvester: switched graphics ZIP to %s", targetZip);
+    warning("Harvester: SUCCESS - switched graphics ZIP to %s", targetZip);
 
     return true;
 }

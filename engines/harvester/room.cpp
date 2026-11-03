@@ -4814,6 +4814,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 
 					if (event.kbd.keycode == Common::KEYCODE_F12) {
+						warning("Harvester: F12 pressed");
 						if (ResourceManager *resources = _engine.getResources())
 							resources->switchGraphicsZip();
 
