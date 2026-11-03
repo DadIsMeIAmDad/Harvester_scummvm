@@ -4810,18 +4810,25 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				break;
 			}
 			case Common::EVENT_KEYDOWN:
-				if (showingInspectText) {
 
 
-					if (event.kbd.keycode == Common::KEYCODE_F12) {
-						warning("Harvester: F12 pressed");
-						if (ResourceManager *resources = _engine.getResources())
-							resources->switchGraphicsZip();
+				if (event.kbd.keycode == Common::KEYCODE_F12) {
+					warning("Harvester: F12 pressed");
 
-						break;
+					if (ResourceManager *resources = _engine.getResources()) {
+						if (resources->switchGraphicsZip())
+							warning("Harvester: graphics ZIP switch successful");
+						else
+							warning("Harvester: graphics ZIP switch FAILED");
 					}
 
+					break;
+				}
 
+
+
+
+				if (showingInspectText) {
 					if (event.kbd.keycode == Common::KEYCODE_ESCAPE) {
 						showingInspectText = false;
 						inspectCanDismiss = false;
