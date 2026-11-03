@@ -48,6 +48,8 @@ static const ArchiveSpec kArchiveSpecs[] = {
 	{ '4', nullptr, nullptr, 27 }
 };
 
+
+
 static bool hasArchiveSetPrefix(const Common::String &path) {
 	return path.size() >= 3 &&
 		path[0] >= '0' && path[0] <= '9' &&
@@ -292,7 +294,7 @@ ResourceManager::~ResourceManager() {
 void ResourceManager::reset() {
 	_search.clear();
 	_currentDisc = 1;
-
+	_usingHarvest5Zip = false;
 	_search.add(
 		"harvester-loose-files",
 		&SearchMan,
@@ -872,6 +874,47 @@ void ResourceManager::mountArchive(
 		archive,
 		priority,
 		autoFree);
+}
+
+bool ResourceManager::switchGraphicsZip() {
+    const char *targetZip = _usingHarvest5Zip
+        ? "HARVEST4.ZIP"
+        : "HARVEST5.ZIP";
+
+    Common::SeekableReadStream *stream =
+        SearchMan.createReadStreamForMember(
+            Common::Path(targetZip, '/'));
+
+    if (!stream) {
+        warning("Harvester: cannot open graphics ZIP: %s", targetZip);
+        return false;
+    }
+
+    Common::Archive *archive = Common::makeZipArchive(stream);
+
+    if (!archive) {
+        delete stream;
+        warning("Harvester: cannot create graphics ZIP: %s", targetZip);
+        return false;
+    }
+
+    const Common::String archiveName = "harvester-zip-4";
+
+    // Replace the currently mounted graphics archive.
+    _search.remove(archiveName);
+
+    _search.add(
+        archiveName,
+        archive,
+        27,
+        true);
+
+    _usingHarvest5Zip = !_usingHarvest5Zip;
+
+    debugC(1, kDebugResources,
+        "Harvester: switched graphics ZIP to %s", targetZip);
+
+    return true;
 }
 
 } // End of namespace Harvester

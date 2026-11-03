@@ -2,7 +2,7 @@
  *
  * ScummVM is the legal property of its developers, whose names
  * are too numerous to list here. Please refer to the COPYRIGHT
- * file distributed with this source distribution.
+ * file distributed with this program.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,8 @@ public:
 	void reset();
 	bool mountStartupArchives();
 	bool setCurrentDisc(int discNumber);
+	bool switchGraphicsZip();
+
 	int getCurrentDisc() const { return _currentDisc; }
 
 	bool hasFile(const Common::String &path) const;
@@ -58,8 +60,10 @@ private:
 	Common::Archive *findArchiveForMember(char archiveSetId, const Common::Path &memberPath) const;
 	bool hasInMountedArchives(const Common::Path &memberPath) const;
 	Common::SeekableReadStream *openFromMountedArchives(const Common::Path &memberPath) const;
+
 	Common::SearchSet _search;
 	int _currentDisc = 1;
+	bool _usingHarvest5Zip = false;
 };
 
 } // End of namespace Harvester
