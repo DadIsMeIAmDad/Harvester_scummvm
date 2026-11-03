@@ -150,6 +150,39 @@ static bool loadTownMapPngSurface(ResourceManager &resources,
     return true;
 }
 
+static uint32 scaleTownMapPixel(uint32 pixel,
+        const Graphics::PixelFormat &format, float brightness) {
+    byte a, r, g, b;
+    format.colorToARGB(pixel, a, r, g, b);
+
+    r = (byte)CLIP((int)(r * brightness + 0.5f), 0, 255);
+    g = (byte)CLIP((int)(g * brightness + 0.5f), 0, 255);
+    b = (byte)CLIP((int)(b * brightness + 0.5f), 0, 255);
+
+    return format.ARGBToColor(a, r, g, b);
+}
+
+static void applyTownMapBrightness(Graphics::Surface &surface,
+        float brightness) {
+    if (fabsf(brightness - 1.0f) < 0.001f)
+        return;
+
+    for (int y = 0; y < surface.h; ++y) {
+        if (surface.format.bytesPerPixel == 4) {
+            uint32 *pixels = (uint32 *)surface.getBasePtr(0, y);
+
+            for (int x = 0; x < surface.w; ++x)
+                pixels[x] = scaleTownMapPixel(
+                    pixels[x], surface.format, brightness);
+        } else if (surface.format.bytesPerPixel == 2) {
+            uint16 *pixels = (uint16 *)surface.getBasePtr(0, y);
+
+            for (int x = 0; x < surface.w; ++x)
+                pixels[x] = (uint16)scaleTownMapPixel(
+                    pixels[x], surface.format, brightness);
+        }
+    }
+}
 
 static const CftFontResource *findStartupFontByName(const HarvesterEngine &engine, const char *fontName) {
 	const Text *text = engine.getText();
@@ -2338,6 +2371,9 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 		? 1.0f
 		: kTownMapNightPaletteBrightness;
 
+	const float mapBrightness =
+		paletteBrightness * _engine.getGammaBrightnessScale();
+
 	byte palette[256 * 3];
 	if (!loadPaletteResource(*resources, kTownMapPalettePath, palette))
 		return Common::kReadingFailed;
@@ -2347,6 +2383,9 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 
 	for (uint i = 0; i < ARRAYSIZE(kTownMapBitmapPaths); ++i) {
 		panels[i] = nullptr;
+
+
+
 		if (!loadTownMapPngSurface(*resources, kTownMapBitmapPaths[i], panels[i])) {
 			warning("Harvester: failed to load town map PNG '%s'",
 				kTownMapBitmapPaths[i]);
@@ -2358,6 +2397,12 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 			}
 			return Common::kReadingFailed;
 		}
+
+		applyTownMapBrightness(*panels[i], mapBrightness);
+
+
+
+
 	}
 
 	const Common::String previousMusicPath = _engine.getMusicPath();
