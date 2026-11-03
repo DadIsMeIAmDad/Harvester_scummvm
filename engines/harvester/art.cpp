@@ -132,7 +132,7 @@ bool Art::load(ResourceManager &resources) {
 	_tipsBitmap = IndexedBitmap();
 
 
-	if (shouldShowWaitAnimation()) {
+	if (_engine.shouldShowWaitAnimation()) {
 
 		if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
 			return false;
