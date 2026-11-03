@@ -89,6 +89,7 @@ public:
 	void setDisplayMode(int width, int height);
 	bool isGoreEnabled() const;
 	bool shouldShowCdChangePrompts() const;
+	bool shouldShowWaitAnimation() const;
 	int getFxVolumeLevel() const;
 	int getMusicVolumeLevel() const;
 	int getGammaLevel() const;

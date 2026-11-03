@@ -131,11 +131,23 @@ bool Art::load(ResourceManager &resources) {
 	_logoBitmap = IndexedBitmap();
 	_tipsBitmap = IndexedBitmap();
 
-	if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
-		return false;
 
-	if (!loadPngAnimationZip(resources, "4:/GRAPHIC/OTHER/WAIT.zip"))
-		return false;
+	if (shouldShowWaitAnimation()) {
+
+		if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
+			return false;
+
+		if (!loadPngAnimationZip(resources, "4:/GRAPHIC/OTHER/WAIT.zip"))
+			return false;
+	} else {
+		if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
+			return false;
+
+		if (!loadPngAnimationZip(resources, "4:/GRAPHIC/OTHER/SKIPWAIT.zip"))
+			return false;
+	}
+
+
 
 	// Prefer true-color PNG versions of the menu graphics.
 	// Keep the original BM files as fallback.

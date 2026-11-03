@@ -111,6 +111,11 @@ bool HarvesterEngine::shouldShowCdChangePrompts() const {
 	return ConfMan.hasKey("show_cd_change_prompts") && ConfMan.getBool("show_cd_change_prompts");
 }
 
+bool HarvesterEngine::shouldShowWaitAnimation() const {
+    return ConfMan.hasKey("show_wait_animation") &&
+        ConfMan.getBool("show_wait_animation");
+}
+
 int HarvesterEngine::getFxVolumeLevel() const {
 	return _script ? _script->getFxVolumeLevel() : 9;
 }
