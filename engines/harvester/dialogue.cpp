@@ -142,7 +142,6 @@ static const int kDialogueOtherStartY = 170;
 static const int kDialogueOtherEndY = 193;
 static const int kDialogueKeywordTitleYOffset = 4;
 static const int kDialogueGenericByeResponseIndex = 13;
-static const char *const kCdChangePromptPalettePath = "1:/GRAPHIC/PAL/CD1.PAL";
 static const char *const kDialogueKeywordBitmapPath = "4:/GRAPHIC/OTHER/KEYWORD.png";
 static const char *const kDialogueLocalizedKeywordBitmapPath = "GRAPHIC/OTHER/KEYWORD.png";
 static const char *const kDialogueGameOverBitmapPath = "4:/GRAPHIC/OTHER/GAMEOVER.png";
@@ -779,11 +778,10 @@ public:
 
 			const Common::String bitmapPath =
 				Common::String::format("4:/GRAPHIC/OTHER/CD%d.png", discNumber);
-			IndexedBitmap promptBitmap;
-			byte promptPalette[256 * 3];
-			if (!loadBitmapResource(*resources, bitmapPath, promptBitmap) ||
-					!loadPaletteResource(*resources, kCdChangePromptPalettePath, promptPalette)) {
-				warning("Harvester: unable to load CD change prompt assets for disc %d", discNumber);
+			Graphics::Surface promptSurface;
+
+			if (!loadDialogueHeadPngResource(*resources, bitmapPath, promptSurface)) {
+				warning("Harvester: unable to load CD change prompt PNG for disc %d", discNumber);
 				return Common::kReadingFailed;
 			}
 
@@ -806,8 +804,14 @@ public:
 			while (!_engine.shouldQuit() && !activateRequestedDisc) {
 				if (needsRedraw) {
 					screen->fillRect(screen->getBounds(), 0);
-					blitBitmap(*screen, promptBitmap, 0, 0);
-					setScaledPalette(*screen, promptPalette, 1.0f);
+
+
+					screen->blitFrom(promptSurface,
+						Common::Rect(0, 0, promptSurface.w, promptSurface.h),
+						Common::Point(0, 0));
+
+
+
 					if (_entityManager)
 						_entityManager->drawCursor(*screen);
 					screen->makeAllDirty();

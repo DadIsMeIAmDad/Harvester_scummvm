@@ -68,7 +68,6 @@ static const uint32 kCombatLoadoutStatusDisplayTicks = 75;
 static const int kNativeCombatResourceIconsX = 10;
 static const int kNativeCombatResourceIconsY = 30;
 static const int kNativeCombatResourceIconSpacing = 15;
-static const char *const kCdChangePromptPalettePath = "1:/GRAPHIC/PAL/CD1.PAL";
 
 static bool roomAllowsImmediateExitClick(const Common::String &roomName) {
 	return !roomName.equalsIgnoreCase("LAVAPIT") &&
@@ -233,23 +232,26 @@ static void applyRoomPalette(Graphics::Screen &screen, const HarvesterEngine &en
     }
 }
 
-static void renderCdChangePromptScreen(HarvesterEngine &engine, const IndexedBitmap &bitmap,
-		const byte *palette) {
-	Graphics::Screen *screen = engine.getScreen();
-	if (!screen) {
-		return;
-}
+static void renderCdChangePromptScreen(HarvesterEngine &engine,
+        const Graphics::Surface &surface) {
+    Graphics::Screen *screen = engine.getScreen();
+    if (!screen)
+        return;
 
-	applyRoomPalette(*screen, engine, palette, 1.0f);
-	screen->fillRect(screen->getBounds(), 0);
-	if (bitmap.isValid()) {
-		screen->copyRectToSurface(bitmap.pixels.data(), bitmap.width, 0, 0, bitmap.width, bitmap.height);
-}
-	if (engine.getRuntimeEntities()) {
-		engine.getRuntimeEntities()->drawCursor(*screen);
-}
-	screen->makeAllDirty();
-	screen->update();
+    screen->fillRect(screen->getBounds(), 0);
+
+    if (surface.w > 0 && surface.h > 0) {
+        screen->blitFrom(surface,
+            Common::Rect(0, 0, surface.w, surface.h),
+            Common::Point(0, 0));
+    }
+
+    if (engine.getRuntimeEntities()) {
+        engine.getRuntimeEntities()->drawCursor(*screen);
+    }
+
+    screen->makeAllDirty();
+    screen->update();
 }
 
 static bool shouldDispatchPickupActionOnCarryStart(const ObjectRecord &object) {
@@ -1723,12 +1725,12 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				if (!screen)
 					return Common::kReadingFailed;
 
-				const Common::String bitmapPath = Common::String::format("4:/GRAPHIC/OTHER/CD%d.png", discNumber);
-				IndexedBitmap promptBitmap;
-				byte promptPalette[256 * 3];
-				if (!loadBitmapResource(*resources, bitmapPath, promptBitmap) ||
-						!loadPaletteResource(*resources, kCdChangePromptPalettePath, promptPalette)) {
-					warning("Harvester: unable to load CD change prompt assets for disc %d", discNumber);
+				const Common::String bitmapPath =
+					Common::String::format("4:/GRAPHIC/OTHER/CD%d.png", discNumber);
+				Graphics::Surface promptSurface;
+				
+				if (!loadPngResource(*resources, bitmapPath, promptSurface)) {
+					warning("Harvester: unable to load CD change prompt PNG for disc %d", discNumber);
 					return Common::kReadingFailed;
 				}
 
@@ -1751,7 +1753,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 				while (!_engine.shouldQuit() && !activateRequestedDisc) {
 					if (needsRedraw) {
-						renderCdChangePromptScreen(_engine, promptBitmap, promptPalette);
+						renderCdChangePromptScreen(_engine, promptSurface);
 						needsRedraw = false;
 					}
 
