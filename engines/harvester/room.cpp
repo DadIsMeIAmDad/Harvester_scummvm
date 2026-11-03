@@ -4812,16 +4812,40 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			case Common::EVENT_KEYDOWN:
 
 
-				if (event.kbd.keycode == Common::KEYCODE_F12) {
-					warning("Harvester: F12 pressed");
 
-					if (ResourceManager *resources = _engine.getResources()) {
-						if (resources->switchGraphicsZip())
-							warning("Harvester: graphics ZIP switch successful");
-						else
-							warning("Harvester: graphics ZIP switch FAILED");
+
+				if (event.kbd.keycode == Common::KEYCODE_F12) {
+					const int reloadSlot = 99;
+
+					warning("Harvester: F12 - saving current game to slot %d", reloadSlot);
+
+					Common::Error saveError =
+						_engine.saveGameState(reloadSlot, "Graphics reload");
+
+					if (saveError.getCode() != Common::kNoError) {
+						warning("Harvester: graphics reload SAVE FAILED");
+						break;
 					}
 
+					warning("Harvester: save successful - switching graphics ZIP");
+	
+					ResourceManager *resources = _engine.getResources();
+
+					if (!resources || !resources->switchGraphicsZip()) {
+						warning("Harvester: graphics ZIP switch FAILED");
+						break;
+					}
+
+					warning("Harvester: ZIP switched - loading save slot %d", reloadSlot);
+
+					Common::Error loadError = _engine.loadGameState(reloadSlot);
+
+					if (loadError.getCode() != Common::kNoError) {
+						warning("Harvester: graphics reload LOAD FAILED");
+						break;
+					}
+
+					warning("Harvester: graphics reload completed");
 					break;
 				}
 
