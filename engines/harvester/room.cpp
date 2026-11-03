@@ -539,7 +539,8 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				savedState.playerFacing, savedState.musicPath.c_str());
 		}
 
-		Common::Error transitionError = flow.beginRoomSetupTransition();
+		Common::Error transitionError =
+			flow.beginRoomSetupTransition(_engine.hasPendingLoadedSaveRoomState());
 
 		if (transitionError.getCode() != Common::kNoError) {
 			warning(

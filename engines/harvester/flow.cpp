@@ -2985,7 +2985,11 @@ bool Flow::populateRoomSceneEntities(RoomSetupState &state,
 	return true;
 }
 
-Common::Error Flow::beginRoomSetupTransition() {
+Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
+	if (skipTransition) {
+		_roomSetupTransitionShownTick = 0;
+		return Common::kNoError;
+	}
 	Graphics::Screen *screen = _engine.getScreen();
 	if (screen) {
 		byte displayPalette[256 * 3];

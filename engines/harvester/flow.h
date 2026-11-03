@@ -90,7 +90,7 @@ private:
 	bool populateRoomSceneEntities(RoomSetupState &state,
 		const Common::Array<ObjectRecord> &drawableObjects,
 		const Common::Array<AnimRecord> &drawableAnimations);
-	Common::Error beginRoomSetupTransition();
+	Common::Error beginRoomSetupTransition(bool skipTransition = false);
 	Common::Error waitForRoomSetupTransitionHold();
 	Common::Error fadeInRoomScene(const byte *palette, float targetBrightness);
 	Common::Error fadePalette(const byte *palette, float fromBrightness, float toBrightness);
