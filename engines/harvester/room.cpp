@@ -467,9 +467,10 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 	bool currentTargetUsesSavedRoomState = false;
 	SaveRoomState currentTargetSavedRoomState;
 	while (!currentRoomTarget.empty()) {
+		const bool isGraphicsReload = _engine.hasPendingLoadedSaveRoomState();
 		RoomSetupState state;
 		bool shouldRunRoomEntryCommands = false;
-		if (_engine.hasPendingLoadedSaveRoomState()) {
+		if (isGraphicsReload) {
 			// Native load destroys live render entities and frees preserved global timers
 			// before room_setup rebuilds the loaded room from restored TIMER records.
 			if (EntityManager *entityManager = _engine.getRuntimeEntities())
@@ -540,7 +541,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		}
 
 		Common::Error transitionError =
-			flow.beginRoomSetupTransition(_engine.hasPendingLoadedSaveRoomState());
+			flow.beginRoomSetupTransition(isGraphicsReload);
 
 		if (transitionError.getCode() != Common::kNoError) {
 			warning(
@@ -2207,26 +2208,53 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		if (transitionError.getCode() != Common::kNoError)
 			return transitionError;
 
-		logScenePaletteSummary("room setup stub palette", scene, 0.0f);
-		warning("ROOM.CPP - Start Draw Scene");
-		drawRoomScene(_engine, *screen, scene, 0.0f);
-		warning("ROOM.CPP - END Draw Scene");		
-		//screen->makeAllDirty();
-	    //warning("ROOM.CPP - Scene Make Dirty");
-		//screen->update();
-        //warning("ROOM.CPP - textboxScene Updated");
-		logScenePaletteSummary("room setup fade target", scene, scene.targetPaletteBrightness);
 
-		// Apply room-entry lighting target before the first visible fade frame.
+
+
+
+
+		logScenePaletteSummary("room setup stub palette", scene, 0.0f);
+
+		// Apply room-entry lighting target.
 		if (roomEntryInteraction.lightingCommand == kStartupLightingCommandDim) {
 			scene.targetPaletteBrightness = kDimPaletteBrightness;
 		}
-
-		transitionError = flow.fadeInRoomScene(scene.palette, scene.targetPaletteBrightness);
-		if (transitionError.getCode() != Common::kNoError)
-			return transitionError;
+		
+		logScenePaletteSummary("room setup fade target", scene, scene.targetPaletteBrightness);
+		
+		warning("ROOM.CPP - Start Draw Scene");
+		
+		if (isGraphicsReload) {
+			// Draw directly; no fade-in.
+			drawRoomScene(_engine, *screen, scene, 1.0f);
+		
+			setScaledRoomPalette(*screen, scene.palette, scene.targetPaletteBrightness);
+		
+			if (screen->format.bytesPerPixel == 4)
+				applyTrueColorGamma(*screen, _engine.getGammaBrightnessScale());
+		
+			screen->makeAllDirty();
+			screen->update();
+		} else {
+			drawRoomScene(_engine, *screen, scene, 0.0f);
+		
+			transitionError = flow.fadeInRoomScene(scene.palette, scene.targetPaletteBrightness);
+			if (transitionError.getCode() != Common::kNoError)
+				return transitionError;
+		}
+		
+		warning("ROOM.CPP - END Draw Scene");
+		
 		if (entityManager)
 			entityManager->resumeTimerCountdowns();
+
+
+
+
+
+
+
+
 
 		if (shouldRunRoomEntryCommands) {
 			if (hasPendingRoomEntryInteraction) {
