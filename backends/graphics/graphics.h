@@ -86,6 +86,8 @@ public:
 	void setPalette(const byte *colors, uint start, uint num) override = 0;
 	void grabPalette(byte *colors, uint start, uint num) const override = 0;
 	virtual void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) = 0;
+	// Set an optional background drawn behind the game screen.
+	virtual void setWidescreenBackground(const Graphics::Surface *surface) {}
 	virtual Graphics::Surface *lockScreen() = 0;
 	virtual void unlockScreen() = 0;
 	virtual void fillScreen(uint32 col) = 0;
