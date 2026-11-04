@@ -1267,7 +1267,8 @@ public:
 	 * @see getScreenFormat
 	 */
 	virtual void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) = 0;
-
+	// Set an optional background drawn behind the game screen.
+	virtual void setWidescreenBackground(const Graphics::Surface *surface) {}
 	/**
 	 * Lock the active screen framebuffer and return a Graphics::Surface
 	 * representing it.
