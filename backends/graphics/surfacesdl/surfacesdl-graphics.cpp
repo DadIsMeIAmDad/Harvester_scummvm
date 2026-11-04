@@ -3161,6 +3161,12 @@ void SurfaceSdlGraphicsManager::SDL_UpdateRects(SDL_Surface *screen, int numrect
 
 	SDL_Rect viewport;
 
+	static bool testLogged = false;
+	if (!testLogged) {
+		warning("WIDESCREEN TEST: SDL_UpdateRects reached");
+		testLogged = true;
+	}
+
 	Common::Rect &drawRect = (_overlayVisible) ? _overlayDrawRect : _gameDrawRect;
 
 	/* Destination rectangle represents the texture before rotation */
