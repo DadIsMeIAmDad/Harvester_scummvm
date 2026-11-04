@@ -605,7 +605,7 @@ OSystem::TransactionError OpenGLGraphicsManager::endGFXTransaction() {
 		} else {
 			const bool wantScaler = _currentState.scaleFactor > 1;
 #ifdef USE_RGB_COLOR
-    		gameScreen = createSurface(_currentState.gameFormat, false, wantScaler);
+    		_gameScreen = createSurface(_currentState.gameFormat, false, wantScaler);
 #else
 			_gameScreen = createSurface(Graphics::PixelFormat::createFormatCLUT8(), false, wantScaler);
 #endif
