@@ -865,7 +865,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				return;
 
 			entity->setClassId(resolveSceneObjectClassLocal(object, entity));
-				object, entity->hasFrames() ? entity : nullptr));
 			entity->setAnchorMode(kRuntimeEntityAnchorTopLeft);
 
 
