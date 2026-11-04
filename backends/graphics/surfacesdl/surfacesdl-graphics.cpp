@@ -3179,6 +3179,8 @@ void SurfaceSdlGraphicsManager::SDL_UpdateRects(SDL_Surface *screen, int numrect
 
 	int rotangle = (int)_rotationMode;
 
+	// Temporary test: fill the entire window behind the game image.
+	SDL_SetRenderDrawColor(_renderer, 40, 80, 120, 255);
 	SDL_RenderClear(_renderer);
 
 	if (rotangle != 0) {
