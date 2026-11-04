@@ -360,6 +360,7 @@ protected:
 	 * The rendering surface for the virtual game screen.
 	 */
 	Surface *_gameScreen;
+	Surface *_gameBackground;
 
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
 	/**

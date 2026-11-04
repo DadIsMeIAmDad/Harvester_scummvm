@@ -76,7 +76,7 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 	: _currentState(), _oldState(), _transactionMode(kTransactionNone), _screenChangeID(1 << (sizeof(int) * 8 - 2)),
 	  _pipeline(nullptr), _stretchMode(STRETCH_FIT),
 	  _defaultFormat(), _defaultFormatAlpha(), _targetBuffer(nullptr),
-	  _gameScreen(nullptr), _overlay(nullptr),
+	  _gameScreen(nullptr), _gameBackground(nullptr), _overlay(nullptr),
 	  _cursor(nullptr), _cursorMask(nullptr),
 	  _cursorHotspotX(0), _cursorHotspotY(0), _cursorScaleX(0), _cursorScaleY(0),
 	  _cursorHotspotXScaled(0), _cursorHotspotYScaled(0), _cursorWidthScaled(0), _cursorHeightScaled(0),
@@ -101,6 +101,7 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 
 OpenGLGraphicsManager::~OpenGLGraphicsManager() {
 	delete _gameScreen;
+	delete _gameBackground;
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
 	delete _renderer3d;
 #endif
@@ -593,6 +594,8 @@ OSystem::TransactionError OpenGLGraphicsManager::endGFXTransaction() {
 	if (setupNewGameScreen) {
 		delete _gameScreen;
 		_gameScreen = nullptr;
+		delete _gameBackground;
+		_gameBackground = nullptr;
 
 		if (render3d) {
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
@@ -601,16 +604,26 @@ OSystem::TransactionError OpenGLGraphicsManager::endGFXTransaction() {
 #endif
 		} else {
 			const bool wantScaler = _currentState.scaleFactor > 1;
-
 #ifdef USE_RGB_COLOR
-			_gameScreen = createSurface(_currentState.gameFormat, false, wantScaler);
+    		gameScreen = createSurface(_currentState.gameFormat, false, wantScaler);
 #else
 			_gameScreen = createSurface(Graphics::PixelFormat::createFormatCLUT8(), false, wantScaler);
 #endif
+
 			assert(_gameScreen);
+
 			if (_gameScreen->hasPalette()) {
 				_gameScreen->setPalette(0, 256, _gamePalette);
 			}
+
+			// Temporary widescreen background test
+			_gameBackground = createSurface(_currentState.gameFormat);
+			assert(_gameBackground);
+
+			_gameBackground->allocate(1, 1);
+			_gameBackground->fill(
+				_gameBackground->getFormat().RGBToColor(0, 80, 160)
+			);
 
 #ifdef USE_SCALERS
 			if (wantScaler) {
@@ -815,6 +828,21 @@ void OpenGLGraphicsManager::updateScreen() {
 
 	// Alpha blending is disabled when drawing the screen
 	_targetBuffer->enableBlend(Framebuffer::kBlendModeOpaque);
+
+
+
+	if (_gameBackground) {
+		_gameBackground->updateGLTexture();
+		_pipeline->drawTexture(
+			_gameBackground->getGLTexture(),
+			0, 0, _windowWidth, _windowHeight
+		);
+	}
+
+
+
+
+
 
 	// First step: Draw the (virtual) game screen.
 	if (_gameScreen) {
