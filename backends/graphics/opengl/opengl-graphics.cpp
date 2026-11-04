@@ -814,6 +814,14 @@ void OpenGLGraphicsManager::updateScreen() {
 #endif
 	{
 		GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+
+		if (_gameBackground) {
+			_gameBackground->updateGLTexture();
+			_pipeline->drawTexture(
+				_gameBackground->getGLTexture(),
+				0, 0, _windowWidth, _windowHeight
+			);
+		}
 	}
 
 	if (!_overlayVisible) {
@@ -830,14 +838,6 @@ void OpenGLGraphicsManager::updateScreen() {
 	_targetBuffer->enableBlend(Framebuffer::kBlendModeOpaque);
 
 
-
-	if (_gameBackground) {
-		_gameBackground->updateGLTexture();
-		_pipeline->drawTexture(
-			_gameBackground->getGLTexture(),
-			0, 0, _windowWidth, _windowHeight
-		);
-	}
 
 
 
