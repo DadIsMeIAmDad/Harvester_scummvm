@@ -864,9 +864,23 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (!entity)
 				return;
 
-			entity->setClassId(resolveSceneObjectClassLocal(
+			entity->setClassId(resolveSceneObjectClassLocal(object, entity));
 				object, entity->hasFrames() ? entity : nullptr));
 			entity->setAnchorMode(kRuntimeEntityAnchorTopLeft);
+
+
+			if (entity->getClassId() == kRuntimeEntityClassBackground &&
+					entity->getBoundsWidth() > 640) {
+				const int backgroundOffsetX =
+					(entity->getBoundsWidth() - 640 + 1) / 2;
+
+				entity->setPosition(
+					object.currentX - backgroundOffsetX,
+					object.currentY,
+					(float)object.currentZ);
+			}
+
+
 			entity->setZExtent((float)object.zExtent);
 		};
 		auto getSceneRegionBounds = [](const RegionRecord &region) {
