@@ -552,6 +552,9 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		}
 
 		RoomSceneResources scene;
+
+
+
 		if (!loadRoomSceneResources(state, *_engine.getResources(), scene)) {
 			warning(
 				"HARVESTER ROOM FAILED: loadRoomSceneResources room='%s'",
@@ -559,6 +562,22 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			);
 			return Common::kReadingFailed;
 		}
+
+		// Load the optional widescreen extension for this room.
+		Graphics::Surface wingsSurface;
+
+		const Common::String wingsPath = Common::String::format(
+			"4:/GRAPHIC/ROOMS/WINGS/%s.png",
+			scene.state.roomName.c_str());
+
+		const bool hasWings = loadPngResource(
+			*_engine.getResources(), wingsPath, wingsSurface);
+
+		g_system->setWidescreenBackground(
+			hasWings ? &wingsSurface : nullptr);
+
+		wingsSurface.free();
+
 
 		auto getActiveScreen = [&]() -> Graphics::Screen * {
 			return _engine.getScreen();
@@ -864,21 +883,9 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (!entity)
 				return;
 
-			entity->setClassId(resolveSceneObjectClassLocal(object, entity));
+			entity->setClassId(resolveSceneObjectClassLocal(
+				object, entity->hasFrames() ? entity : nullptr));
 			entity->setAnchorMode(kRuntimeEntityAnchorTopLeft);
-
-
-			if (entity->getClassId() == kRuntimeEntityClassBackground &&
-					entity->getBoundsWidth() > 640) {
-				const int backgroundOffsetX =
-					(entity->getBoundsWidth() - 640 + 1) / 2;
-
-				entity->setPosition(
-					object.currentX - backgroundOffsetX,
-					object.currentY,
-					(float)object.currentZ);
-			}
-
 
 			entity->setZExtent((float)object.zExtent);
 		};
