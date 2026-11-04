@@ -616,14 +616,7 @@ OSystem::TransactionError OpenGLGraphicsManager::endGFXTransaction() {
 				_gameScreen->setPalette(0, 256, _gamePalette);
 			}
 
-			// Temporary widescreen background test
-			_gameBackground = createSurface(_currentState.gameFormat);
-			assert(_gameBackground);
 
-			_gameBackground->allocate(1, 1);
-			_gameBackground->fill(
-				_gameBackground->getFormat().RGBToColor(0, 80, 160)
-			);
 
 #ifdef USE_SCALERS
 			if (wantScaler) {
@@ -661,6 +654,35 @@ OSystem::TransactionError OpenGLGraphicsManager::endGFXTransaction() {
 
 int OpenGLGraphicsManager::getScreenChangeID() const {
 	return _screenChangeID;
+}
+
+void OpenGLGraphicsManager::setWidescreenBackground(
+        const Graphics::Surface *surface) {
+    delete _gameBackground;
+    _gameBackground = nullptr;
+
+    if (!surface || surface->w <= 0 || surface->h <= 0)
+        return;
+
+    Graphics::Surface *converted = surface->convertTo(_defaultFormatAlpha);
+    if (!converted)
+        return;
+
+    _gameBackground = createSurface(_defaultFormatAlpha);
+    if (!_gameBackground) {
+        converted->free();
+        delete converted;
+        return;
+    }
+
+    _gameBackground->allocate(converted->w, converted->h);
+
+    Graphics::Surface *dst = _gameBackground->getSurface();
+    dst->copyRectToSurface(*converted, 0, 0,
+        Common::Rect(0, 0, converted->w, converted->h));
+
+    converted->free();
+    delete converted;
 }
 
 void OpenGLGraphicsManager::initSize(uint width, uint height, const Graphics::PixelFormat *format) {
@@ -817,6 +839,10 @@ void OpenGLGraphicsManager::updateScreen() {
 
 		if (_gameBackground) {
 			_gameBackground->updateGLTexture();
+
+			_targetBuffer->enableBlend(
+				Framebuffer::kBlendModeTraditionalTransparency);
+
 			_pipeline->drawTexture(
 				_gameBackground->getGLTexture(),
 				0, 0, _windowWidth, _windowHeight
