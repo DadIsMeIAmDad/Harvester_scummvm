@@ -3188,6 +3188,8 @@ void SurfaceSdlGraphicsManager::SDL_UpdateRects(SDL_Surface *screen, int numrect
 	// Temporary test: fill the entire window behind the game image.
 	SDL_SetRenderDrawColor(_renderer, 40, 80, 120, 255);
 	SDL_RenderClear(_renderer);
+	// Restore the normal drawing colour for subsequent rendering.
+	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 
 	if (rotangle != 0) {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
