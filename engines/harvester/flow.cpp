@@ -3004,38 +3004,72 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 	if (screen) {
 		byte displayPalette[256 * 3];
 		screen->getPalette(displayPalette);
-		bool hasVisiblePalette = false;
-		for (byte value : displayPalette) {
-			if (value != 0) {
-				hasVisiblePalette = true;
-				break;
+
+	if (screen->format.bytesPerPixel != 1) {
+		// TRUE-COLOR FADE OUT.
+		Graphics::Surface original;
+		original.copyFrom(*screen);
+	
+		for (float brightness = 1.0f - kPaletteFadeStep;
+				brightness > kPaletteBrightnessBlack;
+				brightness -= kPaletteFadeStep) {
+	
+			applyTrueColorFade(*screen, original, brightness);
+	
+			if (graphicsManager)
+				graphicsManager->setWidescreenBackgroundBrightness(brightness);
+	
+			screen->makeAllDirty();
+			screen->update();
+	
+			const uint32 nextTick =
+				g_system->getMillis() + kPaletteFadeTickMs;
+	
+			while ((int32)(nextTick - g_system->getMillis()) > 0) {
+				Common::Error result = Common::kNoError;
+				if (pumpTransitionEvents(result)) {
+					original.free();
+					return result;
+				}
+				g_system->delayMillis(1);
+			}
+		}
+	
+		applyTrueColorFade(*screen, original, kPaletteBrightnessBlack);
+	
+		if (graphicsManager)
+			graphicsManager->setWidescreenBackgroundBrightness(0.0f);
+	
+		screen->makeAllDirty();
+		screen->update();
+	
+		original.free();
+
+	} else if (hasVisiblePalette) {
+		// ORIGINAL 8-BIT PALETTE FADE OUT.
+		for (float brightness = 1.0f - kPaletteFadeStep;
+				brightness > kPaletteBrightnessBlack;
+				brightness -= kPaletteFadeStep) {
+	
+			setScaledDisplayPalette(*screen, displayPalette, brightness);
+			screen->makeAllDirty();
+			screen->update();
+	
+			const uint32 nextTick =
+				g_system->getMillis() + kPaletteFadeTickMs;
+	
+			while ((int32)(nextTick - g_system->getMillis()) > 0) {
+				Common::Error result = Common::kNoError;
+				if (pumpTransitionEvents(result))
+					return result;
+				g_system->delayMillis(1);
 			}
 		}
 
-		if (hasVisiblePalette) {
-			for (float brightness = 1.0f - kPaletteFadeStep;
-					brightness > kPaletteBrightnessBlack; brightness -= kPaletteFadeStep) {
-
-
-
-				setScaledDisplayPalette(*screen, displayPalette, brightness);
-
-				if (graphicsManager)
-					graphicsManager->setWidescreenBackgroundBrightness(brightness);
-
-				screen->makeAllDirty();
-				screen->update();
-
-
-
-				const uint32 nextTick = g_system->getMillis() + kPaletteFadeTickMs;
-				while ((int32)(nextTick - g_system->getMillis()) > 0) {
-					Common::Error result = Common::kNoError;
-					if (pumpTransitionEvents(result))
-						return result;
-					g_system->delayMillis(1);
-				}
-			}
+		setScaledDisplayPalette(*screen, displayPalette, kPaletteBrightnessBlack);
+		screen->makeAllDirty();
+		screen->update();
+	}
 
 
 
