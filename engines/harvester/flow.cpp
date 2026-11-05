@@ -153,6 +153,11 @@ static bool loadTownMapPngSurface(ResourceManager &resources,
     return true;
 }
 
+static void applyTrueColorFade(
+	Graphics::Screen &screen,
+	const Graphics::Surface &original,
+	float brightness);
+
 static uint32 scaleTownMapPixel(uint32 pixel,
         const Graphics::PixelFormat &format, float brightness) {
     byte a, r, g, b;
