@@ -711,6 +711,7 @@ void OpenGLGraphicsManager::setWidescreenBackground(
 
 
 void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) {
+	warning("WIDESCREEN BRIGHTNESS: %f", brightness);
     if (!_gameBackground || !_gameBackgroundOriginal)
         return;
 
