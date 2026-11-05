@@ -712,32 +712,13 @@ void OpenGLGraphicsManager::setWidescreenBackground(
 
 
 void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) {
-	warning("WIDESCREEN BRIGHTNESS: %f", brightness);
-    if (!_gameBackground || !_gameBackgroundOriginal)
-        return;
-
     if (brightness < 0.0f)
         brightness = 0.0f;
     if (brightness > 1.0f)
         brightness = 1.0f;
 
-    Graphics::Surface *dst = _gameBackground->getSurface();
-    const Graphics::Surface *src = _gameBackgroundOriginal;
-    const Graphics::PixelFormat &format = src->format;
-
-    for (int y = 0; y < src->h; ++y) {
-        for (int x = 0; x < src->w; ++x) {
-            uint8 a, r, g, b;
-
-            format.colorToARGB(src->getPixel(x, y), a, r, g, b);
-
-            r = (uint8)(r * brightness);
-            g = (uint8)(g * brightness);
-            b = (uint8)(b * brightness);
-
-            dst->setPixel(x, y, format.ARGBToColor(a, r, g, b));
-        }
-    }
+    _widescreenBackgroundBrightness = brightness;
+    _forceRedraw = true;
 }
 
 
