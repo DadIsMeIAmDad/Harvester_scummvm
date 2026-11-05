@@ -76,7 +76,10 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 	: _currentState(), _oldState(), _transactionMode(kTransactionNone), _screenChangeID(1 << (sizeof(int) * 8 - 2)),
 	  _pipeline(nullptr), _stretchMode(STRETCH_FIT),
 	  _defaultFormat(), _defaultFormatAlpha(), _targetBuffer(nullptr),
-	  _gameScreen(nullptr), _gameBackground(nullptr), _overlay(nullptr),
+	  
+	  _gameScreen(nullptr), _gameBackground(nullptr),
+	  _gameBackgroundOriginal(nullptr), _overlay(nullptr),
+	  
 	  _cursor(nullptr), _cursorMask(nullptr),
 	  _cursorHotspotX(0), _cursorHotspotY(0), _cursorScaleX(0), _cursorScaleY(0),
 	  _cursorHotspotXScaled(0), _cursorHotspotYScaled(0), _cursorWidthScaled(0), _cursorHeightScaled(0),
@@ -102,6 +105,10 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 OpenGLGraphicsManager::~OpenGLGraphicsManager() {
 	delete _gameScreen;
 	delete _gameBackground;
+	if (_gameBackgroundOriginal) {
+		_gameBackgroundOriginal->free();
+		delete _gameBackgroundOriginal;
+	}
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
 	delete _renderer3d;
 #endif
@@ -596,6 +603,12 @@ OSystem::TransactionError OpenGLGraphicsManager::endGFXTransaction() {
 		_gameScreen = nullptr;
 		delete _gameBackground;
 		_gameBackground = nullptr;
+		
+		if (_gameBackgroundOriginal) {
+			_gameBackgroundOriginal->free();
+			delete _gameBackgroundOriginal;
+			_gameBackgroundOriginal = nullptr;
+		}
 
 		if (render3d) {
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
@@ -650,6 +663,8 @@ OSystem::TransactionError OpenGLGraphicsManager::endGFXTransaction() {
 	// Since transactionError is a ORd list of TransactionErrors this is
 	// clearly wrong. But our API is simply broken.
 	return (OSystem::TransactionError)transactionError;
+	
+
 }
 
 int OpenGLGraphicsManager::getScreenChangeID() const {
@@ -681,9 +696,50 @@ void OpenGLGraphicsManager::setWidescreenBackground(
     dst->copyRectToSurface(*converted, 0, 0,
         Common::Rect(0, 0, converted->w, converted->h));
 
-    converted->free();
-    delete converted;
+	// Keep an original copy for brightness adjustments.
+	if (_gameBackgroundOriginal) {
+		_gameBackgroundOriginal->free();
+		delete _gameBackgroundOriginal;
+	}
+
+	_gameBackgroundOriginal = new Graphics::Surface();
+	_gameBackgroundOriginal->copyFrom(*converted);
+
+	converted->free();
+	delete converted;
 }
+
+
+void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) {
+    if (!_gameBackground || !_gameBackgroundOriginal)
+        return;
+
+    if (brightness < 0.0f)
+        brightness = 0.0f;
+    if (brightness > 1.0f)
+        brightness = 1.0f;
+
+    Graphics::Surface *dst = _gameBackground->getSurface();
+    const Graphics::Surface *src = _gameBackgroundOriginal;
+    const Graphics::PixelFormat &format = src->format;
+
+    for (int y = 0; y < src->h; ++y) {
+        for (int x = 0; x < src->w; ++x) {
+            uint8 a, r, g, b;
+
+            format.colorToARGB(src->getPixel(x, y), a, r, g, b);
+
+            r = (uint8)(r * brightness);
+            g = (uint8)(g * brightness);
+            b = (uint8)(b * brightness);
+
+            dst->setPixel(x, y, format.ARGBToColor(a, r, g, b));
+        }
+    }
+}
+
+
+
 
 void OpenGLGraphicsManager::initSize(uint width, uint height, const Graphics::PixelFormat *format) {
 	Graphics::PixelFormat requestedFormat;

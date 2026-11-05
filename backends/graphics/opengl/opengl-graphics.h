@@ -105,6 +105,7 @@ public:
 	int16 getHeight() const override;
 
 	void setWidescreenBackground(const Graphics::Surface *surface) override;
+	void setWidescreenBackgroundBrightness(float brightness);
 	void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) override;
 	void fillScreen(uint32 col) override;
 	void fillScreen(const Common::Rect &r, uint32 col) override;
@@ -362,6 +363,7 @@ protected:
 	 */
 	Surface *_gameScreen;
 	Surface *_gameBackground;
+	Graphics::Surface *_gameBackgroundOriginal;
 
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
 	/**
