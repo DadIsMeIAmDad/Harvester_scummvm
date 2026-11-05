@@ -24,7 +24,7 @@
 #include "harvester/runtime_entity.h"
 #include "harvester/harvester.h"
 #include "backends/graphics/graphics.h"
-#include "backends/graphics/modular/modular-graphics.h"
+#include "backends/modular-backend.h"
 #include "common/stream.h"
 #include "common/algorithm.h"
 #include "common/debug.h"
