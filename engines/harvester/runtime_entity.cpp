@@ -524,6 +524,8 @@ void Entity::setAnimationSequence(int sequence) {
 	_lastFrame = MIN<int>(_firstFrame + kFramesPerSequence - 1, frameCount - 1);
 
 	advanceAnimationFrame(_firstFrame);
+	
+	_nextAnimationTick = getAnimationClockTicks() + _animationTickInterval;
 
 	if (_classId == kRuntimeEntityClassCursor) {
 		debugC(1, kDebugCursor,
