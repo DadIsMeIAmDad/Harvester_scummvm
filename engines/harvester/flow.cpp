@@ -3177,6 +3177,12 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 	if (!screen || !palette)
 		return Common::kNoError;
 
+	ModularGraphicsBackend *backend =
+		dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+	auto *graphicsManager =
+		backend ? backend->getGraphicsManager() : nullptr;
+
 	// Keep brightness within the valid range.
 	if (targetBrightness < 0.0f)
 		targetBrightness = 0.0f;
@@ -3184,7 +3190,7 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 		targetBrightness = 1.0f;
 
 	// -------------------------------------------------
-	// TRUE-COLOR FADE: fade away a black overlay.
+	// TRUE-COLOR FADE.
 	// -------------------------------------------------
 
 	if (screen->format.bytesPerPixel != 1) {
@@ -3193,6 +3199,10 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 
 		// Start completely black.
 		applyTrueColorFade(*screen, original, 0.0f);
+
+		if (graphicsManager)
+			graphicsManager->setWidescreenBackgroundBrightness(0.0f);
+
 		screen->makeAllDirty();
 		screen->update();
 
@@ -3207,12 +3217,15 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 			g_system->delayMillis(1);
 		}
 
-		// Gradually reveal the original room.
+		// Gradually reveal the original room and wings together.
 		for (float brightness = kPaletteFadeStep;
 				brightness < targetBrightness;
 				brightness += kPaletteFadeStep) {
 
 			applyTrueColorFade(*screen, original, brightness);
+
+			if (graphicsManager)
+				graphicsManager->setWidescreenBackgroundBrightness(brightness);
 
 			screen->makeAllDirty();
 			screen->update();
@@ -3232,6 +3245,9 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 
 		// Finish at the requested brightness.
 		applyTrueColorFade(*screen, original, targetBrightness);
+
+		if (graphicsManager)
+			graphicsManager->setWidescreenBackgroundBrightness(targetBrightness);
 
 		original.free();
 
