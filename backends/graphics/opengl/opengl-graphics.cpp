@@ -708,6 +708,8 @@ void OpenGLGraphicsManager::setWidescreenBackground(
 
 	converted->free();
 	delete converted;
+	
+	_forceRedraw = true;
 }
 
 
