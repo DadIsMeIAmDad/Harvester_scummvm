@@ -22,6 +22,8 @@
 #include <math.h>
 
 #include "harvester/flow.h"
+#include "backends/graphics/graphics.h"
+#include "backends/modular-backend.h"
 #include "image/png.h"
 #include "common/algorithm.h"
 #include "common/config-manager.h"
@@ -48,6 +50,7 @@
 #include "harvester/monster.h"
 #include "harvester/player.h"
 #include "harvester/script.h"
+
 
 namespace Harvester {
 
@@ -2991,6 +2994,13 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 		return Common::kNoError;
 	}
 	Graphics::Screen *screen = _engine.getScreen();
+	
+	ModularGraphicsBackend *backend =
+		dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+	auto *graphicsManager =
+		backend ? backend->getGraphicsManager() : nullptr;
+	
 	if (screen) {
 		byte displayPalette[256 * 3];
 		screen->getPalette(displayPalette);
@@ -3005,9 +3015,18 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 		if (hasVisiblePalette) {
 			for (float brightness = 1.0f - kPaletteFadeStep;
 					brightness > kPaletteBrightnessBlack; brightness -= kPaletteFadeStep) {
+
+
+
 				setScaledDisplayPalette(*screen, displayPalette, brightness);
+
+				if (graphicsManager)
+					graphicsManager->setWidescreenBackgroundBrightness(brightness);
+
 				screen->makeAllDirty();
 				screen->update();
+
+
 
 				const uint32 nextTick = g_system->getMillis() + kPaletteFadeTickMs;
 				while ((int32)(nextTick - g_system->getMillis()) > 0) {
@@ -3018,9 +3037,19 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 				}
 			}
 
+
+
 			setScaledDisplayPalette(*screen, displayPalette, kPaletteBrightnessBlack);
+
+			if (graphicsManager)
+				graphicsManager->setWidescreenBackgroundBrightness(0.0f);
+
 			screen->makeAllDirty();
 			screen->update();
+
+
+
+
 		}
 	}
 
