@@ -88,6 +88,12 @@ public:
 	virtual void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) = 0;
 	// Set an optional background drawn behind the game screen.
 	virtual void setWidescreenBackground(const Graphics::Surface *surface) {}
+	
+	virtual void setHarvesterCursor(
+    const Graphics::Surface *surface,
+    int x, int y, int width, int height) {}
+	
+	
 	virtual void setWidescreenBackgroundBrightness(float brightness) {}
 	virtual Graphics::Surface *lockScreen() = 0;
 	virtual void unlockScreen() = 0;
