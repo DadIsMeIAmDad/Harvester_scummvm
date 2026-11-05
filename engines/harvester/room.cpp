@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#include "backends/graphics/graphics.h"
 #include "backends/modular-backend.h"
 #include "harvester/room.h"
 #include "image/png.h"
