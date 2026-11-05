@@ -872,7 +872,7 @@ void OpenGLGraphicsManager::updateScreen() {
 
 	// First step: Draw the (virtual) game screen.
 	if (_gameScreen) {
-		_pipeline->drawTexture(_gameScreen->getGLTexture(), _gameDrawRect.left, _gameDrawRect.top, _gameDrawRect.width(), _gameDrawRect.height());
+		_pipeline->drawTexture(_gameScreen->getGLTexture(), _gameDrawRect.left - 1, _gameDrawRect.top, _gameDrawRect.width() + 2, _gameDrawRect.height());
 	}
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
 	else if (_renderer3d && _renderer3d->hasTexture()) {
