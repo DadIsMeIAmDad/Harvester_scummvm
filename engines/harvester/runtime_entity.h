@@ -136,6 +136,14 @@ public:
 	void draw(Graphics::Screen &screen) const;
 	const Graphics::Surface *getCurrentPngFrame() const;
 	Common::Point getCurrentDrawOrigin() const;
+	
+	
+	int getCurrentPngDrawWidth() const;
+	int getCurrentPngDrawHeight() const;
+	
+	
+	
+	
 	bool hitTest(const Common::Point &point) const;
 	bool overlapsEntity(const Entity &other) const;
 	uint countOpaqueOverlapPixels(const Entity &other) const;

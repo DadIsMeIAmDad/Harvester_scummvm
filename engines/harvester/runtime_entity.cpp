@@ -22,6 +22,9 @@
 #include <math.h>
 
 #include "harvester/runtime_entity.h"
+#include "harvester/harvester.h"
+#include "backends/graphics/graphics.h"
+#include "backends/graphics/modular/modular-graphics.h"
 #include "common/stream.h"
 #include "common/algorithm.h"
 #include "common/debug.h"
@@ -840,6 +843,25 @@ const Graphics::Surface *Entity::getCurrentPngFrame() const {
 
 Common::Point Entity::getCurrentDrawOrigin() const {
     return getDrawOrigin();
+}
+
+
+int Entity::getCurrentPngDrawWidth() const {
+    const Graphics::Surface *frame = getCurrentPngFrame();
+
+    if (!frame)
+        return 0;
+
+    return scaleDimension(frame->w, _depthScale);
+}
+
+int Entity::getCurrentPngDrawHeight() const {
+    const Graphics::Surface *frame = getCurrentPngFrame();
+
+    if (!frame)
+        return 0;
+
+    return scaleDimension(frame->h, _depthScale);
 }
 
 
@@ -2059,8 +2081,38 @@ bool EntityManager::syncCursorEntityPosition(const Common::Point &position) {
 }
 
 void EntityManager::drawCursor(Graphics::Screen &screen) const {
-	if (_cursorEntity)
-		_cursorEntity->draw(screen);
+	if (!_cursorEntity || !_cursorEntity->isVisible()) {
+		ModularGraphicsBackend *backend =
+			dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+		if (backend)
+			backend->getGraphicsManager()->setHarvesterCursor(
+				nullptr, 0, 0, 0, 0);
+
+		return;
+	}
+
+    ModularGraphicsBackend *backend =
+        dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+    if (!backend)
+        return;
+
+    const Graphics::Surface *frame =
+        _cursorEntity->getCurrentPngFrame();
+
+    if (!frame)
+        return;
+
+    const Common::Point origin =
+        _cursorEntity->getCurrentDrawOrigin();
+
+    backend->getGraphicsManager()->setHarvesterCursor(
+        frame,
+        origin.x,
+        origin.y,
+        _cursorEntity->getCurrentPngDrawWidth(),
+        _cursorEntity->getCurrentPngDrawHeight());
 }
 
 void EntityManager::drawSceneEntities(Graphics::Screen &screen) const {
