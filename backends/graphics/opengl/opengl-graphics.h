@@ -106,6 +106,14 @@ public:
 
 	void setWidescreenBackground(const Graphics::Surface *surface) override;
 	void setWidescreenBackgroundBrightness(float brightness) override;
+	
+	
+	void setHarvesterCursor(
+    const Graphics::Surface *surface,
+    int x, int y, int width, int height) override;
+	
+	
+	
 	void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) override;
 	void fillScreen(uint32 col) override;
 	void fillScreen(const Common::Rect &r, uint32 col) override;
@@ -363,6 +371,16 @@ protected:
 	 */
 	Surface *_gameScreen;
 	Surface *_gameBackground;
+	
+	
+	Surface *_harvesterCursor;
+	int _harvesterCursorX;
+	int _harvesterCursorY;
+	int _harvesterCursorWidth;
+	int _harvesterCursorHeight;
+	bool _harvesterCursorVisible;
+	
+	
 	float _widescreenBackgroundBrightness;
 	Graphics::Surface *_gameBackgroundOriginal;
 

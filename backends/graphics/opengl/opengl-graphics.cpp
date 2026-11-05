@@ -78,6 +78,10 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 	  _defaultFormat(), _defaultFormatAlpha(), _targetBuffer(nullptr),
 	  
 	  _gameScreen(nullptr), _gameBackground(nullptr),
+	  _harvesterCursor(nullptr),
+	  _harvesterCursorX(0), _harvesterCursorY(0),
+	  _harvesterCursorWidth(0), _harvesterCursorHeight(0),
+	  _harvesterCursorVisible(false),
 	  _widescreenBackgroundBrightness(1.0f),
 	  _gameBackgroundOriginal(nullptr), _overlay(nullptr),
 	  
@@ -106,6 +110,7 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 OpenGLGraphicsManager::~OpenGLGraphicsManager() {
 	delete _gameScreen;
 	delete _gameBackground;
+	delete _harvesterCursor;
 	if (_gameBackgroundOriginal) {
 		_gameBackgroundOriginal->free();
 		delete _gameBackgroundOriginal;
@@ -712,6 +717,53 @@ void OpenGLGraphicsManager::setWidescreenBackground(
 	_forceRedraw = true;
 }
 
+void OpenGLGraphicsManager::setHarvesterCursor(
+        const Graphics::Surface *surface,
+        int x, int y, int width, int height) {
+
+    if (!surface || surface->w <= 0 || surface->h <= 0 ||
+            width <= 0 || height <= 0) {
+        _harvesterCursorVisible = false;
+        _forceRedraw = true;
+        return;
+    }
+
+    Graphics::Surface *converted = surface->convertTo(_defaultFormatAlpha);
+    if (!converted)
+        return;
+
+    if (!_harvesterCursor ||
+            _harvesterCursor->getSurface()->w != converted->w ||
+            _harvesterCursor->getSurface()->h != converted->h) {
+
+        delete _harvesterCursor;
+        _harvesterCursor = createSurface(_defaultFormatAlpha);
+
+        if (!_harvesterCursor) {
+            converted->free();
+            delete converted;
+            _harvesterCursorVisible = false;
+            return;
+        }
+
+        _harvesterCursor->allocate(converted->w, converted->h);
+    }
+
+    Graphics::Surface *dst = _harvesterCursor->getSurface();
+    dst->copyRectToSurface(*converted, 0, 0,
+        Common::Rect(0, 0, converted->w, converted->h));
+
+    converted->free();
+    delete converted;
+
+    _harvesterCursorX = x;
+    _harvesterCursorY = y;
+    _harvesterCursorWidth = width;
+    _harvesterCursorHeight = height;
+    _harvesterCursorVisible = true;
+
+    _forceRedraw = true;
+}
 
 void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) {
     if (brightness < 0.0f)
@@ -723,6 +775,57 @@ void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) 
     _forceRedraw = true;
 }
 
+
+
+void OpenGLGraphicsManager::setHarvesterCursor(
+        const Graphics::Surface *surface,
+        int x, int y, int width, int height) {
+
+    if (!surface || width <= 0 || height <= 0) {
+        _harvesterCursorVisible = false;
+        _forceRedraw = true;
+        return;
+    }
+
+    Graphics::Surface *converted = surface->convertTo(_defaultFormatAlpha);
+    if (!converted)
+        return;
+
+    // Recreate the texture only when the frame dimensions change.
+    if (!_harvesterCursor ||
+            _harvesterCursor->getSurface()->w != converted->w ||
+			_harvesterCursor->getSurface()->h != converted->h
+
+        delete _harvesterCursor;
+        _harvesterCursor = createSurface(_defaultFormatAlpha);
+
+        if (!_harvesterCursor) {
+            converted->free();
+            delete converted;
+            _harvesterCursorVisible = false;
+            return;
+        }
+
+        _harvesterCursor->allocate(converted->w, converted->h);
+    }
+
+    Graphics::Surface *dst = _harvesterCursor->getSurface();
+
+    dst->copyRectToSurface(
+        *converted, 0, 0,
+        Common::Rect(0, 0, converted->w, converted->h));
+
+    converted->free();
+    delete converted;
+
+    _harvesterCursorX = x;
+    _harvesterCursorY = y;
+    _harvesterCursorWidth = width;
+    _harvesterCursorHeight = height;
+    _harvesterCursorVisible = true;
+
+    _forceRedraw = true;
+}
 
 
 
@@ -854,6 +957,14 @@ void OpenGLGraphicsManager::updateScreen() {
 	if (_gameScreen) {
 		_gameScreen->updateGLTexture();
 	}
+	
+	
+	
+	if (_harvesterCursor && _harvesterCursorVisible) {
+		_harvesterCursor->updateGLTexture();
+	}
+	
+	
 
 	if (_cursorVisible && _cursor) {
 		_cursor->updateGLTexture();
@@ -938,6 +1049,41 @@ void OpenGLGraphicsManager::updateScreen() {
 	}
 #endif
 
+
+
+// Draw the Harvester cursor outside the game-screen scissor area.
+if (_harvesterCursor && _harvesterCursorVisible && _gameScreen) {
+    _targetBuffer->enableScissorTest(false);
+    _targetBuffer->enableBlend(
+        Framebuffer::kBlendModeTraditionalTransparency);
+
+    const float scaleX =
+        (float)_gameDrawRect.width() / _gameScreen->getWidth();
+    const float scaleY =
+        (float)_gameDrawRect.height() / _gameScreen->getHeight();
+
+    const int cursorX =
+        _gameDrawRect.left + (int)(_harvesterCursorX * scaleX);
+    const int cursorY =
+        _gameDrawRect.top + (int)(_harvesterCursorY * scaleY);
+
+    const int cursorWidth =
+        (int)(_harvesterCursorWidth * scaleX);
+    const int cursorHeight =
+        (int)(_harvesterCursorHeight * scaleY);
+
+    _pipeline->drawTexture(
+        _harvesterCursor->getGLTexture(),
+        cursorX, cursorY, cursorWidth, cursorHeight);
+
+    _targetBuffer->enableBlend(Framebuffer::kBlendModeOpaque);
+}
+
+if (!_overlayVisible)
+    _targetBuffer->enableScissorTest(true);
+
+
+
 	// Second step: Draw the cursor if necessary and we are not in GUI and it
 #if !USE_FORCED_GLES
 	if (_libretroPipeline) {
@@ -966,11 +1112,8 @@ void OpenGLGraphicsManager::updateScreen() {
 	}
 
 	// Fourth step: Draw the cursor if we didn't before.
-	if (drawCursor) {
-		// Allow the cursor to extend beyond the game screen.
-		_targetBuffer->enableScissorTest(false);
+	if (drawCursor)
 		renderCursor();
-	}
 
 	if (!_overlayVisible) {
 		_targetBuffer->enableScissorTest(false);
