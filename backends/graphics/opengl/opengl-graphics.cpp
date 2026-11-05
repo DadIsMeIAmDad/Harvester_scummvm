@@ -966,8 +966,11 @@ void OpenGLGraphicsManager::updateScreen() {
 	}
 
 	// Fourth step: Draw the cursor if we didn't before.
-	if (drawCursor)
+	if (drawCursor) {
+		// Allow the cursor to extend beyond the game screen.
+		_targetBuffer->enableScissorTest(false);
 		renderCursor();
+	}
 
 	if (!_overlayVisible) {
 		_targetBuffer->enableScissorTest(false);
