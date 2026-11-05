@@ -777,58 +777,6 @@ void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) 
 
 
 
-void OpenGLGraphicsManager::setHarvesterCursor(
-        const Graphics::Surface *surface,
-        int x, int y, int width, int height) {
-
-    if (!surface || width <= 0 || height <= 0) {
-        _harvesterCursorVisible = false;
-        _forceRedraw = true;
-        return;
-    }
-
-    Graphics::Surface *converted = surface->convertTo(_defaultFormatAlpha);
-    if (!converted)
-        return;
-
-    // Recreate the texture only when the frame dimensions change.
-    if (!_harvesterCursor ||
-            _harvesterCursor->getSurface()->w != converted->w ||
-			_harvesterCursor->getSurface()->h != converted->h
-
-        delete _harvesterCursor;
-        _harvesterCursor = createSurface(_defaultFormatAlpha);
-
-        if (!_harvesterCursor) {
-            converted->free();
-            delete converted;
-            _harvesterCursorVisible = false;
-            return;
-        }
-
-        _harvesterCursor->allocate(converted->w, converted->h);
-    }
-
-    Graphics::Surface *dst = _harvesterCursor->getSurface();
-
-    dst->copyRectToSurface(
-        *converted, 0, 0,
-        Common::Rect(0, 0, converted->w, converted->h));
-
-    converted->free();
-    delete converted;
-
-    _harvesterCursorX = x;
-    _harvesterCursorY = y;
-    _harvesterCursorWidth = width;
-    _harvesterCursorHeight = height;
-    _harvesterCursorVisible = true;
-
-    _forceRedraw = true;
-}
-
-
-
 void OpenGLGraphicsManager::initSize(uint width, uint height, const Graphics::PixelFormat *format) {
 	Graphics::PixelFormat requestedFormat;
 #ifdef USE_RGB_COLOR
