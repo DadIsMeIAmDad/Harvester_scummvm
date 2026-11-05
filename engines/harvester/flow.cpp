@@ -3183,6 +3183,15 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 	if (targetBrightness > 1.0f)
 		targetBrightness = 1.0f;
 
+
+
+	ModularGraphicsBackend *backend =
+		dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+	auto *graphicsManager =
+		backend ? backend->getGraphicsManager() : nullptr;
+
+
 	// -------------------------------------------------
 	// TRUE-COLOR FADE: fade away a black overlay.
 	// -------------------------------------------------
@@ -3190,6 +3199,9 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 	if (screen->format.bytesPerPixel != 1) {
 		Graphics::Surface original;
 		original.copyFrom(*screen);
+
+		if (graphicsManager)
+			graphicsManager->setWidescreenBackgroundBrightness(0.0f);
 
 		// Start completely black.
 		applyTrueColorFade(*screen, original, 0.0f);
@@ -3214,6 +3226,9 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 
 			applyTrueColorFade(*screen, original, brightness);
 
+			if (graphicsManager)
+				graphicsManager->setWidescreenBackgroundBrightness(brightness);
+
 			screen->makeAllDirty();
 			screen->update();
 
@@ -3232,6 +3247,9 @@ Common::Error Flow::fadeInRoomScene(const byte *palette, float targetBrightness)
 
 		// Finish at the requested brightness.
 		applyTrueColorFade(*screen, original, targetBrightness);
+		
+		if (graphicsManager)
+			graphicsManager->setWidescreenBackgroundBrightness(targetBrightness);
 
 		original.free();
 
