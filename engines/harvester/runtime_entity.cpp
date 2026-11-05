@@ -819,6 +819,30 @@ Common::Point Entity::getDrawOrigin() const {
 		_screenBaseY);
 }
 
+const Graphics::Surface *Entity::getCurrentPngFrame() const {
+    const Common::Array<Graphics::Surface *> *sourceFrames = nullptr;
+
+    if (!_basePngFrames.empty())
+        sourceFrames = &_basePngFrames;
+    else if (!_pngFrames.empty())
+        sourceFrames = &_pngFrames;
+
+    if (!sourceFrames || sourceFrames->empty())
+        return nullptr;
+
+    int frameIndex = _currentFrame;
+
+    if (frameIndex < 0 || frameIndex >= (int)sourceFrames->size())
+        frameIndex = 0;
+
+    return (*sourceFrames)[frameIndex];
+}
+
+Common::Point Entity::getCurrentDrawOrigin() const {
+    return getDrawOrigin();
+}
+
+
 Common::Rect Entity::getScreenRect() const {
 	return getFrameRect();
 }
