@@ -78,6 +78,7 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 	  _defaultFormat(), _defaultFormatAlpha(), _targetBuffer(nullptr),
 	  
 	  _gameScreen(nullptr), _gameBackground(nullptr),
+	  _widescreenBackgroundBrightness(1.0f),
 	  _gameBackgroundOriginal(nullptr), _overlay(nullptr),
 	  
 	  _cursor(nullptr), _cursorMask(nullptr),
@@ -905,6 +906,23 @@ void OpenGLGraphicsManager::updateScreen() {
 				0, 0, _windowWidth, _windowHeight
 			);
 		}
+	}
+
+
+	if (_gameBackground && _widescreenBackgroundBrightness < 1.0f) {
+		float alpha = 1.0f - _widescreenBackgroundBrightness;
+
+		_targetBuffer->enableBlend(
+			Framebuffer::kBlendModeTraditionalTransparency);
+	
+		_pipeline->setColor(0.0f, 0.0f, 0.0f, alpha);
+	
+		_pipeline->drawTexture(
+			_gameBackground->getGLTexture(),
+			0, 0, _windowWidth, _windowHeight
+		);
+	
+		_pipeline->setColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
 	if (!_overlayVisible) {

@@ -363,6 +363,7 @@ protected:
 	 */
 	Surface *_gameScreen;
 	Surface *_gameBackground;
+	float _widescreenBackgroundBrightness;
 	Graphics::Surface *_gameBackgroundOriginal;
 
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
