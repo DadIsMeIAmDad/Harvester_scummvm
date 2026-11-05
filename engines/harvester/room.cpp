@@ -4191,7 +4191,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			needsRedraw = true;
 		}
 
-		EntityManager *entityManager = _engine.getRuntimeEntities();
+		
 		if (entityManager && entityManager->syncCursorEntityPosition(_mousePos))
 			needsRedraw = true;
 
