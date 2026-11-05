@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+#include "backends/modular-backend.h"
 #include "harvester/room.h"
 #include "image/png.h"
 #include "common/algorithm.h"
@@ -573,8 +573,18 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		const bool hasWings = loadPngResource(
 			*_engine.getResources(), wingsPath, wingsSurface);
 
-		g_system->setWidescreenBackground(
-			hasWings ? &wingsSurface : nullptr);
+
+
+		ModularGraphicsBackend *backend =
+			dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+		if (backend && backend->getGraphicsManager()) {
+			backend->getGraphicsManager()->setWidescreenBackground(
+				hasWings ? &wingsSurface : nullptr);
+		}
+
+
+
 
 		wingsSurface.free();
 
