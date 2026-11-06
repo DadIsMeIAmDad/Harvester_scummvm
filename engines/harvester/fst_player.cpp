@@ -543,6 +543,15 @@ bool FstPlayer::play(const Common::String &path) {
 	if (!clearPendingVideoInput(_vm))
 		return false;
 
+
+	// Hide the animated game cursor for the entire FST playback.
+	EntityManager *entities = _vm.getRuntimeEntities();
+	if (entities)
+		entities->hideCursor();
+
+
+
+
 	const bool shouldSwitchToMovieDisplay =
 		header.width == 320 && header.height == 200 &&
 		(_vm.getDisplayWidth() != 320 || _vm.getDisplayHeight() != 200);
@@ -699,6 +708,11 @@ bool FstPlayer::play(const Common::String &path) {
 		_vm.pauseMusic(false);
 	if (shouldSwitchToMovieDisplay)
 		_vm.setDisplayMode(previousDisplayWidth, previousDisplayHeight);
+
+	// Restore the game cursor after video playback.
+	if (entities)
+		entities->showCursor();
+
 
 	return !_vm.shouldQuit();
 }
