@@ -3007,6 +3007,11 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 	auto *graphicsManager =
 		backend ? backend->getGraphicsManager() : nullptr;
 
+
+	const float wingsStartBrightness = graphicsManager ?
+		graphicsManager->getWidescreenBackgroundBrightness() : 1.0f;
+
+
 	if (screen) {
 		byte displayPalette[256 * 3];
 		screen->getPalette(displayPalette);
@@ -3031,7 +3036,8 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 				applyTrueColorFade(*screen, original, brightness);
 
 				if (graphicsManager)
-					graphicsManager->setWidescreenBackgroundBrightness(brightness);
+					graphicsManager->setWidescreenBackgroundBrightness(
+						wingsStartBrightness * brightness);
 
 				screen->makeAllDirty();
 				screen->update();
