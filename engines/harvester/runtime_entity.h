@@ -262,6 +262,7 @@ public:
 	Entity *getCursorEntity() const { return _cursorEntity; }
 	void hideCursor();
 	void showCursor();
+	void setCursorInvisible(bool invisible);
 	void pauseTimerCountdowns();
 	void resumeTimerCountdowns();
 	bool takeExpiredTimerNames(Common::Array<Common::String> &expiredTimerNames);
@@ -284,6 +285,7 @@ private:
 	Common::Array<Entity *> _sceneEntities;
 	Common::Array<Common::String> _expiredTimerNames;
 	Entity *_cursorEntity = nullptr;
+	bool _cursorInvisible = false;
 	
 	mutable bool _cursorFramesUploaded = false;
 	

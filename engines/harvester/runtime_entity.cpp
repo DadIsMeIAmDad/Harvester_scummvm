@@ -2028,6 +2028,10 @@ void EntityManager::showCursor() {
 		_cursorEntity->setVisible(true);
 }
 
+void EntityManager::setCursorInvisible(bool invisible) {
+    _cursorInvisible = invisible;
+}
+
 void EntityManager::pauseTimerCountdowns() {
 	if (_timerPauseDepth++ > 0)
 		return;
@@ -2101,7 +2105,11 @@ void EntityManager::drawCursor(Graphics::Screen &screen) const {
 	}
 	
 
-
+	if (_cursorInvisible) {
+		backend->getGraphicsManager()->setHarvesterCursor(
+			nullptr, 0, 0, 0, 0);
+		return;
+	}
 
 
 

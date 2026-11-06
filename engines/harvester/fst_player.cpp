@@ -545,10 +545,10 @@ bool FstPlayer::play(const Common::String &path) {
 		return false;
 
 
-	// Hide the animated game cursor for the entire FST playback.
+	// Make the animated game cursor invisible during FST playback.
 	EntityManager *entities = _vm.getRuntimeEntities();
 	if (entities)
-		entities->hideCursor();
+		entities->setCursorInvisible(true);
 
 
 
@@ -712,7 +712,7 @@ bool FstPlayer::play(const Common::String &path) {
 
 	// Restore the game cursor after video playback.
 	if (entities)
-		entities->showCursor();
+		entities->setCursorInvisible(false);
 
 
 	return !_vm.shouldQuit();
