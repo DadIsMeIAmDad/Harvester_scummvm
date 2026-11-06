@@ -3210,26 +3210,27 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 }
 
 Common::Error Flow::waitForRoomSetupTransitionHold() {
+    if (_roomSetupTransitionShownTick == 0 || !g_system)
+        return Common::kNoError;
 
+    if (ConfMan.hasKey("show_wait_animation") &&
+            !ConfMan.getBool("show_wait_animation")) {
+        _roomSetupTransitionShownTick = 0;
+        return Common::kNoError;
+    }
 
+    const uint32 deadline =
+        _roomSetupTransitionShownTick + kTransitionWaitFrameMinMs;
 
+    while ((int32)(deadline - g_system->getMillis()) > 0) {
+        Common::Error result = Common::kNoError;
+        if (pumpTransitionEvents(result))
+            return result;
+        g_system->delayMillis(1);
+    }
 
-
-
-
-	if (_roomSetupTransitionShownTick == 0 || !g_system)
-		return Common::kNoError;
-
-	const uint32 deadline = _roomSetupTransitionShownTick + kTransitionWaitFrameMinMs;
-	while ((int32)(deadline - g_system->getMillis()) > 0) {
-		Common::Error result = Common::kNoError;
-		if (pumpTransitionEvents(result))
-			return result;
-		g_system->delayMillis(1);
-	}
-
-	_roomSetupTransitionShownTick = 0;
-	return Common::kNoError;
+    _roomSetupTransitionShownTick = 0;
+    return Common::kNoError;
 }
 
 static void applyTrueColorFade(
