@@ -106,6 +106,11 @@ public:
 
 	void setWidescreenBackground(const Graphics::Surface *surface) override;
 	void setWidescreenBackgroundBrightness(float brightness) override;
+	
+	float getWidescreenBackgroundBrightness() const override {
+		return _widescreenBackgroundBrightness;
+	}
+	
 	void setWidescreenBackgroundGamma(float gamma) override;
 	
 	
