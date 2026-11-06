@@ -135,6 +135,17 @@ public:
 	bool tickVisualState(uint32 now);
 	void draw(Graphics::Screen &screen) const;
 	const Graphics::Surface *getCurrentPngFrame() const;
+	
+	const Common::Array<Graphics::Surface *> &getPngAnimationFrames() const {
+		return !_basePngFrames.empty() ? _basePngFrames : _pngFrames;
+	}
+	
+	
+	int getAnimationSequence() const {
+		return _animationSequence;
+	}
+	
+	
 	Common::Point getCurrentDrawOrigin() const;
 	
 	
@@ -279,6 +290,10 @@ private:
 	Common::Array<Entity *> _sceneEntities;
 	Common::Array<Common::String> _expiredTimerNames;
 	Entity *_cursorEntity = nullptr;
+	
+	mutable bool _cursorFramesUploaded = false;
+	
+	
 	int _timerPauseDepth = 0;
 };
 

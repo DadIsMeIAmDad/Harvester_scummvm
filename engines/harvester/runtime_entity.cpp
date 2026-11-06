@@ -2083,9 +2083,30 @@ bool EntityManager::syncCursorEntityPosition(const Common::Point &position) {
 }
 
 void EntityManager::drawCursor(Graphics::Screen &screen) const {
+
+
+
+
+	ModularGraphicsBackend *backend =
+		dynamic_cast<ModularGraphicsBackend *>(g_system);
+	
+	if (!backend)
+		return;
+	
+	if (!_cursorFramesUploaded && _cursorEntity) {
+		backend->getGraphicsManager()->setHarvesterCursorFrames(
+			_cursorEntity->getPngAnimationFrames());
+	
+		_cursorFramesUploaded = true;
+	}
+	
+
+
+
+
+
+
 	if (!_cursorEntity || !_cursorEntity->isVisible()) {
-		ModularGraphicsBackend *backend =
-			dynamic_cast<ModularGraphicsBackend *>(g_system);
 
 		if (backend)
 			backend->getGraphicsManager()->setHarvesterCursor(
@@ -2108,6 +2129,9 @@ void EntityManager::drawCursor(Graphics::Screen &screen) const {
 
     const Common::Point origin =
         _cursorEntity->getCurrentDrawOrigin();
+
+	backend->getGraphicsManager()->setHarvesterCursorSequence(
+		_cursorEntity->getAnimationSequence());
 
     backend->getGraphicsManager()->setHarvesterCursor(
         frame,
