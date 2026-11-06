@@ -93,6 +93,7 @@ static const char *const kSaveGamePalettePath = "1:/GRAPHIC/PAL/SAVEGAME.PAL";
 static const char *const kGameOverBitmapPath = "4:/GRAPHIC/OTHER/GAMEOVER.png";
 static const char *const kGameOverPalettePath = "1:/GRAPHIC/PAL/GAMEOVER.PAL";
 static const char *const kGameOverMusicPath = "SOUND/MUSIC/ANXIETY.CMP";
+static const char *const kGameOverWingsPath = "4:/GRAPHIC/OTHER/WINGS/GAMEOVER.png";
 
 static const int kOptionsSliderMinX = 0x16f;
 static const int kOptionsSliderMaxX = 0x22b;
@@ -1490,6 +1491,36 @@ if (!loadedPng) {
 
 _hasMainMenuBackdrop = true;
 flow.resetCursorAnimationSequence();
+
+
+
+
+
+ModularGraphicsBackend *backend =
+    dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+auto *graphicsManager =
+    backend ? backend->getGraphicsManager() : nullptr;
+
+if (graphicsManager) {
+    Graphics::Surface *wings = nullptr;
+
+    if (loadPngAsMenuSurface(*resources, kGameOverWingsPath, wings)) {
+        graphicsManager->setWidescreenBackground(wings);
+
+        graphicsManager->setWidescreenBackgroundGamma(
+            _engine.getGammaBrightnessScale());
+
+        graphicsManager->setWidescreenBackgroundBrightness(1.0f);
+
+        wings->free();
+        delete wings;
+    }
+}
+
+
+
+
 
 
 
