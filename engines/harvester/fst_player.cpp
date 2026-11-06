@@ -38,6 +38,7 @@
 #include "harvester/harvester.h"
 #include "harvester/resources.h"
 #include "image/pcx.h"
+#include "harvester/runtime_entity.h"
 
 namespace Harvester {
 
