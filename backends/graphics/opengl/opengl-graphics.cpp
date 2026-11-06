@@ -891,6 +891,7 @@ void OpenGLGraphicsManager::setWidescreenBackgroundGamma(float gamma) {
         }
     }
 
+	_gameBackground->flagDirty();
     _gameBackground->updateGLTexture();
     _forceRedraw = true;
 }
