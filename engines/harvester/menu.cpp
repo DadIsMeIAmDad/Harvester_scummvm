@@ -20,7 +20,8 @@
  */
 
 #include "harvester/menu.h"
-
+#include "backends/modular-backend.h"
+#include "backends/graphics/graphics.h"
 #include "common/algorithm.h"
 #include "common/config-manager.h"
 #include "common/endian.h"
@@ -788,6 +789,18 @@ static void renderOptionsMenuScreen(HarvesterEngine &engine,
 	// Apply gamma to the completed true-color menu.
 	applyTrueColorMenuGamma(
 		*screen, engine.getGammaBrightnessScale());
+
+
+
+	ModularGraphicsBackend *backend =
+		dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+	if (backend && backend->getGraphicsManager()) {
+		backend->getGraphicsManager()->setWidescreenBackgroundGamma(
+			engine.getGammaBrightnessScale());
+	}
+
+
 
 	screen->makeAllDirty();
 	screen->update();
