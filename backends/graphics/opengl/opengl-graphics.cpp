@@ -82,7 +82,12 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 	  _harvesterCursorX(0), _harvesterCursorY(0),
 	  _harvesterCursorWidth(0), _harvesterCursorHeight(0),
 	  _harvesterCursorVisible(false),
+	  _harvesterCursorSequence(-1),
+	  _harvesterCursorFrame(0),
+	  _harvesterCursorNextTick(0),
 	  _widescreenBackgroundBrightness(1.0f),
+	  
+	  
 	  _gameBackgroundOriginal(nullptr), _overlay(nullptr),
 	  
 	  _cursor(nullptr), _cursorMask(nullptr),
@@ -111,6 +116,12 @@ OpenGLGraphicsManager::~OpenGLGraphicsManager() {
 	delete _gameScreen;
 	delete _gameBackground;
 	delete _harvesterCursor;
+	
+	for (uint i = 0; i < _harvesterCursorFrames.size(); ++i)
+		delete _harvesterCursorFrames[i];
+
+	_harvesterCursorFrames.clear();
+	
 	if (_gameBackgroundOriginal) {
 		_gameBackgroundOriginal->free();
 		delete _gameBackgroundOriginal;
@@ -765,6 +776,79 @@ void OpenGLGraphicsManager::setHarvesterCursor(
     _forceRedraw = true;
 }
 
+void OpenGLGraphicsManager::setHarvesterCursorFrames(
+        const Common::Array<Graphics::Surface *> &frames) {
+
+    // Release any previously loaded cursor frames.
+    for (uint i = 0; i < _harvesterCursorFrames.size(); ++i)
+        delete _harvesterCursorFrames[i];
+
+    _harvesterCursorFrames.clear();
+
+    // Convert and store every PNG frame in OpenGL format.
+    for (uint i = 0; i < frames.size(); ++i) {
+        if (!frames[i]) {
+            _harvesterCursorFrames.push_back(nullptr);
+            continue;
+        }
+
+        Graphics::Surface *converted =
+            frames[i]->convertTo(_defaultFormatAlpha);
+
+        if (!converted) {
+            _harvesterCursorFrames.push_back(nullptr);
+            continue;
+        }
+
+        Surface *cursorFrame = createSurface(_defaultFormatAlpha);
+
+        if (!cursorFrame) {
+            converted->free();
+            delete converted;
+            _harvesterCursorFrames.push_back(nullptr);
+            continue;
+        }
+
+        cursorFrame->allocate(converted->w, converted->h);
+
+        cursorFrame->getSurface()->copyRectToSurface(
+            *converted, 0, 0,
+            Common::Rect(0, 0, converted->w, converted->h));
+
+        converted->free();
+        delete converted;
+
+        _harvesterCursorFrames.push_back(cursorFrame);
+    }
+
+    _harvesterCursorSequence = -1;
+    _harvesterCursorFrame = 0;
+    _harvesterCursorNextTick = 0;
+
+    _forceRedraw = true;
+}
+
+
+void OpenGLGraphicsManager::setHarvesterCursorSequence(int sequence) {
+    if (sequence < 0 || sequence > 7)
+        sequence = 7;
+
+    if (_harvesterCursorSequence == sequence)
+        return;
+
+    _harvesterCursorSequence = sequence;
+    _harvesterCursorFrame = 0;
+
+    // Start the new sequence immediately.
+    _harvesterCursorNextTick = 0;
+
+    _forceRedraw = true;
+}
+
+
+
+
+
 void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) {
     if (brightness < 0.0f)
         brightness = 0.0f;
@@ -875,6 +959,34 @@ void OpenGLGraphicsManager::updateScreen() {
 	GUI::Debugger *debugger = g_engine ? g_engine->getDebugger() : nullptr;
 	if (debugger)
 		debugger->onFrame();
+
+
+
+	// Advance the Harvester cursor animation independently of the game.
+	if (_harvesterCursorVisible &&
+			_harvesterCursorFrames.size() >= 80 &&
+			_harvesterCursorSequence >= 0 &&
+			_harvesterCursorSequence <= 7) {
+	
+		const uint32 now = g_system->getMillis(false);
+	
+		if (_harvesterCursorNextTick == 0) {
+			_harvesterCursorNextTick = now + 100;
+		} else if ((int32)(now - _harvesterCursorNextTick) >= 0) {
+			_harvesterCursorFrame =
+				(_harvesterCursorFrame + 1) % 10;
+	
+			_harvesterCursorNextTick = now + 100;
+			_forceRedraw = true;
+		}
+	}
+
+
+
+
+
+
+
 
 	// We only update the screen when there actually have been any changes.
 	if (   !_forceRedraw
@@ -1000,31 +1112,46 @@ void OpenGLGraphicsManager::updateScreen() {
 
 
 // Draw the Harvester cursor outside the game-screen scissor area.
-if (_harvesterCursor && _harvesterCursorVisible && _gameScreen) {
-    _targetBuffer->enableScissorTest(false);
-    _targetBuffer->enableBlend(
-        Framebuffer::kBlendModeTraditionalTransparency);
+// Draw the Harvester cursor using OpenGL's selected animation frame.
+if (_harvesterCursorVisible && _gameScreen &&
+        _harvesterCursorSequence >= 0 &&
+        _harvesterCursorSequence <= 7) {
 
-    const float scaleX =
-        (float)_gameDrawRect.width() / _gameScreen->getWidth();
-    const float scaleY =
-        (float)_gameDrawRect.height() / _gameScreen->getHeight();
+    const int frameIndex =
+        (_harvesterCursorSequence * 10) + _harvesterCursorFrame;
 
-    const int cursorX =
-        _gameDrawRect.left + (int)(_harvesterCursorX * scaleX);
-    const int cursorY =
-        _gameDrawRect.top + (int)(_harvesterCursorY * scaleY);
+    if (frameIndex < (int)_harvesterCursorFrames.size() &&
+            _harvesterCursorFrames[frameIndex]) {
 
-    const int cursorWidth =
-        (int)(_harvesterCursorWidth * scaleX);
-    const int cursorHeight =
-        (int)(_harvesterCursorHeight * scaleY);
+        Surface *cursorFrame = _harvesterCursorFrames[frameIndex];
 
-    _pipeline->drawTexture(
-        _harvesterCursor->getGLTexture(),
-        cursorX, cursorY, cursorWidth, cursorHeight);
+        cursorFrame->updateGLTexture();
 
-    _targetBuffer->enableBlend(Framebuffer::kBlendModeOpaque);
+        _targetBuffer->enableScissorTest(false);
+        _targetBuffer->enableBlend(
+            Framebuffer::kBlendModeTraditionalTransparency);
+
+        const float scaleX =
+            (float)_gameDrawRect.width() / _gameScreen->getWidth();
+        const float scaleY =
+            (float)_gameDrawRect.height() / _gameScreen->getHeight();
+
+        const int cursorX =
+            _gameDrawRect.left + (int)(_harvesterCursorX * scaleX);
+        const int cursorY =
+            _gameDrawRect.top + (int)(_harvesterCursorY * scaleY);
+
+        const int cursorWidth =
+            (int)(_harvesterCursorWidth * scaleX);
+        const int cursorHeight =
+            (int)(_harvesterCursorHeight * scaleY);
+
+        _pipeline->drawTexture(
+            cursorFrame->getGLTexture(),
+            cursorX, cursorY, cursorWidth, cursorHeight);
+
+        _targetBuffer->enableBlend(Framebuffer::kBlendModeOpaque);
+    }
 }
 
 if (!_overlayVisible)

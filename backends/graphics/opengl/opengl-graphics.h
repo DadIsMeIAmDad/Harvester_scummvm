@@ -112,7 +112,10 @@ public:
     const Graphics::Surface *surface,
     int x, int y, int width, int height) override;
 	
+	void setHarvesterCursorFrames(
+		const Common::Array<Graphics::Surface *> &frames) override;
 	
+	void setHarvesterCursorSequence(int sequence) override;
 	
 	void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) override;
 	void fillScreen(uint32 col) override;
@@ -380,6 +383,11 @@ protected:
 	int _harvesterCursorHeight;
 	bool _harvesterCursorVisible;
 	
+	
+	Common::Array<Surface *> _harvesterCursorFrames;
+	int _harvesterCursorSequence;
+	int _harvesterCursorFrame;
+	uint32 _harvesterCursorNextTick;
 	
 	float _widescreenBackgroundBrightness;
 	Graphics::Surface *_gameBackgroundOriginal;
