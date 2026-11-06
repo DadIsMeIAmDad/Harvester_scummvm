@@ -2590,13 +2590,29 @@ Common::Error MenuSystem::runOptionsMenu(
 				needsRedraw = true;
 			}
 			break;
+			
+			
+			
+			
 		case 2:
 			if (newLevel != script->getGammaLevel()) {
 				_engine.setGammaLevel(newLevel);
+
+				ModularGraphicsBackend *backend =
+					dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+				if (backend && backend->getGraphicsManager()) {
+					backend->getGraphicsManager()->setWidescreenBackgroundGamma(
+						_engine.getGammaBrightnessScale());
+				}
+
 				persistConfig();
 				needsRedraw = true;
 			}
 			break;
+
+
+
 		default:
 			break;
 		}
