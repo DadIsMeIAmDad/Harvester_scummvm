@@ -21,7 +21,7 @@
 
 #ifndef BACKENDS_GRAPHICS_ABSTRACT_H
 #define BACKENDS_GRAPHICS_ABSTRACT_H
-
+#include "common/array.h"
 #include "common/system.h"
 #include "common/noncopyable.h"
 #include "common/keyboard.h"
@@ -93,6 +93,10 @@ public:
     const Graphics::Surface *surface,
     int x, int y, int width, int height) {}
 	
+	virtual void setHarvesterCursorFrames(
+		const Common::Array<Graphics::Surface *> &frames) {}
+	
+	virtual void setHarvesterCursorSequence(int sequence) {}
 	
 	virtual void setWidescreenBackgroundBrightness(float brightness) {}
 	virtual Graphics::Surface *lockScreen() = 0;
