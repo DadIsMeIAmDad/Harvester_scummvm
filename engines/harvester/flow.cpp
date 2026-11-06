@@ -3063,6 +3063,16 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 		return Common::kNoError;
 	}
 
+
+
+	if (ConfMan.hasKey("show_wait_animation") &&
+			!ConfMan.getBool("show_wait_animation")) {
+		_roomSetupTransitionShownTick = 0;
+		return Common::kNoError;
+	}
+
+
+
 	Graphics::Screen *screen = _engine.getScreen();
 
 	ModularGraphicsBackend *backend =
