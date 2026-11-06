@@ -579,9 +579,16 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		ModularGraphicsBackend *backend =
 			dynamic_cast<ModularGraphicsBackend *>(g_system);
 
+
+
+
+
 		if (backend && backend->getGraphicsManager()) {
 			backend->getGraphicsManager()->setWidescreenBackground(
 				hasWings ? &wingsSurface : nullptr);
+
+			backend->getGraphicsManager()->setWidescreenBackgroundGamma(
+				_engine.getGammaBrightnessScale());
 		}
 
 
