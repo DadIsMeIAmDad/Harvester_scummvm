@@ -99,6 +99,7 @@ public:
 	virtual void setHarvesterCursorSequence(int sequence) {}
 	
 	virtual void setWidescreenBackgroundBrightness(float brightness) {}
+	virtual void setWidescreenBackgroundGamma(float gamma) {}
 	virtual Graphics::Surface *lockScreen() = 0;
 	virtual void unlockScreen() = 0;
 	virtual void fillScreen(uint32 col) = 0;
