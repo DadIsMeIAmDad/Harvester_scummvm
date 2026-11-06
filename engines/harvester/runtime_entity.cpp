@@ -2030,6 +2030,16 @@ void EntityManager::showCursor() {
 
 void EntityManager::setCursorInvisible(bool invisible) {
     _cursorInvisible = invisible;
+
+    if (invisible) {
+        ModularGraphicsBackend *backend =
+            dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+        if (backend) {
+            backend->getGraphicsManager()->setHarvesterCursor(
+                nullptr, 0, 0, 0, 0);
+        }
+    }
 }
 
 void EntityManager::pauseTimerCountdowns() {
