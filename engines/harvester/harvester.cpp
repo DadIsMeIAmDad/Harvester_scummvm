@@ -20,7 +20,7 @@
  */
 
 #include "harvester/harvester.h"
-
+#include "backends/modular-backend.h"
 #include "common/config-manager.h"
 #include "engines/util.h"
 #include "harvester/console.h"
@@ -150,8 +150,16 @@ void HarvesterEngine::setMusicVolumeLevel(int level) {
 }
 
 void HarvesterEngine::setGammaLevel(int level) {
-	if (_script)
-		_script->setGammaLevel(level);
+    if (_script)
+        _script->setGammaLevel(level);
+
+    ModularGraphicsBackend *backend =
+        dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+    if (backend && backend->getGraphicsManager()) {
+        backend->getGraphicsManager()->setWidescreenBackgroundGamma(
+            getGammaBrightnessScale());
+    }
 }
 
 const Common::String &HarvesterEngine::getMusicPath() const {
