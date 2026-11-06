@@ -106,6 +106,7 @@ public:
 
 	void setWidescreenBackground(const Graphics::Surface *surface) override;
 	void setWidescreenBackgroundBrightness(float brightness) override;
+	void setWidescreenBackgroundGamma(float gamma) override;
 	
 	
 	void setHarvesterCursor(
@@ -390,6 +391,7 @@ protected:
 	uint32 _harvesterCursorNextTick;
 	
 	float _widescreenBackgroundBrightness;
+	float _widescreenBackgroundGamma;
 	Graphics::Surface *_gameBackgroundOriginal;
 
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)

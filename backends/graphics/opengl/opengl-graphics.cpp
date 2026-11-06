@@ -86,7 +86,7 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 	  _harvesterCursorFrame(0),
 	  _harvesterCursorNextTick(0),
 	  _widescreenBackgroundBrightness(1.0f),
-	  
+	  _widescreenBackgroundGamma(1.0f),
 	  
 	  _gameBackgroundOriginal(nullptr), _overlay(nullptr),
 	  
@@ -856,6 +856,42 @@ void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) 
         brightness = 1.0f;
 
     _widescreenBackgroundBrightness = brightness;
+    _forceRedraw = true;
+}
+
+
+void OpenGLGraphicsManager::setWidescreenBackgroundGamma(float gamma) {
+    _widescreenBackgroundGamma = gamma;
+
+    if (!_gameBackground || !_gameBackgroundOriginal) {
+        _forceRedraw = true;
+        return;
+    }
+
+    Graphics::Surface *dst = _gameBackground->getSurface();
+
+    // Restore the original image before applying gamma.
+    dst->copyRectToSurface(*_gameBackgroundOriginal, 0, 0,
+        Common::Rect(0, 0, dst->w, dst->h));
+
+    if (dst->format.bytesPerPixel == 4) {
+        for (int y = 0; y < dst->h; ++y) {
+            uint32 *p = (uint32 *)dst->getBasePtr(0, y);
+
+            for (int x = 0; x < dst->w; ++x) {
+                byte a, r, g, b;
+                dst->format.colorToARGB(p[x], a, r, g, b);
+
+                r = (byte)CLIP((int)(r * gamma + 0.5f), 0, 255);
+                g = (byte)CLIP((int)(g * gamma + 0.5f), 0, 255);
+                b = (byte)CLIP((int)(b * gamma + 0.5f), 0, 255);
+
+                p[x] = dst->format.ARGBToColor(a, r, g, b);
+            }
+        }
+    }
+
+    _gameBackground->updateGLTexture();
     _forceRedraw = true;
 }
 
