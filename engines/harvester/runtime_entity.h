@@ -140,12 +140,6 @@ public:
 		return !_basePngFrames.empty() ? _basePngFrames : _pngFrames;
 	}
 	
-	
-	int getAnimationSequence() const {
-		return _animationSequence;
-	}
-	
-	
 	Common::Point getCurrentDrawOrigin() const;
 	
 	
