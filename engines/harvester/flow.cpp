@@ -3089,6 +3089,13 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 	if (_engine.getRuntimeEntities())
 		_engine.getRuntimeEntities()->hideCursor();
 
+	if (graphicsManager)
+		graphicsManager->setHarvesterCursor(nullptr, 0, 0, 0, 0);
+
+
+
+
+
 	const Art *art = _engine.getArt();
 
 	if (art && screen) {
