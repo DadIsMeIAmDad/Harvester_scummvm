@@ -3008,10 +3008,6 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 		backend ? backend->getGraphicsManager() : nullptr;
 
 
-	const float wingsStartBrightness = graphicsManager ?
-		graphicsManager->getWidescreenBackgroundBrightness() : 1.0f;
-
-
 	if (screen) {
 		byte displayPalette[256 * 3];
 		screen->getPalette(displayPalette);
@@ -3023,6 +3019,9 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 				break;
 			}
 		}
+
+		const float initialWingsBrightness = graphicsManager ?
+			graphicsManager->getWidescreenBackgroundBrightness() : 1.0f;
 
 		if (screen->format.bytesPerPixel != 1) {
 			// TRUE-COLOR FADE OUT.
@@ -3037,7 +3036,7 @@ Common::Error Flow::beginRoomSetupTransition(bool skipTransition) {
 
 				if (graphicsManager)
 					graphicsManager->setWidescreenBackgroundBrightness(
-						wingsStartBrightness * brightness);
+						initialWingsBrightness * brightness);
 
 				screen->makeAllDirty();
 				screen->update();
