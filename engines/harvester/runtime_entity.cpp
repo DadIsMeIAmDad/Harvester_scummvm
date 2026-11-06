@@ -2115,9 +2115,6 @@ void EntityManager::drawCursor(Graphics::Screen &screen) const {
 		return;
 	}
 
-    ModularGraphicsBackend *backend =
-        dynamic_cast<ModularGraphicsBackend *>(g_system);
-
     if (!backend)
         return;
 
