@@ -21,6 +21,7 @@
 
 #include "harvester/harvester.h"
 #include "backends/modular-backend.h"
+#include "backends/graphics/graphics.h"
 #include "common/config-manager.h"
 #include "engines/util.h"
 #include "harvester/console.h"
