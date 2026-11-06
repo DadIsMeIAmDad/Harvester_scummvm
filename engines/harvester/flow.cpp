@@ -76,6 +76,13 @@ static const char *const kTownMapBitmapPaths[] = {
 	"4:/GRAPHIC/TOWN/HARVMAP4.png"
 };
 
+static const char *const kTownMapWingsPaths[] = {
+    "4:/GRAPHIC/TOWN/WINGS/HARVMAP1.png",
+    "4:/GRAPHIC/TOWN/WINGS/HARVMAP2.png",
+    "4:/GRAPHIC/TOWN/WINGS/HARVMAP3.png",
+    "4:/GRAPHIC/TOWN/WINGS/HARVMAP4.png"
+};
+
 static const int kCursorSequence7 = 7;
 static const int kIdentTextboxX = 177;
 static const int kIdentTextboxY = 85;
@@ -2382,6 +2389,17 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 	const float mapBrightness =
 		paletteBrightness * _engine.getGammaBrightnessScale();
 
+
+
+	ModularGraphicsBackend *backend =
+		dynamic_cast<ModularGraphicsBackend *>(g_system);
+	
+	auto *graphicsManager =
+		backend ? backend->getGraphicsManager() : nullptr;
+
+
+
+
 	byte palette[256 * 3];
 	if (!loadPaletteResource(*resources, kTownMapPalettePath, palette))
 		return Common::kReadingFailed;
@@ -2426,9 +2444,46 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 		(void)entityManager->syncCursorEntityPosition(_mousePos);
 
 	int currentPanel = clampTownMapPanelIndex(mapEntrance->initialPanelIndex);
+
+
+
+
+	auto updateTownMapWings = [&]() {
+		if (!graphicsManager)
+			return;
+	
+		Graphics::Surface *wings = nullptr;
+	
+		if (loadTownMapPngSurface(*resources,
+				kTownMapWingsPaths[currentPanel], wings)) {
+	
+			graphicsManager->setWidescreenBackground(wings);
+	
+			graphicsManager->setWidescreenBackgroundGamma(
+				_engine.getGammaBrightnessScale());
+	
+			graphicsManager->setWidescreenBackgroundBrightness(
+				paletteBrightness);
+	
+			wings->free();
+			delete wings;
+		}
+	};
+
+
+
+
+
+
+
+
+
+
+
+
 	bool needsRedraw = true;
 	Graphics::FrameLimiter limiter(g_system, 60);
-
+	updateTownMapWings();
 	auto centerCursor = [&]() {
 		_mousePos = Common::Point(screen->w / 2, screen->h / 2);
 		if (EntityManager *entityManager = _engine.getRuntimeEntities())
@@ -2445,8 +2500,11 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 
 	while (!_engine.shouldQuit()) {
 		const int edgePanel = resolveTownMapEdgePanel(currentPanel, _mousePos, screen->w, screen->h);
+		
+		
 		if (edgePanel != currentPanel) {
 			currentPanel = edgePanel;
+			updateTownMapWings();
 			centerCursor();
 			needsRedraw = true;
 		}
@@ -2517,11 +2575,17 @@ Common::Error Flow::runTownMapSelector(const Common::String &mapEntryName,
 			}
 			case Common::EVENT_KEYDOWN: {
 				const int nextPanel = resolveTownMapKeyPanel(currentPanel, event.kbd.keycode);
+				
+				
 				if (nextPanel != currentPanel) {
 					currentPanel = nextPanel;
+					updateTownMapWings();
 					centerCursor();
 					needsRedraw = true;
 				}
+				
+				
+				
 				break;
 			}
 			default:
