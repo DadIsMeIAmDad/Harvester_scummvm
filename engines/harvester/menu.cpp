@@ -1105,10 +1105,10 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 	
 	
 	const CftFontResource *normalActionFontResource =
-		findStartupFontByName(engine, "MEDFONT2");
+		findStartupFontByName(engine, "TEXTFNT2");
 	
 	const CftFontResource *hoverActionFontResource =
-		findStartupFontByName(engine, "MEDFONT1");
+		findStartupFontByName(engine, "TEXTFONT");
 	
 	Common::ScopedPtr<HarvesterCftFont> normalActionCftFont;
 	Common::ScopedPtr<HarvesterCftFont> hoverActionCftFont;
@@ -1900,8 +1900,8 @@ Common::Error MenuSystem::runLoadGameMenu(const byte *palette, float paletteBrig
 
 	ResourceManager *resources = _engine.getResources();
 	MetaEngine *metaEngine = _engine.getMetaEngine();
-	const CftFontResource *slotNameFontResource = findStartupFontByName(_engine, "TEXTFONT");
-	const CftFontResource *slotLabelFontResource = findStartupFontByName(_engine, "TEXTFNT2");
+	const CftFontResource *slotNameFontResource = findStartupFontByName(_engine, "MEDFONT1");
+	const CftFontResource *slotLabelFontResource = findStartupFontByName(_engine, "MEDFONT2");
 	if (!resources || !metaEngine || !slotNameFontResource || !slotLabelFontResource)
 		return Common::kReadingFailed;
 	if (!_engine.canLoadGameStateCurrently())
