@@ -682,7 +682,7 @@ static void drawShadowedString(Graphics::Screen &screen, const Graphics::Font &f
 		int x, int y, int width, byte color, Graphics::TextAlign align = Graphics::kTextAlignLeft) {
 	font.drawString(&screen, text, x + 1, y + 1, width, kShadowColor, align);
 	
-	font.drawString(&screen, text, x, y, width, 0xFFFF0000, align);
+	font.drawString(&screen, text, x, y, width, color, align);
 }
 
 static void drawSinglePassString(Graphics::Screen &screen, const Graphics::Font &font,
@@ -1104,7 +1104,28 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 		FontMan.getFontByUsage(Graphics::FontManager::kGUIFont);
 	
 	
+	const CftFontResource *normalActionFontResource =
+		findStartupFontByName(engine, "MEDFONT2");
 	
+	const CftFontResource *hoverActionFontResource =
+		findStartupFontByName(engine, "MEDFONT1");
+	
+	Common::ScopedPtr<HarvesterCftFont> normalActionCftFont;
+	Common::ScopedPtr<HarvesterCftFont> hoverActionCftFont;
+	
+	if (normalActionFontResource)
+		normalActionCftFont.reset(new HarvesterCftFont(*normalActionFontResource));
+	
+	if (hoverActionFontResource)
+		hoverActionCftFont.reset(new HarvesterCftFont(*hoverActionFontResource));
+	
+	const Graphics::Font *normalActionFont =
+		normalActionCftFont && normalActionCftFont->isValid()
+			? normalActionCftFont.get() : font;
+	
+	const Graphics::Font *hoverActionFont =
+		hoverActionCftFont && hoverActionCftFont->isValid()
+			? hoverActionCftFont.get() : font;
 	
 	
 	
@@ -1165,21 +1186,22 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 		? config.quickTipsOnLabel : config.quickTipsOffLabel;
 		
 		
-	const byte exitColor = layout.exitRect.contains(mousePos)
-		? kTextColorNormal : kQuickTipActionColor;
+	const Graphics::Font &exitFont =
+		layout.exitRect.contains(mousePos) ? *hoverActionFont : *normalActionFont;
 	
-	const byte nextColor = layout.nextRect.contains(mousePos)
-		? kTextColorNormal : kQuickTipActionColor;
+	const Graphics::Font &nextFont =
+		layout.nextRect.contains(mousePos) ? *hoverActionFont : *normalActionFont;
 	
-	const byte toggleColor = layout.toggleRect.contains(mousePos)
-		? kTextColorNormal : kQuickTipActionColor;
-		
-		
-	drawShadowedString(*screen, *font, config.quickTipsExitLabel,
+	const Graphics::Font &toggleFont =
+		layout.toggleRect.contains(mousePos) ? *hoverActionFont : *normalActionFont;
+	
+	drawShadowedString(*screen, exitFont, config.quickTipsExitLabel,
 		layout.exitRect.left, layout.exitRect.top, layout.exitRect.width(), exitColor);
-	drawShadowedString(*screen, *font, config.quickTipsNextLabel,
+	
+	drawShadowedString(*screen, nextFont, config.quickTipsNextLabel,
 		layout.nextRect.left, layout.nextRect.top, layout.nextRect.width(), nextColor);
-	drawShadowedString(*screen, *font, toggleLabel,
+	
+	drawShadowedString(*screen, toggleFont, toggleLabel,
 		layout.toggleRect.left, layout.toggleRect.top, layout.toggleRect.width(), toggleColor);
 }
 
