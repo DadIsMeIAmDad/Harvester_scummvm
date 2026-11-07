@@ -58,7 +58,7 @@ static const int kLogoY = 0;
 static const int kMenuStartY = 100;
 static const int kMenuLineSpacing = 28;
 
-static const byte kTextColorNormal = 0;
+static const byte kTextColorNormal = 255;
 static const byte kTextColorHover = 251;
 static const byte kTextColorDim = 248;
 static const byte kShadowColor = 0;
@@ -681,7 +681,8 @@ static void blitTransparentBitmap(Graphics::Screen &screen, const IndexedBitmap 
 static void drawShadowedString(Graphics::Screen &screen, const Graphics::Font &font, const Common::String &text,
 		int x, int y, int width, byte color, Graphics::TextAlign align = Graphics::kTextAlignLeft) {
 	font.drawString(&screen, text, x + 1, y + 1, width, kShadowColor, align);
-	font.drawString(&screen, text, x, y, width, color, align);
+	
+	font.drawString(&screen, text, x, y, width, 0xFFFF0000, align);
 }
 
 static void drawSinglePassString(Graphics::Screen &screen, const Graphics::Font &font,
@@ -1165,13 +1166,13 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 		
 		
 	const byte exitColor = layout.exitRect.contains(mousePos)
-		? 0 : 0xc3;
+		? kTextColorNormal : kQuickTipActionColor;
 	
 	const byte nextColor = layout.nextRect.contains(mousePos)
-		? 0 : 0xc3;
+		? kTextColorNormal : kQuickTipActionColor;
 	
 	const byte toggleColor = layout.toggleRect.contains(mousePos)
-		? 0 : 0xc3;
+		? kTextColorNormal : kQuickTipActionColor;
 		
 		
 	drawShadowedString(*screen, *font, config.quickTipsExitLabel,
