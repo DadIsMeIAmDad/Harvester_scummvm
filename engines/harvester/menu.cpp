@@ -681,7 +681,7 @@ static void blitTransparentBitmap(Graphics::Screen &screen, const IndexedBitmap 
 static void drawShadowedString(Graphics::Screen &screen, const Graphics::Font &font, const Common::String &text,
 		int x, int y, int width, byte color, Graphics::TextAlign align = Graphics::kTextAlignLeft) {
 	font.drawString(&screen, text, x + 1, y + 1, width, kShadowColor, align);
-	font.drawString(&screen, text, x, y, width, color, align);
+	font.drawString(&screen, text, x, y, width, 0xFFFFFFFF, align);
 }
 
 static void drawSinglePassString(Graphics::Screen &screen, const Graphics::Font &font,
