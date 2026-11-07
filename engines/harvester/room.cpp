@@ -2326,6 +2326,20 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			flow.resetCursorAnimationSequence();
 			resetIdleState();
 		}
+	
+		// Show Quick Tips once when START is first entered.
+		if (shouldRunRoomEntryCommands &&
+				scene.state.roomName.equalsIgnoreCase("START") &&
+				!flow._didQuickTipsShow) {
+			flow._didQuickTipsShow = true;
+
+			if (_engine.getScript()->isQuickTipsEnabled()) {
+				Common::Error quickTipsError = flow.runQuickTips(scene);
+				if (quickTipsError.getCode() != Common::kNoError)
+					return quickTipsError;
+			}
+		}
+
 		ScopedDeferredLiveNpcDeathTransitions deferredLiveNpcDeathTransitions(
 			_engine.getScript());
 		auto findRoomNpcRecordByName = [&](const Common::String &npcName) -> NpcRecord * {

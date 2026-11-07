@@ -1819,15 +1819,7 @@ static Common::String trimAsciiLine(const Common::String &value) {
 	return value.substr(start, end - start);
 }
 
-static bool loadQuickTipsScene(HarvesterEngine &engine, RoomSceneResources &scene) {
-	RoomSetupState state;
-	// The original startup path enters the START room first and overlays quick tips on top of it.
-	if (!engine.getScript()->resolveRoomSetupState("START", state, *engine.getResources())) {
-		return false;
-}
 
-	return loadRoomSceneResources(state, *engine.getResources(), scene);
-}
 
 static void renderQuickTipsScreen(HarvesterEngine &engine, const RoomSceneResources &scene,
         const MenuTextConfig &config, const QuickTipsLayout &layout,
@@ -1963,23 +1955,10 @@ Common::Error Flow::run() {
 				return error;
 		}
 
-		warning("HARVESTER FLOW: entering runQuickTips()");
-
-		error = runQuickTips();
-
-		warning(
-			"HARVESTER FLOW: runQuickTips returned %d",
-			error.getCode()
-		);
-
-		if (error.getCode() != Common::kNoError)
-			return error;
-
 		clearPendingMainMenuReturn();
 
-		_engine.getScript()->resetRuntimeState();
-
 		warning("HARVESTER FLOW: entering runRoomLoop(START)");
+
 
 		error = runRoomLoop("START");
 
@@ -2079,37 +2058,9 @@ bool Flow::loadMenuItems() {
 	return true;
 }
 
-Common::Error Flow::runQuickTips() {
+Common::Error Flow::runQuickTips(RoomSceneResources &scene) {
 	if (!_engine.getScript()->isQuickTipsEnabled() || _quickTips.empty())
 		return Common::kNoError;
-
-	Common::Error transitionError = beginRoomSetupTransition();
-	if (transitionError.getCode() != Common::kNoError)
-		return transitionError;
-
-	RoomSceneResources scene;
-	if (!loadQuickTipsScene(_engine, scene))
-		return Common::kReadingFailed;
-
-	Graphics::Screen *screen = _engine.getScreen();
-	if (screen) {
-		if (!populateRoomSceneEntities(scene.state, scene.sceneObjects, scene.sceneAnimations))
-			return Common::kReadingFailed;
-
-		transitionError = waitForRoomSetupTransitionHold();
-		if (transitionError.getCode() != Common::kNoError)
-			return transitionError;
-
-		logScenePaletteSummary("quick tips scene palette", scene, kPaletteBrightnessBlack);
-		drawRoomScene(_engine, *screen, scene, kPaletteBrightnessBlack);
-		screen->makeAllDirty();
-		screen->update();
-
-		logScenePaletteSummary("quick tips fade target", scene, scene.targetPaletteBrightness);
-		transitionError = fadeInRoomScene(scene.palette, scene.targetPaletteBrightness);
-		if (transitionError.getCode() != Common::kNoError)
-			return transitionError;
-	}
 
 	resetCursorAnimationSequence();
 

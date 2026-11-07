@@ -64,7 +64,7 @@ private:
 
 	bool loadQuickTips();
 	bool loadMenuItems();
-	Common::Error runQuickTips();
+	Common::Error runQuickTips(RoomSceneResources &scene);
 	Common::Error runDemoIntroduction();
 	Common::Error runDemoEnding();
 	Common::Error runMainMenuStub();
@@ -144,6 +144,7 @@ private:
 	bool _pendingGameOverReturn = false;
 	bool _pendingMainMenuReturn = false;
 	bool _pendingCloseupParentRestart = false;
+	bool _didQuickTipsShow = false;
 	Common::String _pendingDebugRoomName;
 	uint _roomLoopDepth = 0;
 	uint32 _roomSetupTransitionShownTick = 0;
