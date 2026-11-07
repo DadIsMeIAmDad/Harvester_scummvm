@@ -567,9 +567,27 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		// Load the optional widescreen extension for this room.
 		Graphics::Surface wingsSurface;
 
+
+
+		Common::String backgroundName = scene.state.backgroundPath;
+		backgroundName.replace('\\', '/');
+		
+		const int lastSlash = backgroundName.findLastOf('/');
+		if (lastSlash >= 0)
+			backgroundName = backgroundName.substr(lastSlash + 1);
+		
+		const int extension = backgroundName.findLastOf('.');
+		if (extension >= 0)
+			backgroundName = backgroundName.substr(0, extension);
+		
 		const Common::String wingsPath = Common::String::format(
 			"4:/GRAPHIC/ROOMS/WINGS/%s.png",
-			scene.state.roomName.c_str());
+			backgroundName.c_str());
+
+
+
+
+
 
 		const bool hasWings = loadPngResource(
 			*_engine.getResources(), wingsPath, wingsSurface);
