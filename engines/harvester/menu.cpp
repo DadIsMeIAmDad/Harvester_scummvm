@@ -58,7 +58,7 @@ static const int kLogoY = 0;
 static const int kMenuStartY = 100;
 static const int kMenuLineSpacing = 28;
 
-static const byte kTextColorNormal = 255;
+static const byte kTextColorNormal = 0;
 static const byte kTextColorHover = 251;
 static const byte kTextColorDim = 248;
 static const byte kShadowColor = 0;
@@ -1165,13 +1165,13 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 		
 		
 	const byte exitColor = layout.exitRect.contains(mousePos)
-		? kTextColorNormal : kQuickTipActionColor;
+		? 0 : 0xc3;
 	
 	const byte nextColor = layout.nextRect.contains(mousePos)
-		? kTextColorNormal : kQuickTipActionColor;
+		? 0 : 0xc3;
 	
 	const byte toggleColor = layout.toggleRect.contains(mousePos)
-		? kTextColorNormal : kQuickTipActionColor;
+		? 0 : 0xc3;
 		
 		
 	drawShadowedString(*screen, *font, config.quickTipsExitLabel,
