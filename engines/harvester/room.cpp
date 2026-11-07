@@ -2329,7 +2329,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 	
 		// Show Quick Tips once when START is first entered.
 		if (shouldRunRoomEntryCommands &&
-				scene.state.roomName.equalsIgnoreCase("START") &&
+				scene.state.roomName.equalsIgnoreCase("PCROOM") &&
 				!flow._didQuickTipsShow) {
 			flow._didQuickTipsShow = true;
 
