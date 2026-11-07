@@ -842,7 +842,7 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine,
 		const Graphics::Surface *backdropSurface,   // NEW
 		const byte *palette, float paletteBrightness,
 		const MenuTextConfig &config, const QuickTipsLayout &layout,
-		const Common::String &tipText),
+		const Common::String &tipText,
 		const Common::Point &mousePos) {
 	Graphics::Screen *screen = engine.getScreen();
 	const Art *art = engine.getArt();
