@@ -1076,7 +1076,35 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 	//const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
 	Graphics::Screen *screen = engine.getScreen();
 	const Art *art = engine.getArt();
-	const Graphics::Font *font = FontMan.getFontByUsage(Graphics::FontManager::kGUIFont);
+	
+	
+	
+	const CftFontResource *fontResource = nullptr;
+	const Text *text = engine.getText();
+
+	if (text) {
+		for (const CftFontResource &candidate : text->getFonts()) {
+			if (candidate.name.equalsIgnoreCase("TEXTFONT")) {
+				fontResource = &candidate;
+				break;
+			}
+		}
+	}
+	
+	Common::ScopedPtr<HarvesterCftFont> cftFont;
+	if (fontResource) {
+		cftFont.reset(new HarvesterCftFont(*fontResource));
+	}
+	
+	const Graphics::Font *font =
+		cftFont && cftFont->isValid() ? cftFont.get() :
+		FontMan.getFontByUsage(Graphics::FontManager::kGUIFont);
+	
+	
+	
+	
+	
+	
 	const Script *script = engine.getScript();
 	if (!screen || !art || !font || !script) {
 		return;
