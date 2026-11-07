@@ -1127,7 +1127,7 @@ void OpenGLGraphicsManager::updateScreen() {
 	bool drawCursor = _cursorVisible && _cursor;
 
 	// Alpha blending is disabled when drawing the screen
-	_targetBuffer->enableBlend(Framebuffer::kBlendModeOpaque);
+	_targetBuffer->enableBlend(Framebuffer::kBlendModeTraditionalTransparency);
 
 
 
