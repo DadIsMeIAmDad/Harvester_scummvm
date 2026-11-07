@@ -80,8 +80,14 @@ Common::String buildUseItemPrompt(const MenuTextConfig &config,
 	const Common::String &itemLabel, const Common::String &targetLabel);
 bool resolveQuickTipsLayout(HarvesterEngine &engine, const MenuTextConfig &config,
 	QuickTipsLayout &layout);
+	
+	
 void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
-	const QuickTipsLayout &layout, const Common::String &tipText);
+        const QuickTipsLayout &layout, const Common::String &tipText,
+        const Common::Point &mousePos);
+
+
+
 
 class MenuSystem {
 public:

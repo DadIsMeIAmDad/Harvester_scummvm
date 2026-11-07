@@ -842,7 +842,8 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine,
 		const Graphics::Surface *backdropSurface,   // NEW
 		const byte *palette, float paletteBrightness,
 		const MenuTextConfig &config, const QuickTipsLayout &layout,
-		const Common::String &tipText) {
+		const Common::String &tipText),
+		const Common::Point &mousePos) {
 	Graphics::Screen *screen = engine.getScreen();
 	const Art *art = engine.getArt();
 	if (!screen || !art) {
@@ -876,7 +877,7 @@ static void renderQuickTipsOverlay(HarvesterEngine &engine,
 		blitTransparentBitmap(*screen, art->getLogoBitmap(), kLogoX, kLogoY);
 	}
 
-	drawQuickTipsPanel(engine, config, layout, tipText);
+	drawQuickTipsPanel(engine, config, layout, tipText, mousePos);
 
 	if (engine.getRuntimeEntities()) {
 		engine.getRuntimeEntities()->drawCursor(*screen);
@@ -1072,7 +1073,8 @@ bool resolveQuickTipsLayout(HarvesterEngine &engine, const MenuTextConfig &confi
 }
 
 void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
-		const QuickTipsLayout &layout, const Common::String &tipText) {
+        const QuickTipsLayout &layout, const Common::String &tipText,
+        const Common::Point &mousePos) {
 	//const Graphics::Surface *getTipsSurface() const { return _tipsSurface; }
 	Graphics::Screen *screen = engine.getScreen();
 	const Art *art = engine.getArt();
@@ -1155,14 +1157,29 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 		? kLocalizedQuickTipTextWidth : kEnglishQuickTipTextWidth;
 	drawWrappedShadowedText(*screen, *font, tipText,
 		kQuickTipTextX, kQuickTipTextY, tipTextWidth, kTextColorNormal);
+		
+		
+		
 	const Common::String &toggleLabel = script->isQuickTipsEnabled()
 		? config.quickTipsOnLabel : config.quickTipsOffLabel;
+		
+		
+	const byte exitColor = layout.exitRect.contains(mousePos)
+		? kTextColorNormal : kQuickTipActionColor;
+	
+	const byte nextColor = layout.nextRect.contains(mousePos)
+		? kTextColorNormal : kQuickTipActionColor;
+	
+	const byte toggleColor = layout.toggleRect.contains(mousePos)
+		? kTextColorNormal : kQuickTipActionColor;
+		
+		
 	drawShadowedString(*screen, *font, config.quickTipsExitLabel,
-		layout.exitRect.left, layout.exitRect.top, layout.exitRect.width(), kQuickTipActionColor);
+		layout.exitRect.left, layout.exitRect.top, layout.exitRect.width(), exitColor);
 	drawShadowedString(*screen, *font, config.quickTipsNextLabel,
-		layout.nextRect.left, layout.nextRect.top, layout.nextRect.width(), kQuickTipActionColor);
+		layout.nextRect.left, layout.nextRect.top, layout.nextRect.width(), nextColor);
 	drawShadowedString(*screen, *font, toggleLabel,
-		layout.toggleRect.left, layout.toggleRect.top, layout.toggleRect.width(), kQuickTipActionColor);
+		layout.toggleRect.left, layout.toggleRect.top, layout.toggleRect.width(), toggleColor);
 }
 
 MenuSystem::MenuSystem(HarvesterEngine &engine, Common::Point &mousePos,
@@ -2777,9 +2794,10 @@ Common::Error MenuSystem::runOptionsMenu(
 			if (showingQuickTips) {
 				renderQuickTipsOverlay(_engine,
 					backdrop,
-					backdropSurface,   // same one passed into runOptionsMenu
+					backdropSurface,
 					palette, paletteBrightness,
-					config, quickTipsLayout, flow._quickTips[quickTipIndex]);
+					config, quickTipsLayout, flow._quickTips[quickTipIndex],
+					_mousePos);
 			} else {
 				renderOptionsMenuScreen(_engine, backdrop, backdropSurface, palette, paletteBrightness,
 					selectedFont, unselectedFont, *art, config,

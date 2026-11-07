@@ -1830,15 +1830,15 @@ static bool loadQuickTipsScene(HarvesterEngine &engine, RoomSceneResources &scen
 }
 
 static void renderQuickTipsScreen(HarvesterEngine &engine, const RoomSceneResources &scene,
-		const MenuTextConfig &config, const QuickTipsLayout &layout,
-		const Common::String &tipText) {
+        const MenuTextConfig &config, const QuickTipsLayout &layout,
+        const Common::String &tipText, const Common::Point &mousePos) {
 	Graphics::Screen *screen = engine.getScreen();
 	if (!screen) {
 		return;
 }
 
 	drawRoomScene(engine, *screen, scene, scene.targetPaletteBrightness);
-	drawQuickTipsPanel(engine, config, layout, tipText);
+	drawQuickTipsPanel(engine, config, layout, tipText, mousePos);
 
 	if (engine.getRuntimeEntities()) {
 		engine.getRuntimeEntities()->drawCursor(*screen);
@@ -2130,7 +2130,8 @@ Common::Error Flow::runQuickTips() {
 
 	while (!_engine.shouldQuit()) {
 		if (needsRedraw) {
-			renderQuickTipsScreen(_engine, scene, _menuTextConfig, quickTipsLayout, _quickTips[tipIndex]);
+			renderQuickTipsScreen(_engine, scene, _menuTextConfig, quickTipsLayout, _quickTips[tipIndex], _mousePos);
+			
 			needsRedraw = false;
 		}
 
