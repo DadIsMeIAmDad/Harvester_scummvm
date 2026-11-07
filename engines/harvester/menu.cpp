@@ -1177,15 +1177,23 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 
 	const int tipTextWidth = config.hasQuickTipsHeader()
 		? kLocalizedQuickTipTextWidth : kEnglishQuickTipTextWidth;
+	
 	drawWrappedShadowedText(*screen, *font, tipText,
 		kQuickTipTextX, kQuickTipTextY, tipTextWidth, kTextColorNormal);
-		
-		
-		
+	
 	const Common::String &toggleLabel = script->isQuickTipsEnabled()
 		? config.quickTipsOnLabel : config.quickTipsOffLabel;
-		
-		
+	
+	const byte exitColor = layout.exitRect.contains(mousePos)
+		? kTextColorNormal : kQuickTipActionColor;
+	
+	const byte nextColor = layout.nextRect.contains(mousePos)
+		? kTextColorNormal : kQuickTipActionColor;
+	
+	const byte toggleColor = layout.toggleRect.contains(mousePos)
+		? kTextColorNormal : kQuickTipActionColor;
+	
+	// Select normal or hover font for each action.
 	const Graphics::Font &exitFont =
 		layout.exitRect.contains(mousePos) ? *hoverActionFont : *normalActionFont;
 	
@@ -1203,11 +1211,10 @@ void drawQuickTipsPanel(HarvesterEngine &engine, const MenuTextConfig &config,
 	
 	drawShadowedString(*screen, toggleFont, toggleLabel,
 		layout.toggleRect.left, layout.toggleRect.top, layout.toggleRect.width(), toggleColor);
-}
-
-MenuSystem::MenuSystem(HarvesterEngine &engine, Common::Point &mousePos,
-		const Common::Array<Common::String> &menuItems)
-	: _engine(engine), _mousePos(mousePos), _menuItems(menuItems) {
+	
+	MenuSystem::MenuSystem(HarvesterEngine &engine, Common::Point &mousePos,
+			const Common::Array<Common::String> &menuItems)
+		: _engine(engine), _mousePos(mousePos), _menuItems(menuItems) {
 }
 
 Common::Error MenuSystem::runMainMenuStub(Flow &flow) {
