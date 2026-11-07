@@ -2103,12 +2103,17 @@ Common::Error Flow::runQuickTips(RoomSceneResources &scene) {
 				if (quickTipsLayout.nextRect.contains(_mousePos)) {
 					tipIndex = (tipIndex + 1) % _quickTips.size();
 					needsRedraw = true;
+
 				} else if (quickTipsLayout.toggleRect.contains(_mousePos)) {
 					_engine.getScript()->setQuickTipsEnabled(!_engine.getScript()->isQuickTipsEnabled());
+					_engine.getScript()->saveConfig();
 					if (!resolveQuickTipsLayout(_engine, _menuTextConfig, quickTipsLayout))
 						return Common::kReadingFailed;
 					needsRedraw = true;
 				}
+
+
+
 				break;
 			case Common::EVENT_KEYDOWN:
 				if (event.kbd.keycode == Common::KEYCODE_ESCAPE)
