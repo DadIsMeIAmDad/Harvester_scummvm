@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
+#include "backends/graphics/opengl/opengl-graphics.h"
 #include "harvester/fst_player.h"
 #include "video/avi_decoder.h"
 #include <string.h>
@@ -558,6 +558,18 @@ bool FstPlayer::play(const Common::String &path) {
 		(_vm.getDisplayWidth() != 320 || _vm.getDisplayHeight() != 200);
 	const int previousDisplayWidth = _vm.getDisplayWidth();
 	const int previousDisplayHeight = _vm.getDisplayHeight();
+	
+	
+	
+	OpenGL::OpenGLGraphicsManager *glManager =
+		dynamic_cast<OpenGL::OpenGLGraphicsManager *>(g_system);
+
+	if (glManager)
+		glManager->setWidescreenBackgroundBlack(true);
+	
+	
+	
+	
 	if (shouldSwitchToMovieDisplay)
 		_vm.setDisplayMode(320, 200);
 
@@ -709,6 +721,10 @@ bool FstPlayer::play(const Common::String &path) {
 		_vm.pauseMusic(false);
 	if (shouldSwitchToMovieDisplay)
 		_vm.setDisplayMode(previousDisplayWidth, previousDisplayHeight);
+
+	if (glManager)
+		glManager->setWidescreenBackgroundBlack(false);
+
 
 	// Restore the game cursor after video playback.
 	if (entities)
