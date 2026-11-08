@@ -67,6 +67,14 @@ jobs:
           ls
           cd ../../../
 
+      - name: Check VPX Configure Result
+        shell: pwsh
+        run: |
+          Write-Host "========== VPX CONFIGURATION =========="
+          Get-ChildItem -Path . -Recurse -Include config.log,config.mk,config.h,config.h.in |
+            Select-String -Pattern "USE_VPX|_vpx|VPX"
+          Write-Host "========== END VPX CHECK =========="
+
       - name: Call create_project
         run: |
           mkdir build-scummvm
