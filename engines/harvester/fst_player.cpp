@@ -21,7 +21,7 @@
 #include "backends/modular-backend.h"
 #include "backends/graphics/opengl/opengl-graphics.h"
 #include "harvester/fst_player.h"
-#include "video/avi_decoder.h"
+#include "video/mkv_decoder.h"
 #include <string.h>
 #include "audio/audiostream.h"
 #include "audio/decoders/raw.h"
@@ -274,117 +274,118 @@ static bool pumpVideoEvents(HarvesterEngine &vm, bool &skipRequested, bool &defe
 
 static bool tryPlayReplacementVideo(HarvesterEngine &vm,
                                    const Common::String &fstPath) {
-	Common::String normalized = normalizeHarvesterResourcePath(fstPath);
-	Common::String filename = Common::lastPathComponent(normalized, '/');
+    Common::String normalized = normalizeHarvesterResourcePath(fstPath);
+    Common::String filename = Common::lastPathComponent(normalized, '/');
 
-	const char *dot = strrchr(filename.c_str(), '.');
-	if (dot)
-		filename = Common::String(filename.c_str(), dot);
+    const char *dot = strrchr(filename.c_str(), '.');
+    if (dot)
+        filename = Common::String(filename.c_str(), dot);
 
-	Common::String aviPath =
-		Common::String::format("4:/GRAPHIC/FST/%s.AVI", filename.c_str());
+    const char *extensions[] = { "MKV", "WEBM" };
 
-	Common::SeekableReadStream *stream =
-		vm.getResources()->openFile(aviPath);
+    for (uint i = 0; i < ARRAYSIZE(extensions); ++i) {
+        Common::String videoPath =
+            Common::String::format("4:/GRAPHIC/FST/%s.%s",
+                filename.c_str(), extensions[i]);
 
-	if (!stream) {
-		aviPath = Common::String::format("GRAPHIC/FST/%s.AVI",
-			filename.c_str());
-		stream = vm.getResources()->openFile(aviPath);
-	}
+        Common::SeekableReadStream *stream =
+            vm.getResources()->openFile(videoPath);
 
-	if (!stream)
-		return false;
+        if (!stream) {
+            videoPath = Common::String::format("GRAPHIC/FST/%s.%s",
+                filename.c_str(), extensions[i]);
 
-	Video::AVIDecoder decoder;
-	if (!decoder.loadStream(stream)) {
-		warning("Harvester: unable to load replacement AVI '%s'",
-			aviPath.c_str());
-		return false;
-	}
+            stream = vm.getResources()->openFile(videoPath);
+        }
 
-	if (!clearPendingVideoInput(vm)) {
-		decoder.close();
-		return true;
-	}
+        if (!stream)
+            continue;
 
-	const bool resumeMusic = vm.isMusicPlaying();
-	if (resumeMusic)
-		vm.pauseMusic(true);
+        Video::MKVDecoder decoder;
 
-	decoder.setSoundType(Audio::Mixer::kSFXSoundType);
-	decoder.start();
+        if (!decoder.loadStream(stream)) {
+            warning("Harvester: unable to load replacement video '%s'",
+                videoPath.c_str());
+            continue;
+        }
 
-	bool skipRequested = false;
-	bool deferredSkipRequested = false;
+        if (!clearPendingVideoInput(vm)) {
+            decoder.close();
+            return true;
+        }
 
-	while (!decoder.endOfVideo() && !vm.shouldQuit() && !skipRequested) {
-		if (!pumpVideoEvents(vm, skipRequested,
-				deferredSkipRequested, true))
-			break;
+        const bool resumeMusic = vm.isMusicPlaying();
+        if (resumeMusic)
+            vm.pauseMusic(true);
 
-		if (decoder.needsUpdate()) {
-			const Graphics::Surface *frame = decoder.decodeNextFrame();
-			if (!frame) {
-				debug("Harvester AVI: decodeNextFrame returned nullptr");
-				continue;
-			}
+        decoder.setSoundType(Audio::Mixer::kSFXSoundType);
+        decoder.start();
 
-			debug("Harvester AVI: frame %dx%d, %d bytes per pixel, pitch %d",
-				frame->w, frame->h, frame->format.bytesPerPixel, frame->pitch);
+        bool skipRequested = false;
+        bool deferredSkipRequested = false;
 
-			const Graphics::PixelFormat screenFormat = g_system->getScreenFormat();
-			Graphics::Surface *converted = nullptr;
-			const Graphics::Surface *displayFrame = frame;
+        while (!decoder.endOfVideo() && !vm.shouldQuit() && !skipRequested) {
+            if (!pumpVideoEvents(vm, skipRequested,
+                    deferredSkipRequested, true))
+                break;
 
-			if (frame->format != screenFormat) {
-				// IMPORTANT: do NOT pass a palette for true-color frames
-				converted = frame->convertTo(screenFormat);
-				if (!converted) {
-					warning("Harvester: convertTo failed on frame %d", decoder.getCurFrame());
-					break;
-				}
-				displayFrame = converted;
-			}
+            if (decoder.needsUpdate()) {
+                const Graphics::Surface *frame = decoder.decodeNextFrame();
+                if (!frame)
+                    continue;
 
-			const int screenW = g_system->getWidth();
-			const int screenH = g_system->getHeight();
+                const Graphics::PixelFormat screenFormat = g_system->getScreenFormat();
+                Graphics::Surface *converted = nullptr;
+                const Graphics::Surface *displayFrame = frame;
 
-			int x = (screenW - displayFrame->w) / 2;
-			int y = (screenH - displayFrame->h) / 2;
-			int srcX = MAX(0, -x);
-			int srcY = MAX(0, -y);
-			int dstX = MAX(0, x);
-			int dstY = MAX(0, y);
-			int copyW = MIN(displayFrame->w - srcX, screenW - dstX);
-			int copyH = MIN(displayFrame->h - srcY, screenH - dstY);
+                if (frame->format != screenFormat) {
+                    converted = frame->convertTo(screenFormat);
+                    if (!converted) {
+                        warning("Harvester: video frame conversion failed");
+                        break;
+                    }
+                    displayFrame = converted;
+                }
 
-			if (copyW > 0 && copyH > 0) {
-				g_system->copyRectToScreen(
-					displayFrame->getBasePtr(srcX, srcY),
-					displayFrame->pitch,
-					dstX, dstY, copyW, copyH);
-				g_system->updateScreen();
-			}
+                const int screenW = g_system->getWidth();
+                const int screenH = g_system->getHeight();
 
-			if (converted) {
-				converted->free();
-				delete converted;
-			}
-		
+                int x = (screenW - displayFrame->w) / 2;
+                int y = (screenH - displayFrame->h) / 2;
+                int srcX = MAX(0, -x);
+                int srcY = MAX(0, -y);
+                int dstX = MAX(0, x);
+                int dstY = MAX(0, y);
+                int copyW = MIN(displayFrame->w - srcX, screenW - dstX);
+                int copyH = MIN(displayFrame->h - srcY, screenH - dstY);
 
-		}
+                if (copyW > 0 && copyH > 0) {
+                    g_system->copyRectToScreen(
+                        displayFrame->getBasePtr(srcX, srcY),
+                        displayFrame->pitch,
+                        dstX, dstY, copyW, copyH);
+                    g_system->updateScreen();
+                }
 
-		decoder.delayMillis(10);
-	}
+                if (converted) {
+                    converted->free();
+                    delete converted;
+                }
+            }
 
-	decoder.stop();
-	decoder.close();
+            decoder.delayMillis(10);
+        }
 
-	if (resumeMusic)
-		vm.pauseMusic(false);
+        decoder.stop();
+        decoder.close();
 
-	return true;
+        if (resumeMusic)
+            vm.pauseMusic(false);
+
+        return true;
+    }
+
+    return false;
 }
 
 static bool waitForAudioSync(HarvesterEngine &vm, Audio::Mixer &mixer, Audio::SoundHandle audioHandle,
