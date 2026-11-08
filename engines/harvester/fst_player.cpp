@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#include "backends/modular-backend.h"
 #include "backends/graphics/opengl/opengl-graphics.h"
 #include "harvester/fst_player.h"
 #include "video/avi_decoder.h"
@@ -561,8 +562,14 @@ bool FstPlayer::play(const Common::String &path) {
 	
 	
 	
-	OpenGL::OpenGLGraphicsManager *glManager =
-		dynamic_cast<OpenGL::OpenGLGraphicsManager *>(g_system->getGraphicsManager());
+	ModularGraphicsBackend *backend =
+		dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+	OpenGL::OpenGLGraphicsManager *glManager = backend
+		? dynamic_cast<OpenGL::OpenGLGraphicsManager *>(backend->getGraphicsManager())
+		: nullptr;
+	
+		
 
 	if (glManager)
 		glManager->setWidescreenBackgroundBlack(true);
