@@ -87,6 +87,7 @@ OpenGLGraphicsManager::OpenGLGraphicsManager()
 	  _harvesterCursorNextTick(0),
 	  _widescreenBackgroundBrightness(1.0f),
 	  _widescreenBackgroundGamma(1.0f),
+	  _widescreenBackgroundBlack(false),
 	  
 	  _gameBackgroundOriginal(nullptr), _overlay(nullptr),
 	  
@@ -860,6 +861,16 @@ void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) 
 }
 
 
+void OpenGLGraphicsManager::setWidescreenBackgroundBlack(bool black) {
+    if (_widescreenBackgroundBlack == black)
+        return;
+
+    _widescreenBackgroundBlack = black;
+    _forceRedraw = true;
+}
+
+
+
 void OpenGLGraphicsManager::setWidescreenBackgroundGamma(float gamma) {
     _widescreenBackgroundGamma = gamma;
 
@@ -1088,14 +1099,19 @@ void OpenGLGraphicsManager::updateScreen() {
 
 		if (_gameBackground) {
 			_gameBackground->updateGLTexture();
-
+		
 			_targetBuffer->enableBlend(
 				Framebuffer::kBlendModeTraditionalTransparency);
-
+		
+			if (_widescreenBackgroundBlack)
+				_pipeline->setColor(0.0f, 0.0f, 0.0f, 1.0f);
+		
 			_pipeline->drawTexture(
 				_gameBackground->getGLTexture(),
 				0, 0, _windowWidth, _windowHeight
 			);
+		
+			_pipeline->setColor(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 	}
 

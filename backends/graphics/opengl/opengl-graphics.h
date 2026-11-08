@@ -112,7 +112,7 @@ public:
 	}
 	
 	void setWidescreenBackgroundGamma(float gamma) override;
-	
+	void setWidescreenBackgroundBlack(bool black);
 	
 	void setHarvesterCursor(
     const Graphics::Surface *surface,
@@ -404,6 +404,7 @@ protected:
 	
 	float _widescreenBackgroundBrightness;
 	float _widescreenBackgroundGamma;
+	bool _widescreenBackgroundBlack;
 	Graphics::Surface *_gameBackgroundOriginal;
 
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
