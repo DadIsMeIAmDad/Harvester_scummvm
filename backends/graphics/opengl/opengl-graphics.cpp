@@ -847,6 +847,14 @@ void OpenGLGraphicsManager::setHarvesterCursorSequence(int sequence) {
 
 
 
+void OpenGLGraphicsManager::setHarvesterCursorVisible(bool visible) {
+    if (_harvesterCursorVisible == visible)
+        return;
+
+    _harvesterCursorVisible = visible;
+    _forceRedraw = true;
+}
+
 
 
 void OpenGLGraphicsManager::setWidescreenBackgroundBrightness(float brightness) {

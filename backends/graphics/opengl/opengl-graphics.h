@@ -123,6 +123,13 @@ public:
 	
 	void setHarvesterCursorSequence(int sequence) override;
 	
+	
+	void setHarvesterCursorVisible(bool visible);
+	bool getHarvesterCursorVisible() const {
+		return _harvesterCursorVisible;
+	}
+	
+	
 	void copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) override;
 	void fillScreen(uint32 col) override;
 	void fillScreen(const Common::Rect &r, uint32 col) override;
