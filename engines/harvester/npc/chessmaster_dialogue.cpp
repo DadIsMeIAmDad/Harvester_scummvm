@@ -737,7 +737,7 @@ Common::Error ChessmasterDialogueHandler::handleDialogue(DialogueRuntime &runtim
 
 	if (responseIndex != 1 || !solvedPuzzle) {
 		(void)runtime.startupScript().setRuntimeFlagValue(
-			kChessShouldUseKingFlag, true);
+			kChessShouldUseKingFlag, false);
 		lineError = runtime.playDialogueLineWithVariant(0x4126, kChessmasterNpc, 2);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
