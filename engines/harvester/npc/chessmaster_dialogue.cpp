@@ -35,6 +35,7 @@
 #include "common/archive.h"
 #include "common/compression/unzip.h"
 #include "image/png.h"
+#include "backends/graphics/opengl/opengl-graphics.h"
 
 namespace Harvester {
 
@@ -631,50 +632,76 @@ static Common::Error setChessmasterWings(DialogueRuntime &runtime,
 
 
 static Common::Error runChessmasterThreeMovePuzzle(DialogueRuntime &runtime, bool &solvedPuzzle) {
-	solvedPuzzle = false;
+    solvedPuzzle = false;
 
-	// Switch to the chess puzzle wings.
-	Common::Error wingsError = setChessmasterWings(
-		runtime, "4:/GRAPHIC/OTHER/WINGS/CHESROM.png");
-	if (wingsError.getCode() != Common::kNoError)
-		return wingsError;
+    ModularGraphicsBackend *backend =
+        dynamic_cast<ModularGraphicsBackend *>(g_system);
 
-	// Run the complete puzzle sequence.
-	Common::Error puzzleError = [&]() -> Common::Error {
-		for (uint i = 0; i < ARRAYSIZE(kChessmasterPuzzleStages); ++i) {
-			bool selectedSuccessHotspot = false;
-			Common::Error stageError = runChessmasterChoiceStage(
-				runtime, kChessmasterPuzzleStages[i], selectedSuccessHotspot);
-			if (stageError.getCode() != Common::kNoError)
-				return stageError;
-			if (runtime.engine().shouldQuit())
-				return Common::kNoError;
-			if (!selectedSuccessHotspot)
-				return Common::kNoError;
+    auto *graphicsManager =
+        backend ? backend->getGraphicsManager() : nullptr;
 
-			stageError = playOneShotFlic(runtime, kChessmasterPuzzleStages[i].moveFlicPath);
-			if (stageError.getCode() != Common::kNoError)
-				return stageError;
-			if (runtime.engine().shouldQuit())
-				return Common::kNoError;
-		}
+    auto *openGLManager =
+        dynamic_cast<OpenGL::OpenGLGraphicsManager *>(graphicsManager);
 
-		Common::Error delayError = runTimedDelay(kChessmasterSuccessHoldMs);
-		if (delayError.getCode() != Common::kNoError)
-			return delayError;
+    const bool wasCursorVisible =
+        openGLManager && openGLManager->getHarvesterCursorVisible();
 
-		solvedPuzzle = true;
-		return Common::kNoError;
-	}();
+    // Hide the normal OpenGL cursor for the Chessmaster custom cursors.
+    if (openGLManager)
+        openGLManager->setHarvesterCursorVisible(false);
 
-	// Restore the normal Chessmaster room wings.
-	wingsError = setChessmasterWings(
-		runtime, "4:/GRAPHIC/ROOMS/WINGS/CHESROM.png");
+    // Switch to the chess puzzle wings.
+    Common::Error wingsError = setChessmasterWings(
+        runtime, "4:/GRAPHIC/OTHER/WINGS/CHESROM.png");
 
-	if (puzzleError.getCode() != Common::kNoError)
-		return puzzleError;
+    if (wingsError.getCode() != Common::kNoError) {
+        if (openGLManager)
+            openGLManager->setHarvesterCursorVisible(wasCursorVisible);
+        return wingsError;
+    }
 
-	return wingsError;
+    Common::Error puzzleError = [&]() -> Common::Error {
+        for (uint i = 0; i < ARRAYSIZE(kChessmasterPuzzleStages); ++i) {
+            bool selectedSuccessHotspot = false;
+            Common::Error stageError = runChessmasterChoiceStage(
+                runtime, kChessmasterPuzzleStages[i], selectedSuccessHotspot);
+
+            if (stageError.getCode() != Common::kNoError)
+                return stageError;
+            if (runtime.engine().shouldQuit())
+                return Common::kNoError;
+            if (!selectedSuccessHotspot)
+                return Common::kNoError;
+
+            stageError = playOneShotFlic(
+                runtime, kChessmasterPuzzleStages[i].moveFlicPath);
+
+            if (stageError.getCode() != Common::kNoError)
+                return stageError;
+            if (runtime.engine().shouldQuit())
+                return Common::kNoError;
+        }
+
+        Common::Error delayError = runTimedDelay(kChessmasterSuccessHoldMs);
+        if (delayError.getCode() != Common::kNoError)
+            return delayError;
+
+        solvedPuzzle = true;
+        return Common::kNoError;
+    }();
+
+    // Restore the normal Chessmaster room wings.
+    wingsError = setChessmasterWings(
+        runtime, "4:/GRAPHIC/ROOMS/WINGS/CHESROM.png");
+
+    // Restore the OpenGL cursor's previous visibility.
+    if (openGLManager)
+        openGLManager->setHarvesterCursorVisible(wasCursorVisible);
+
+    if (puzzleError.getCode() != Common::kNoError)
+        return puzzleError;
+
+    return wingsError;
 }
 
 } // End of namespace
@@ -717,16 +744,32 @@ Common::Error ChessmasterDialogueHandler::handleDialogue(DialogueRuntime &runtim
 			interaction.cutscenePath = "GRAPHIC/FST/KINGGROW.FST";
 			runtime.applyImmediateDialogueInteractionEffects(interaction);
 			runtime.queueDialogueInteractionIfNeeded(interaction);
-			return Common::kNoError;
+
+			return setChessmasterWings(runtime,
+					"4:/GRAPHIC/ROOMS/WINGS/CHESROM.png");
 		}
 
-		return runtime.playDialogueFst("GRAPHIC/FST/KINGGROW.FST");
+		lineError = runtime.playDialogueFst("GRAPHIC/FST/KINGGROW.FST");
+		Common::Error wingsError = setChessmasterWings(runtime,
+				"4:/GRAPHIC/ROOMS/WINGS/CHESROM.png");
+
+		if (lineError.getCode() != Common::kNoError)
+			return lineError;
+
+		return wingsError;
 	}
 
 	(void)runtime.startupScript().setRuntimeFlagValue(kChessSolvedFlag, true);
+
 	lineError = runtime.playDialogueFst("GRAPHIC/FST/C125.FST");
+	Common::Error wingsError = setChessmasterWings(runtime,
+			"4:/GRAPHIC/ROOMS/WINGS/CHESROM.png");
+
 	if (lineError.getCode() != Common::kNoError)
 		return lineError;
+
+	if (wingsError.getCode() != Common::kNoError)
+		return wingsError;
 
 	InteractionResult interaction;
 	// Queue so the room loop can dispatch on_death=ADD_CHESS_CU
@@ -737,6 +780,7 @@ Common::Error ChessmasterDialogueHandler::handleDialogue(DialogueRuntime &runtim
 		interaction.visualRuntimeStateChanged = true;
 	}
 	runtime.queueDialogueInteractionIfNeeded(interaction);
+
 	return Common::kNoError;
 }
 } // End of namespace Harvester
