@@ -92,12 +92,9 @@ jobs:
           cd build-scummvm
           ls
 
-          Write-Host "========== CHECKING VPX =========="
-          Get-ChildItem -Path . -Filter config.h -Recurse |
-            ForEach-Object {
-              Write-Host "Found: $($_.FullName)"
-              Select-String -Path $_.FullName -Pattern "USE_VPX"
-            }
+          Write-Host "========== CHECKING VPX PROJECT SETTINGS =========="
+          Get-ChildItem -Path . -Recurse -Include *.vcxproj,*.props |
+            Select-String -Pattern "USE_VPX|mkv_decoder|HAVE_CONFIG_H"
           Write-Host "========== END CHECK =========="
 
           
