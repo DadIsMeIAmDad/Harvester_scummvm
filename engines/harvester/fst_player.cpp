@@ -288,6 +288,11 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
             Common::String::format("4:/GRAPHIC/FST/%s.%s",
                 filename.c_str(), extensions[i]);
 
+
+		debug("Harvester: checking replacement video: %s",
+			videoPath.c_str());
+
+
         Common::SeekableReadStream *stream =
             vm.getResources()->openFile(videoPath);
 
@@ -298,12 +303,18 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
             stream = vm.getResources()->openFile(videoPath);
         }
 
-        if (!stream)
-            continue;
+		if (!stream)
+			continue;
 
-        Video::MKVDecoder decoder;
+		debug("Harvester: replacement video stream opened: %s",
+			videoPath.c_str());
 
-        if (!decoder.loadStream(stream)) {
+		Video::MKVDecoder decoder;
+
+		debug("Harvester: attempting MKV loadStream: %s",
+			videoPath.c_str());
+
+		if (!decoder.loadStream(stream)) {
             warning("Harvester: unable to load replacement video '%s'",
                 videoPath.c_str());
             continue;
