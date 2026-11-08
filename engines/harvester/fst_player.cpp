@@ -330,6 +330,15 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
             vm.pauseMusic(true);
 
         decoder.setSoundType(Audio::Mixer::kSFXSoundType);
+		
+		
+		EntityManager *entities = _vm.getRuntimeEntities();
+
+		if (entities)
+			entities->hideCursor();
+
+		g_system->showMouse(false);
+		
         decoder.start();
 
         bool skipRequested = false;
@@ -389,6 +398,15 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 
         decoder.stop();
         decoder.close();
+
+
+
+		if (entities)
+			entities->showCursor();
+
+		g_system->showMouse(true);
+
+
 
         if (resumeMusic)
             vm.pauseMusic(false);
