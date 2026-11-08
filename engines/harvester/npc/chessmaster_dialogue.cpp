@@ -21,6 +21,7 @@
 
 
 #include "harvester/npc/chessmaster_dialogue.h"
+#include "backends/graphics/graphics.h"
 #include "backends/modular-backend.h"
 #include "common/events.h"
 #include "common/system.h"
