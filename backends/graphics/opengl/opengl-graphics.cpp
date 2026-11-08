@@ -618,15 +618,7 @@ OSystem::TransactionError OpenGLGraphicsManager::endGFXTransaction() {
 	if (setupNewGameScreen) {
 		delete _gameScreen;
 		_gameScreen = nullptr;
-		delete _gameBackground;
-		_gameBackground = nullptr;
-		
-		if (_gameBackgroundOriginal) {
-			_gameBackgroundOriginal->free();
-			delete _gameBackgroundOriginal;
-			_gameBackgroundOriginal = nullptr;
-		}
-
+	
 		if (render3d) {
 #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
 			_renderer3d->initSize(_currentState.gameWidth, _currentState.gameHeight, antialiasing, renderToFrameBuffer);
