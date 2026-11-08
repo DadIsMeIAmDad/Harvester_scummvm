@@ -332,11 +332,26 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
         decoder.setSoundType(Audio::Mixer::kSFXSoundType);
 		
 		
+		
+		ModularGraphicsBackend *backend =
+			dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+		OpenGL::OpenGLGraphicsManager *glManager = backend
+			? dynamic_cast<OpenGL::OpenGLGraphicsManager *>(backend->getGraphicsManager())
+			: nullptr;
+		
+		
+		
+		
+		
 		EntityManager *entities = vm.getRuntimeEntities();
 
 		if (entities)
 			entities->setCursorInvisible(true);
 		
+		if (glManager)
+			glManager->setWidescreenBackgroundBlack(true);
+			
         decoder.start();
 
         bool skipRequested = false;
@@ -397,7 +412,8 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
         decoder.stop();
         decoder.close();
 
-
+		if (glManager)
+			glManager->setWidescreenBackgroundBlack(false);
 
 		if (entities)
 			entities->setCursorInvisible(false);
