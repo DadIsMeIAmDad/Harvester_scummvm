@@ -21,8 +21,7 @@
 
 
 #include "harvester/npc/chessmaster_dialogue.h"
-#include "backends/graphics/graphics.h"
-#include "backends/modular-backend.h"
+
 #include "common/events.h"
 #include "common/system.h"
 #include "graphics/blit.h"
@@ -35,7 +34,7 @@
 #include "common/archive.h"
 #include "common/compression/unzip.h"
 #include "image/png.h"
-#include "backends/graphics/opengl/opengl-graphics.h"
+
 namespace Harvester {
 
 namespace {
@@ -594,87 +593,33 @@ static Common::Error runChessmasterChoiceStage(DialogueRuntime &runtime,
 	return Common::kNoError;
 }
 
-
-static Common::Error setChessmasterWings(DialogueRuntime &runtime,
-		const char *path) {
-	ResourceManager *resources = runtime.engine().getResources();
-
-	ModularGraphicsBackend *backend =
-		dynamic_cast<ModularGraphicsBackend *>(g_system);
-
-	auto *graphicsManager =
-		backend ? backend->getGraphicsManager() : nullptr;
-
-	if (!resources || !graphicsManager)
-		return Common::kReadingFailed;
-
-	Common::SeekableReadStream *stream = resources->openFile(path);
-	if (!stream)
-		return Common::kReadingFailed;
-
-	Image::PNGDecoder decoder;
-	const bool loaded = decoder.loadStream(*stream);
-	delete stream;
-
-	if (!loaded || !decoder.getSurface())
-		return Common::kReadingFailed;
-
-	graphicsManager->setWidescreenBackground(decoder.getSurface());
-	graphicsManager->setWidescreenBackgroundGamma(
-		runtime.engine().getGammaBrightnessScale());
-
-	return Common::kNoError;
-}
-
-
-
-
-
 static Common::Error runChessmasterThreeMovePuzzle(DialogueRuntime &runtime, bool &solvedPuzzle) {
 	solvedPuzzle = false;
 
-	// Switch to the chess puzzle wings.
-	Common::Error wingsError = setChessmasterWings(
-		runtime, "4:/GRAPHIC/OTHER/WINGS/CHESROM.png");
-	if (wingsError.getCode() != Common::kNoError)
-		return wingsError;
+	for (uint i = 0; i < ARRAYSIZE(kChessmasterPuzzleStages); ++i) {
+		bool selectedSuccessHotspot = false;
+		Common::Error stageError = runChessmasterChoiceStage(
+			runtime, kChessmasterPuzzleStages[i], selectedSuccessHotspot);
+		if (stageError.getCode() != Common::kNoError)
+			return stageError;
+		if (runtime.engine().shouldQuit())
+			return Common::kNoError;
+		if (!selectedSuccessHotspot)
+			return Common::kNoError;
 
-	// Run the complete puzzle sequence.
-	Common::Error puzzleError = [&]() -> Common::Error {
-		for (uint i = 0; i < ARRAYSIZE(kChessmasterPuzzleStages); ++i) {
-			bool selectedSuccessHotspot = false;
-			Common::Error stageError = runChessmasterChoiceStage(
-				runtime, kChessmasterPuzzleStages[i], selectedSuccessHotspot);
-			if (stageError.getCode() != Common::kNoError)
-				return stageError;
-			if (runtime.engine().shouldQuit())
-				return Common::kNoError;
-			if (!selectedSuccessHotspot)
-				return Common::kNoError;
+		stageError = playOneShotFlic(runtime, kChessmasterPuzzleStages[i].moveFlicPath);
+		if (stageError.getCode() != Common::kNoError)
+			return stageError;
+		if (runtime.engine().shouldQuit())
+			return Common::kNoError;
+	}
 
-			stageError = playOneShotFlic(runtime, kChessmasterPuzzleStages[i].moveFlicPath);
-			if (stageError.getCode() != Common::kNoError)
-				return stageError;
-			if (runtime.engine().shouldQuit())
-				return Common::kNoError;
-		}
+	Common::Error delayError = runTimedDelay(kChessmasterSuccessHoldMs);
+	if (delayError.getCode() != Common::kNoError)
+		return delayError;
 
-		Common::Error delayError = runTimedDelay(kChessmasterSuccessHoldMs);
-		if (delayError.getCode() != Common::kNoError)
-			return delayError;
-
-		solvedPuzzle = true;
-		return Common::kNoError;
-	}();
-
-	// Restore the normal Chessmaster room wings.
-	wingsError = setChessmasterWings(
-		runtime, "4:/GRAPHIC/ROOMS/WINGS/CHESROM.png");
-
-	if (puzzleError.getCode() != Common::kNoError)
-		return puzzleError;
-
-	return wingsError;
+	solvedPuzzle = true;
+	return Common::kNoError;
 }
 
 } // End of namespace
