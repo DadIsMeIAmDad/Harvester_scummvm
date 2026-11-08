@@ -44,6 +44,7 @@ namespace {
 static const char *const kChessmasterNpc = "CHESSMASTER";
 static const char *const kChessSolvedFlag = "CHESS_SOLVED";
 static const char *const kChessKingMonsterActionTag = "ADD_CHESS_KING_MONSTER";
+static const char *const kChessShouldUseKingFlag = "SHOULD_USE_KING";
 static const int kChessmasterSlashDamageType = 2;
 static const byte kTransparentPaletteIndex = 0;
 static const uint32 kChessmasterSuccessHoldMs = 1000;
@@ -735,6 +736,8 @@ Common::Error ChessmasterDialogueHandler::handleDialogue(DialogueRuntime &runtim
 	}
 
 	if (responseIndex != 1 || !solvedPuzzle) {
+		(void)runtime.startupScript().setRuntimeFlagValue(
+			kChessShouldUseKingFlag, true);
 		lineError = runtime.playDialogueLineWithVariant(0x4126, kChessmasterNpc, 2);
 		if (lineError.getCode() != Common::kNoError)
 			return lineError;
