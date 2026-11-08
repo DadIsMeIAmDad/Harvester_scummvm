@@ -1792,6 +1792,33 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					return Common::kReadingFailed;
 				}
 
+
+
+
+				// Replace the room wings with the shared black CD prompt wings.
+				Graphics::Surface wingsSurface;
+				const Common::String wingsPath =
+					"4:/GRAPHIC/OTHER/WINGS/CD.png";
+
+				const bool hasWings =
+					loadPngResource(*resources, wingsPath, wingsSurface);
+
+				ModularGraphicsBackend *backend =
+					dynamic_cast<ModularGraphicsBackend *>(g_system);
+
+				if (backend && backend->getGraphicsManager()) {
+					backend->getGraphicsManager()->setWidescreenBackground(
+						hasWings ? &wingsSurface : nullptr);
+				}
+
+				wingsSurface.free();
+
+				if (!hasWings)
+					warning("Harvester: unable to load CD change prompt wings PNG");
+
+
+
+
 				debugC(1, kDebugScene, "Harvester: showing CD change prompt for disc %d", discNumber);
 				_engine.stopMusic();
 
