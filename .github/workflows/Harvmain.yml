@@ -91,6 +91,16 @@ jobs:
         run: |
           cd build-scummvm
           ls
+
+          Write-Host "========== CHECKING VPX =========="
+          Get-ChildItem -Path . -Filter config.h -Recurse |
+            ForEach-Object {
+              Write-Host "Found: $($_.FullName)"
+              Select-String -Path $_.FullName -Pattern "USE_VPX"
+            }
+          Write-Host "========== END CHECK =========="
+
+          
           msbuild scummvm.sln /m /p:VcpkgEnableManifest=true /p:BuildInParallel=true /p:Configuration=${{ env.CONFIGURATION }} /p:PreferredToolArchitecture=x64 /p:Platform=${{ matrix.platform }} /v:minimal
 
       - name: Upload scummvm
