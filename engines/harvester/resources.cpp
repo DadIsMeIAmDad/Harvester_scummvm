@@ -39,13 +39,15 @@ struct ArchiveSpec {
 };
 
 static const ArchiveSpec kArchiveSpecs[] = {
-	{ '1', "INDEX.001", "HARVEST.DAT", 30 },
-	{ '2', "INDEX.002", "SOUND.DAT", 29 },
-	{ '3', "INDEX.003", "HARVEST2.DAT", 28 },
+    { '1', "INDEX.001", "HARVEST.DAT", 30 },
+    { '2', "INDEX.002", "SOUND.DAT", 29 },
+    { '3', "INDEX.003", "HARVEST2.DAT", 28 },
 
-	// Set 4 is NOT an XFile archive.
-	// It is mounted separately from HARVEST4.ZIP.
-	{ '4', nullptr, nullptr, 27 }
+    // Set 4: HD graphics archive.
+    { '4', nullptr, nullptr, 27 },
+
+    // Set 5: replacement video archive.
+    { '5', nullptr, nullptr, 26 }
 };
 
 
@@ -352,8 +354,9 @@ bool ResourceManager::ensureDiscMounted(int discNumber) {
 
 	for (const ArchiveSpec &spec : kArchiveSpecs) {
 
-		// Set 4 is handled separately below by HARVEST4.ZIP.
-		if (spec.archiveSetId == '4')
+		// Sets 4 and 5 are mounted separately as ZIP archives.
+		if (spec.archiveSetId == '4' ||
+				spec.archiveSetId == '5')
 			continue;
 
 		if (getMountedDiscArchive(
@@ -484,6 +487,45 @@ bool ResourceManager::ensureDiscMounted(int discNumber) {
 		}
 	}
 
+
+
+
+	static const char *const kFstZipCandidates[] = {
+		"CD1/FST.ZIP",
+		"FST.ZIP",
+		"HD/FST.ZIP",
+		"remaster/FST.ZIP"
+	};
+	
+	if (_search.hasArchive("harvester-zip-5")) {
+	
+		mountedAny = true;
+	
+	} else {
+	
+		for (const char *candidate : kFstZipCandidates) {
+	
+			if (!SearchMan.hasFile(
+					Common::Path(candidate, '/'))) {
+				continue;
+			}
+	
+			if (mountZipAsArchiveSet(
+					*this,
+					candidate,
+					'5',
+					26)) {
+	
+				mountedAny = true;
+				break;
+			}
+		}
+	}
+
+
+
+
+
 	return mountedAny;
 }
 
@@ -538,6 +580,10 @@ Common::Archive *ResourceManager::getMountedDiscArchive(
 	if (archiveSetId == '4')
 		return _search.getArchive(
 			"harvester-zip-4");
+
+	if (archiveSetId == '5')
+		return _search.getArchive(
+			"harvester-zip-5");
 
 	/*
 	 * Sets 1-3 remain the original XFile archives.
@@ -674,7 +720,8 @@ bool ResourceManager::hasFile(
 		 * CD1/GRAPHIC/ROOMS/PCROOM.PNG
 		 */
 
-		if (archiveSetId == '4')
+		if (archiveSetId == '4' ||
+				archiveSetId == '5')
 			return false;
 
 
@@ -765,7 +812,8 @@ ResourceManager::openFile(
 			 */
 
 			if (!stream &&
-					archiveSetId != '4') {
+					archiveSetId != '4' &&
+					archiveSetId != '5') {
 
 				const Common::String loosePath =
 					resolveDiscArchiveStoragePath(

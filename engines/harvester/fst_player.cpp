@@ -285,7 +285,7 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 
     for (uint i = 0; i < ARRAYSIZE(extensions); ++i) {
         Common::String videoPath =
-            Common::String::format("4:/GRAPHIC/FST/%s.%s",
+            Common::String::format("5:/%s.%s",
                 filename.c_str(), extensions[i]);
 
 
