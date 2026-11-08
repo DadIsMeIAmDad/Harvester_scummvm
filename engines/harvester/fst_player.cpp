@@ -562,7 +562,7 @@ bool FstPlayer::play(const Common::String &path) {
 	
 	
 	OpenGL::OpenGLGraphicsManager *glManager =
-		dynamic_cast<OpenGL::OpenGLGraphicsManager *>(g_system);
+		dynamic_cast<OpenGL::OpenGLGraphicsManager *>(g_system->getGraphicsManager());
 
 	if (glManager)
 		glManager->setWidescreenBackgroundBlack(true);
