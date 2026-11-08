@@ -332,12 +332,10 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
         decoder.setSoundType(Audio::Mixer::kSFXSoundType);
 		
 		
-		EntityManager *entities = _vm.getRuntimeEntities();
+		EntityManager *entities = vm.getRuntimeEntities();
 
 		if (entities)
-			entities->hideCursor();
-
-		g_system->showMouse(false);
+			entities->setCursorInvisible(true);
 		
         decoder.start();
 
@@ -402,9 +400,7 @@ static bool tryPlayReplacementVideo(HarvesterEngine &vm,
 
 
 		if (entities)
-			entities->showCursor();
-
-		g_system->showMouse(true);
+			entities->setCursorInvisible(false);
 
 
 
