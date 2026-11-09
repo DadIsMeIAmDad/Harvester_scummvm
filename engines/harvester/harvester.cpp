@@ -389,7 +389,8 @@ Common::Error HarvesterEngine::run() {
 	applyMixerLevels();
 
 	// The intro FST files play on the narrower startup movie surface.
-	setDisplayMode(320, 200);
+	//setDisplayMode(320, 200);
+	setDisplayMode(640, 480);
 
 	// Set the engine's debugger console
 	setDebugger(new Console());
@@ -405,7 +406,7 @@ Common::Error HarvesterEngine::run() {
 	}
 
 	// The original executable switches back to the gameplay UI surface after INTROFIN.FST.
-	setDisplayMode(640, 480);
+	//setDisplayMode(640, 480);
 
 	if (!_media->loadArt())
 		return Common::kReadingFailed;
