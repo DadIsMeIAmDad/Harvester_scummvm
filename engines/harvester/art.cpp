@@ -135,13 +135,13 @@ bool Art::load(ResourceManager &resources) {
 
 	if (ConfMan.hasKey("show_wait_animation") && ConfMan.getBool("show_wait_animation")) {
 
-		if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
+		if (!loadPalette(resources, "1:/GRAPHIC/PAL/NONE.PAL", _waitPalette))
 			return false;
 
 		if (!loadPngAnimationZip(resources, "4:/GRAPHIC/OTHER/WAIT.zip"))
 			return false;
 	} else {
-		if (!loadPalette(resources, "1:/GRAPHIC/PAL/WAIT.PAL", _waitPalette))
+		if (!loadPalette(resources, "1:/GRAPHIC/PAL/NONE.PAL", _waitPalette))
 			return false;
 
 		if (!loadPngAnimationZip(resources, "4:/GRAPHIC/OTHER/SKIPWAIT.zip"))
@@ -275,7 +275,7 @@ void Art::drawWaitFrame(Graphics::Screen &screen, uint frameIndex) const {
 
     logPaletteSummary(
         "applying wait palette",
-        "1:/GRAPHIC/PAL/WAIT.PAL",
+        "1:/GRAPHIC/PAL/NONE.PAL",
         _waitPalette
     );
 

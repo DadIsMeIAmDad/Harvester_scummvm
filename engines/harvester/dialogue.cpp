@@ -145,7 +145,7 @@ static const int kDialogueGenericByeResponseIndex = 13;
 static const char *const kDialogueKeywordBitmapPath = "4:/GRAPHIC/OTHER/KEYWORD.png";
 static const char *const kDialogueLocalizedKeywordBitmapPath = "GRAPHIC/OTHER/KEYWORD.png";
 static const char *const kDialogueGameOverBitmapPath = "4:/GRAPHIC/OTHER/GAMEOVER.png";
-static const char *const kDialogueGameOverPalettePath = "1:/GRAPHIC/PAL/GAMEOVER.PAL";
+static const char *const kDialogueGameOverPalettePath = "1:/GRAPHIC/PAL/NONE.PAL";
 static const char *const kDialogueGameOverMusicPath = "SOUND/MUSIC/ANXIETY.CMP";
 
 static const int kDialogueCursorSequenceTalk = 2;

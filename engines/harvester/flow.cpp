@@ -67,7 +67,7 @@ static const char *const kBuiltInMenuItems[] = {
 	"HELP",
 	"QUIT GAME"
 };
-static const char *const kTownMapPalettePath = "1:/GRAPHIC/PAL/HARVMAP.PAL";
+static const char *const kTownMapPalettePath = "1:/GRAPHIC/PAL/NONE.PAL";
 static const char *const kTownMapMusicPath = "SOUND/MUSIC/MENACE.CMP";
 static const char *const kTownMapBitmapPaths[] = {
 	"4:/GRAPHIC/TOWN/HARVMAP1.png",
@@ -99,7 +99,7 @@ static const int kDemoEndingScreenNumbers[] = { 1, 2, 3, 4, 6 };
 static const char *const kDemoEndingMusicPath = "SOUND/MUSIC/ROCKFITE.CMP";
 static const uint32 kDemoIntroductionDurationMs = 17000;
 static const char *const kDemoIntroductionBitmapPath = "1:/GRAPHIC/OTHER/MAINMENU.BM";
-static const char *const kDemoIntroductionPalettePath = "1:/GRAPHIC/PAL/MAINMENU.PAL";
+static const char *const kDemoIntroductionPalettePath = "1:/GRAPHIC/PAL/NONE.PAL";
 static const char *const kDemoIntroductionMusicPath = "SOUND/MUSIC/LODGERB.CMP";
 static const char *const kDemoIntroductionFstPath = "GRAPHIC/FST/PCFALL.FST";
 static const char *const kDemoIntroductionText =
