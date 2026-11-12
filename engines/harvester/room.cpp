@@ -3403,7 +3403,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					InteractionResult interaction;
 
 					const bool handled = script->executeActionTag(
-						"CAIN_DEAD1",
+						"CAIN_DEAD2",
 						interaction,
 						true,
 						scene.state.roomName
