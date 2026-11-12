@@ -3397,21 +3397,17 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (monster->monsterName.equalsIgnoreCase("CAIN")) {
 				if (playerState.combatLoadout == 8) {
 				
+					static const char *const killedCainFlag = "Cain_is_dead";
+					script->setRuntimeFlagValue(killedCainFlag, true);
 
-					for (MonsterRecord &triggerMonster : scene.state.roomMonsters) {
-						if (triggerMonster.monsterName.equalsIgnoreCase("CAIN3")) {
-							triggerMonster.currentHitPoints = 0;
+					InteractionResult interaction;
 
-
-
-							static const char *const killedCainFlag = "Cain_is_dead";
-							(void)script->setRuntimeFlagValue(killedCainFlag, true);
-
-
-							break;
-						}
-					}
-
+					const bool handled = script->executeActionTag(
+						"CAIN_DEAD1",
+						interaction,
+						true,
+						scene.state.roomName
+					);
 				
 				}
 			}
