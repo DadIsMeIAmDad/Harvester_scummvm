@@ -744,7 +744,7 @@ Common::Error ChessmasterDialogueHandler::handleDialogue(DialogueRuntime &runtim
 
 		InteractionResult interaction;
 		if (runtime.executeActionTag(kChessKingMonsterActionTag, interaction)) {
-			interaction.cutscenePath = "5:/KINGGROW.webm";
+			interaction.cutscenePath = "GRAPHIC/FST/KINGGROW.FST";
 			runtime.applyImmediateDialogueInteractionEffects(interaction);
 			runtime.queueDialogueInteractionIfNeeded(interaction);
 
@@ -752,7 +752,7 @@ Common::Error ChessmasterDialogueHandler::handleDialogue(DialogueRuntime &runtim
 					"4:/GRAPHIC/ROOMS/WINGS/CHESROM.png");
 		}
 
-		lineError = runtime.playDialogueFst("5:/KINGGROW.webm");
+		lineError = runtime.playDialogueFst("GRAPHIC/FST/KINGGROW.FST");
 		Common::Error wingsError = setChessmasterWings(runtime,
 				"4:/GRAPHIC/ROOMS/WINGS/CHESROM.png");
 
@@ -764,7 +764,7 @@ Common::Error ChessmasterDialogueHandler::handleDialogue(DialogueRuntime &runtim
 
 	(void)runtime.startupScript().setRuntimeFlagValue(kChessSolvedFlag, true);
 
-	lineError = runtime.playDialogueFst("5:/C125.webm");
+	lineError = runtime.playDialogueFst("GRAPHIC/FST/C125.FST");
 	Common::Error wingsError = setChessmasterWings(runtime,
 			"4:/GRAPHIC/ROOMS/WINGS/CHESROM.png");
 
