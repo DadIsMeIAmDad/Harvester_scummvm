@@ -3388,24 +3388,27 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				playerState.attackContactResolved = true;
 			}
 
+			const int hitPointsBefore = monster->currentHitPoints;
 
+			monster->currentHitPoints = MAX(0,
+				monster->currentHitPoints - damageAmount);
 
 			// Special Cain encounter diagnostic.
 			if (monster->monsterName.equalsIgnoreCase("CAIN")) {
-				warning(
-					"HARVESTER CAIN HIT: combatLoadout=%d weapon='%s' attackFrame=%d damage=%d",
-					playerState.combatLoadout,
-					Player::describeCombatLoadout(playerState.combatLoadout),
-					playerState.attackFirstFrame,
-					damageAmount
-				);
+				if (playerState.combatLoadout == 8) {
+				
+					monster->currentHitPoints = MAX(0,
+						1 - damageAmount);
+					static const char *const killedCainFlag = "Cain_is_dead";
+					(void)runtime.startupScript().setRuntimeFlagValue(killedCainFlag, true);
+				
+				}
 			}
 
 
 
-			const int hitPointsBefore = monster->currentHitPoints;
-			monster->currentHitPoints = MAX(0,
-				monster->currentHitPoints - damageAmount);
+
+
 			const int damageLanded = hitPointsBefore - monster->currentHitPoints;
 			const int monsterIndex = findRoomMonsterIndexByName(monster->monsterName);
 			RoomMonsterCombatState *combatState =
