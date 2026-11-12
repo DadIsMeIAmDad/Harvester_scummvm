@@ -491,10 +491,7 @@ bool ResourceManager::ensureDiscMounted(int discNumber) {
 
 
 	static const char *const kFstZipCandidates[] = {
-		"CD1/FST.ZIP",
-		"FST.ZIP",
-		"HD/FST.ZIP",
-		"remaster/FST.ZIP"
+		"FST.ZIP"
 	};
 	
 	if (_search.hasArchive("harvester-zip-5")) {
