@@ -3398,6 +3398,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				if (playerState.combatLoadout == 8) {
 				
 
+					static const char *const killedCainFlag = "Cain_is_dead";
 					(void)script->setRuntimeFlagValue(killedCainFlag, true);
 				
 				}
