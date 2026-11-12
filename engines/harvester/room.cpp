@@ -3394,22 +3394,32 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				monster->currentHitPoints - damageAmount);
 
 			// Special Cain encounter diagnostic.
-			if (monster->monsterName.equalsIgnoreCase("CAIN")) {
-				if (playerState.combatLoadout == 8) {
-				
-					static const char *const killedCainFlag = "Cain_is_dead";
-					script->setRuntimeFlagValue(killedCainFlag, true);
+			if (monster->monsterName.equalsIgnoreCase("CAIN") &&
+					playerState.combatLoadout == 8) {
 
-					InteractionResult interaction;
+				// Restore Cain's HP so normal combat death handling never runs.
+				monster->currentHitPoints = hitPointsBefore;
 
-					const bool handled = script->executeActionTag(
-						"CAIN_DEAD2",
-						interaction,
-						true,
-						scene.state.roomName
-					);
-				
+				static const char *const killedCainFlag = "Cain_is_dead";
+				script->setRuntimeFlagValue(killedCainFlag, true);
+
+				InteractionResult interaction;
+
+				const bool handled = script->executeActionTag(
+					"CAIN_DEAD1",
+					interaction,
+					true,
+					scene.state.roomName
+				);
+
+				if (handled) {
+					interaction.mutatedRuntimeState = true;
+					interaction.visualRuntimeStateChanged = true;
+					return handleCombatInteraction(interaction);
 				}
+
+				warning("HARVESTER: Failed to execute CAIN_DEAD1.");
+				return Common::kNoError;
 			}
 
 
