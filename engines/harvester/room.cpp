@@ -3397,6 +3397,12 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (monster->monsterName.equalsIgnoreCase("CAIN")) {
 				if (playerState.combatLoadout == 8) {
 				
+					for (uint i = 0; i < _monsters.size(); i++) {
+						if (_monsters[i].monsterName.equalsIgnoreCase("CAIN3")) {
+							_monsters[i].currentHitPoints = 0;
+							break;
+						}
+					}
 
 					static const char *const killedCainFlag = "Cain_is_dead";
 					(void)script->setRuntimeFlagValue(killedCainFlag, true);
