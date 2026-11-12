@@ -3400,7 +3400,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					monster->currentHitPoints = MAX(0,
 						1 - damageAmount);
 					static const char *const killedCainFlag = "Cain_is_dead";
-					(void)runtime.startupScript().setRuntimeFlagValue(killedCainFlag, true);
+					(void)script->setRuntimeFlagValue(killedCainFlag, true);
 				
 				}
 			}
