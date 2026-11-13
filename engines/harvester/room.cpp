@@ -4966,6 +4966,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					clickedObject->identShown = true;
 					_engine.getScript()->markObjectIdentShown(*clickedObject);
 					if (canShowInspectText) {
+						clearHeldKeyboardInput();
 						beginInspectText(*clickedObject, resolvedInspectText);
 					} else if (hasInspectText) {
 						debug(1, "Harvester: unsupported IDENT textbox '%s' for object '%s'",
@@ -5003,6 +5004,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				if (!_engine.getScript()->resolveObjectInteraction(
 						*clickedObject, interaction, scene.state.roomName)) {
 					if (canShowInspectText) {
+						clearHeldKeyboardInput();
 						beginInspectText(*clickedObject, resolvedInspectText);
 					} else if (hasInspectText) {
 						debug(1, "Harvester: unsupported IDENT textbox '%s' for object '%s'",
