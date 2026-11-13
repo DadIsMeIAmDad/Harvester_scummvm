@@ -707,6 +707,19 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		bool moveUp = false;
 		bool moveDown = false;
 		bool attackModifierHeld = false;
+		
+		
+		auto clearHeldKeyboardInput = [&]() {
+			moveLeft = false;
+			moveRight = false;
+			moveUp = false;
+			moveDown = false;
+			attackModifierHeld = false;
+		};
+		
+		
+		
+		
 		Common::String pendingRegionName;
 		Common::String pendingRoomChange;
 		bool pendingRoomChangeIsRoomName = false;
@@ -2163,6 +2176,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		typedef decltype(runModalShowText) RunModalShowTextFn;
 		typedef decltype(resetIdleState) ResetIdleStateFn;
 		typedef decltype(stopPlayerRegionInteraction) StopPlayerRegionInteractionFn;
+		typedef decltype(clearHeldKeyboardInput) ClearHeldKeyboardInputFn;
 		typedef decltype(startPlayerDefeatSequence) StartPlayerDefeatSequenceFn;
 
 		struct RoomInteractionCallbacksImpl : RoomInteractionCallbacks {
@@ -2178,6 +2192,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					RunModalShowTextFn &runModalShowTextFn_,
 					ResetIdleStateFn &resetIdleStateFn_,
 					StopPlayerRegionInteractionFn &stopPlayerRegionInteractionFn_,
+					ClearHeldKeyboardInputFn &clearHeldKeyboardInputFn_,
 					StartPlayerDefeatSequenceFn &startPlayerDefeatSequenceFn_)
 				: refreshCurrentSceneFn(refreshCurrentSceneFn_),
 				  applyCurrentRoomRuntimeMutationsInPlaceFn(applyCurrentRoomRuntimeMutationsInPlaceFn_),
@@ -2190,8 +2205,24 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				  runModalShowTextFn(runModalShowTextFn_),
 				  resetIdleStateFn(resetIdleStateFn_),
 				  stopPlayerRegionInteractionFn(stopPlayerRegionInteractionFn_),
+				  clearHeldKeyboardInputFn(clearHeldKeyboardInputFn_),
 				  startPlayerDefeatSequenceFn(startPlayerDefeatSequenceFn_) {
 			}
+
+			RefreshCurrentSceneFn &refreshCurrentSceneFn;
+			ApplyCurrentRoomRuntimeMutationsInPlaceFn &applyCurrentRoomRuntimeMutationsInPlaceFn;
+			SyncGlobalTimerEntitiesFn &syncGlobalTimerEntitiesFn;
+			CaptureDialogueBackdropFn &captureDialogueBackdropFn;
+			ShowCdChangePromptFn &showCdChangePromptFn;
+			RunRoomExitCommandsFn &runRoomExitCommandsFn;
+			ApplyLightingCommandFn &applyLightingCommandFn;
+			ApplyPlayerGotoXZFn &applyPlayerGotoXZFn;
+			RunModalShowTextFn &runModalShowTextFn;
+			ResetIdleStateFn &resetIdleStateFn;
+			StopPlayerRegionInteractionFn &stopPlayerRegionInteractionFn;
+			ClearHeldKeyboardInputFn &clearHeldKeyboardInputFn;
+			StartPlayerDefeatSequenceFn &startPlayerDefeatSequenceFn;
+		
 
 			bool refreshCurrentScene(bool preservePlayerPlacement) override {
 				return refreshCurrentSceneFn(preservePlayerPlacement);
@@ -2238,6 +2269,12 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				stopPlayerRegionInteractionFn();
 			}
 
+
+			void clearHeldKeyboardInput() override {
+				clearHeldKeyboardInputFn();
+			}
+
+
 			void startPlayerDefeatSequence(const char *reason, const Common::String &sourceName,
 					int damageType) override {
 				startPlayerDefeatSequenceFn(reason, sourceName, damageType);
@@ -2260,7 +2297,8 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			refreshCurrentScene, applyCurrentRoomRuntimeMutationsInPlace,
 			syncGlobalTimerEntities, captureDialogueBackdrop, showCdChangePrompt,
 			runRoomExitCommands, applyLightingCommand, applyPlayerGotoXZ, runModalShowText,
-			resetIdleState, stopPlayerRegionInteraction, startPlayerDefeatSequence);
+			resetIdleState, stopPlayerRegionInteraction, clearHeldKeyboardInput,
+			startPlayerDefeatSequence);
 			
 		RoomInteractionProcessor interactionProcessor(
 			_engine, flow, scene, playerState, pendingRegionName, pendingRoomChange,

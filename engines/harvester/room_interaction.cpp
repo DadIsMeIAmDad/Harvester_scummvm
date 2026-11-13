@@ -73,8 +73,9 @@ Common::Error RoomInteractionProcessor::handleInteractionResult(const Interactio
 			FstPlayer fstPlayer(_engine);
 			if (!fstPlayer.play(interaction.deathFlicPath))
 				return Common::kReadingFailed;
+			_callbacks.clearHeldKeyboardInput();
 		}
-
+		_callbacks.clearHeldKeyboardInput();
 		if (!interaction.deathFlicPath.empty())
 			_flow.requestGameOverReturn();
 		else
@@ -270,8 +271,9 @@ Common::Error RoomInteractionProcessor::handleInteractionResult(const Interactio
 		FstPlayer fstPlayer(_engine);
 		if (!fstPlayer.play(interaction.cutscenePath))
 			return Common::kReadingFailed;
+		_callbacks.clearHeldKeyboardInput();
 	}
-
+	_callbacks.clearHeldKeyboardInput();
 
 	// ADD THIS WARNING HERE
 	warning("Harvester: interaction result modalText box='%s' text='%s'",
