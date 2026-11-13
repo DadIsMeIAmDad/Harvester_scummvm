@@ -2280,19 +2280,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				startPlayerDefeatSequenceFn(reason, sourceName, damageType);
 			}
 
-			RefreshCurrentSceneFn &refreshCurrentSceneFn;
-			ApplyCurrentRoomRuntimeMutationsInPlaceFn &applyCurrentRoomRuntimeMutationsInPlaceFn;
-			SyncGlobalTimerEntitiesFn &syncGlobalTimerEntitiesFn;
-			CaptureDialogueBackdropFn &captureDialogueBackdropFn;
-			ShowCdChangePromptFn &showCdChangePromptFn;
-			RunRoomExitCommandsFn &runRoomExitCommandsFn;
-			ApplyLightingCommandFn &applyLightingCommandFn;
-			ApplyPlayerGotoXZFn &applyPlayerGotoXZFn;
-			RunModalShowTextFn &runModalShowTextFn;
-			ResetIdleStateFn &resetIdleStateFn;
-			StopPlayerRegionInteractionFn &stopPlayerRegionInteractionFn;
-			StartPlayerDefeatSequenceFn &startPlayerDefeatSequenceFn;
-		};
+
 		RoomInteractionCallbacksImpl interactionCallbacks(
 			refreshCurrentScene, applyCurrentRoomRuntimeMutationsInPlace,
 			syncGlobalTimerEntities, captureDialogueBackdrop, showCdChangePrompt,
