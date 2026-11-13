@@ -2281,6 +2281,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			}
 
 
+		};
 		RoomInteractionCallbacksImpl interactionCallbacks(
 			refreshCurrentScene, applyCurrentRoomRuntimeMutationsInPlace,
 			syncGlobalTimerEntities, captureDialogueBackdrop, showCdChangePrompt,
