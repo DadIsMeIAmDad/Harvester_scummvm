@@ -229,9 +229,9 @@ static Audio::SeekableAudioStream *openStartupAudioStream(ResourceManager &resou
             (relativePath[2] == '\\' || relativePath[2] == '/'))
         relativePath = relativePath.substr(3);
 
-	// Always check drive 4 first.
+	// Always check drive 6 first.
 	Common::String replacementPath =
-		Common::String::format("4:\\%s", relativePath.c_str());
+		Common::String::format("6:\\%s", relativePath.c_str());
 	
 	Common::SeekableReadStream *stream = nullptr;
 	
@@ -494,9 +494,9 @@ bool MediaManager::loadSound(int slot, const Common::String &path) {
 			(relativePath[2] == '\\' || relativePath[2] == '/'))
 		relativePath = relativePath.substr(3);
 
-	// Always check drive 4 first.
+	// Always check drive 6 first.
 	Common::String replacementPath =
-		Common::String::format("4:\\%s", relativePath.c_str());
+		Common::String::format("6:\\%s", relativePath.c_str());
 
 	Common::String loadedPath = replacementPath;
 

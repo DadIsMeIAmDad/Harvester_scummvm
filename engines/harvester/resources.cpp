@@ -48,6 +48,8 @@ static const ArchiveSpec kArchiveSpecs[] = {
 
     // Set 5: replacement video archive.
     { '5', nullptr, nullptr, 26 }
+	// Set 6: replacement sound archive.
+    { '6', nullptr, nullptr, 25 }
 };
 
 
@@ -496,7 +498,19 @@ bool ResourceManager::ensureDiscMounted(int discNumber) {
 		"CD2/FST.ZIP",
 		"CD3/FST.ZIP"
 	};
-	
+
+
+
+    static const char *const kSoundZipCandidates[] = {
+        "CD1/SOUND.ZIP",
+        "SOUND.ZIP",
+        "CD2/SOUND.ZIP",
+        "CD3/SOUND.ZIP"
+    };
+
+
+
+
 	if (_search.hasArchive("harvester-zip-5")) {
 	
 		mountedAny = true;
@@ -584,6 +598,10 @@ Common::Archive *ResourceManager::getMountedDiscArchive(
 	if (archiveSetId == '5')
 		return _search.getArchive(
 			"harvester-zip-5");
+			
+    if (archiveSetId == '6')
+        return _search.getArchive(
+            "harvester-zip-6");
 
 	/*
 	 * Sets 1-3 remain the original XFile archives.
@@ -721,7 +739,8 @@ bool ResourceManager::hasFile(
 		 */
 
 		if (archiveSetId == '4' ||
-				archiveSetId == '5')
+				archiveSetId == '5' ||
+                archiveSetId == '6')
 			return false;
 
 
@@ -813,7 +832,8 @@ ResourceManager::openFile(
 
 			if (!stream &&
 					archiveSetId != '4' &&
-					archiveSetId != '5') {
+					archiveSetId != '5' &&
+                    archiveSetId != '6') {
 
 				const Common::String loosePath =
 					resolveDiscArchiveStoragePath(
