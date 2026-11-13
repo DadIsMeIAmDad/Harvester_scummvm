@@ -47,7 +47,7 @@ static const ArchiveSpec kArchiveSpecs[] = {
     { '4', nullptr, nullptr, 27 },
 
     // Set 5: replacement video archive.
-    { '5', nullptr, nullptr, 26 }
+    { '5', nullptr, nullptr, 26 },
 	// Set 6: replacement sound archive.
     { '6', nullptr, nullptr, 25 }
 };
@@ -358,7 +358,8 @@ bool ResourceManager::ensureDiscMounted(int discNumber) {
 
 		// Sets 4 and 5 are mounted separately as ZIP archives.
 		if (spec.archiveSetId == '4' ||
-				spec.archiveSetId == '5')
+				spec.archiveSetId == '5' ||
+				spec.archiveSetId == '6')
 			continue;
 
 		if (getMountedDiscArchive(
@@ -492,22 +493,15 @@ bool ResourceManager::ensureDiscMounted(int discNumber) {
 
 
 
+
+
+
 	static const char *const kFstZipCandidates[] = {
 		"CD1/FST.ZIP",
 		"FST.ZIP",
 		"CD2/FST.ZIP",
 		"CD3/FST.ZIP"
 	};
-
-
-
-    static const char *const kSoundZipCandidates[] = {
-        "CD1/SOUND.ZIP",
-        "SOUND.ZIP",
-        "CD2/SOUND.ZIP",
-        "CD3/SOUND.ZIP"
-    };
-
 
 
 
@@ -535,6 +529,43 @@ bool ResourceManager::ensureDiscMounted(int discNumber) {
 			}
 		}
 	}
+
+
+
+
+    static const char *const kSoundZipCandidates[] = {
+        "CD1/SOUND.ZIP",
+        "SOUND.ZIP",
+        "CD2/SOUND.ZIP",
+        "CD3/SOUND.ZIP"
+    };
+
+
+    if (_search.hasArchive("harvester-zip-6")) {
+
+        mountedAny = true;
+
+    } else {
+
+        for (const char *candidate : kSoundZipCandidates) {
+
+            if (!SearchMan.hasFile(
+                    Common::Path(candidate, '/'))) {
+                continue;
+            }
+
+            if (mountZipAsArchiveSet(
+                    *this,
+                    candidate,
+                    '6',
+                    25)) {
+
+                mountedAny = true;
+                break;
+            }
+        }
+    }
+
 
 
 
