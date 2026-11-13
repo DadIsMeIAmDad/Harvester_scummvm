@@ -2094,7 +2094,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 						if (event.type == Common::EVENT_LBUTTONDOWN ||
 								event.type == Common::EVENT_RBUTTONDOWN) {
 							dismissPressed = true;
-						} else if (event.type == Common::EVENT_KEYDOWN) {
+						} else if (event.type == Common::EVENT_KEYDOWN && event.kbd.keycode == Common::KEYCODE_ESCAPE) {
 							return Common::kNoError;
 						}
 						continue;
