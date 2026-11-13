@@ -23,7 +23,7 @@
 #include <cstring>
 
 #include "harvester/media_manager.h"
-
+#include "audio/decoders/mp3.h"
 #include "audio/audiostream.h"
 #include "audio/decoders/raw.h"
 #include "audio/decoders/wave.h"
@@ -203,6 +203,19 @@ static Audio::SeekableAudioStream *decodeStartupAudioStream(Common::SeekableRead
 	}
 
 	stream->seek(0);
+
+	// Detect MP3 files by extension.
+	if (stream->size() >= 3) {
+		char magic[3];
+		stream->read(magic, 3);
+
+		stream->seek(0);
+
+		if (!memcmp(magic, "ID3", 3))
+			return Audio::makeMP3Stream(stream, DisposeAfterUse::YES);
+	}
+
+	stream->seek(0);
 	return Audio::makeWAVStream(stream, DisposeAfterUse::YES);
 }
 
@@ -216,11 +229,23 @@ static Audio::SeekableAudioStream *openStartupAudioStream(ResourceManager &resou
             (relativePath[2] == '\\' || relativePath[2] == '/'))
         relativePath = relativePath.substr(3);
 
-    // Always check drive 4 first, using the original extension.
-    Common::String replacementPath =
-        Common::String::format("4:\\%s", relativePath.c_str());
-
-    Common::SeekableReadStream *stream = resources.openFile(replacementPath);
+	// Always check drive 4 first.
+	Common::String replacementPath =
+		Common::String::format("4:\\%s", relativePath.c_str());
+	
+	Common::SeekableReadStream *stream = nullptr;
+	
+	// Try MP3 first.
+	Common::String mp3Path =
+		replacementPath.substr(0, replacementPath.size() - 4) + ".mp3";
+	
+	stream = resources.openFile(mp3Path);
+	
+	// Then try the original extension.
+	if (!stream)
+		stream = resources.openFile(replacementPath);
+	
+	// Then try alternate CMP/WAV extensions.
 
     // If not found, try the alternate CMP/WAV extension.
     if (!stream && relativePath.size() >= 4) {
