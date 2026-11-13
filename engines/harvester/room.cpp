@@ -2080,7 +2080,15 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				while (g_system->getEventManager()->pollEvent(event)) {
 					if (flow.handleSystemEvent(event, result))
 						return result;
-
+					
+					
+					if (event.type == Common::EVENT_MOUSEMOVE) {
+						_mousePos = event.mouse;
+						continue;
+					}
+					
+					
+					
 					if (!initialInputReleased) {
 						if (event.type == Common::EVENT_LBUTTONUP ||
 								event.type == Common::EVENT_RBUTTONUP ||
@@ -2105,6 +2113,12 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 						return Common::kNoError;
 					}
 				}
+
+
+				if (entityManager)
+					entityManager->syncCursorEntityPosition(_mousePos);
+
+
 
 				if (!initialInputReleased && frameCount++ > 0)
 					initialInputReleased = true;
