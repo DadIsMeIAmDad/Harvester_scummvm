@@ -715,6 +715,8 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			moveUp = false;
 			moveDown = false;
 			attackModifierHeld = false;
+			
+			g_system->getEventManager()->purgeKeyboardEvents();
 		};
 		
 		
