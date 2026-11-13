@@ -2100,8 +2100,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					}
 
 					if (!dismissPressed) {
-						if (event.type == Common::EVENT_LBUTTONDOWN ||
-								event.type == Common::EVENT_RBUTTONDOWN) {
+						if (event.type == Common::EVENT_LBUTTONDOWN) {
 							dismissPressed = true;
 						} else if (event.type == Common::EVENT_KEYDOWN && event.kbd.keycode == Common::KEYCODE_ESCAPE) {
 							return Common::kNoError;
@@ -2109,8 +2108,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 						continue;
 					}
 
-					if (event.type == Common::EVENT_LBUTTONUP ||
-							event.type == Common::EVENT_RBUTTONUP) {
+					if (event.type == Common::EVENT_LBUTTONUP) {
 						return Common::kNoError;
 					}
 				}
@@ -2127,6 +2125,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				blitBitmap(*activeScreen, backdrop, 0, 0);
 				setScaledRoomPalette(*activeScreen, scene.palette, scene.targetPaletteBrightness);
 				drawRoomInspectText(*activeScreen, *art, *inspectFont, modalText, useNativeInspectFont);
+				
+				
+				if (entityManager)
+					entityManager->drawCursor(*activeScreen);
+				
+				
+				
 				activeScreen->makeAllDirty();
 				activeScreen->update();
 
