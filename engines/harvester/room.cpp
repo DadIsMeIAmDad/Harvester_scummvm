@@ -2080,7 +2080,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				Common::Error result = Common::kNoError;
 				while (g_system->getEventManager()->pollEvent(event)) {
 					if (flow.handleSystemEvent(event, result))
-						clearHeldKeyboardInput();
 						return result;
 					
 					
@@ -2105,7 +2104,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 								event.type == Common::EVENT_RBUTTONDOWN) {
 							dismissPressed = true;
 						} else if (event.type == Common::EVENT_KEYDOWN && event.kbd.keycode == Common::KEYCODE_ESCAPE) {
-							clearHeldKeyboardInput();
 							return Common::kNoError;
 						}
 						continue;
@@ -2113,7 +2111,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 					if (event.type == Common::EVENT_LBUTTONUP ||
 							event.type == Common::EVENT_RBUTTONUP) {
-						clearHeldKeyboardInput();
 						return Common::kNoError;
 					}
 				}
