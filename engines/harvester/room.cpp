@@ -4170,15 +4170,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		return bestTarget;
 	};
 	auto queueRegionInteraction = [&](const RegionRecord &region) {
-	
-	
-	
-	    if (hasActiveMonsterInRoom()) {
-			pendingRegionName.clear();
-			return;
-		}
-	
-	
 		pendingRegionName = region.regionName;
 		if (!playerState.entity)
 			return;
@@ -4265,6 +4256,12 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		return Common::kNoError;
 	};
 	auto tryActivatePendingRegion = [&]() -> Common::Error {
+	
+	
+		if (hasActiveMonsterInRoom())
+			return Common::kNoError;
+	
+	
 		if (pendingRegionName.empty() || !playerState.entity)
 			return Common::kNoError;
 
@@ -4285,6 +4282,10 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		return runRegionInteraction(*region);
 	};
 	auto tryActivatePassiveRegion = [&]() -> Common::Error {
+	
+		if (hasActiveMonsterInRoom())
+			return Common::kNoError;
+	
 		if (!playerState.entity)
 			return Common::kNoError;
 
