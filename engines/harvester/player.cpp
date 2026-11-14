@@ -498,6 +498,7 @@ static bool startResolvedAttackAnimation(RoomPlayerState &playerState,
 	playerState.hasMoveTarget = false;
 	playerState.turnActive = false;
 	playerState.turnTargetFacing = -1;
+	playerState.turnFinalFacing = -1;
 	playerState.turnFirstFrame = -1;
 	playerState.turnLastFrame = -1;
 	playerState.turnEndFrame = -1;
@@ -1647,6 +1648,7 @@ bool Player::startHitAnimation(HarvesterEngine &engine, RoomPlayerState &playerS
 	playerState.hasMoveTarget = false;
 	playerState.turnActive = false;
 	playerState.turnTargetFacing = -1;
+	playerState.turnFinalFacing = -1;
 	playerState.turnFirstFrame = -1;
 	playerState.turnLastFrame = -1;
 	playerState.turnEndFrame = -1;
@@ -1731,6 +1733,7 @@ bool Player::startDeathAnimation(RoomPlayerState &playerState, int damageType, b
 	playerState.hasMoveTarget = false;
 	playerState.turnActive = false;
 	playerState.turnTargetFacing = -1;
+	playerState.turnFinalFacing = -1;
 	playerState.turnFirstFrame = -1;
 	playerState.turnLastFrame = -1;
 	playerState.turnEndFrame = -1;
@@ -1796,52 +1799,106 @@ bool Player::updateDeathAnimationState(RoomPlayerState &playerState) {
 	return true;
 }
 
+
 bool Player::startTurnAnimation(RoomPlayerState &playerState, int targetFacing) {
 	if (!playerState.entity || playerState.hitActive ||
 			playerState.facing < 0 || playerState.facing == targetFacing)
 		return false;
 
 	PlayerTurnAnimationRange range;
-	if (!resolvePlayerTurnAnimationRange(playerState.facing, targetFacing, range))
-		return false;
+	int nextFacing = targetFacing;
+
+	// Opposite directions require two 90-degree turns.
+	if (!resolvePlayerTurnAnimationRange(playerState.facing, targetFacing, range)) {
+		switch (playerState.facing) {
+		case 0: // Front -> Back: turn Right first.
+			nextFacing = 2;
+			break;
+		case 3: // Back -> Front: turn Left first.
+			nextFacing = 1;
+			break;
+		case 1: // Left -> Right: turn Back first.
+			nextFacing = 3;
+			break;
+		case 2: // Right -> Left: turn Front first.
+			nextFacing = 0;
+			break;
+		default:
+			return false;
+		}
+
+		if (!resolvePlayerTurnAnimationRange(playerState.facing, nextFacing, range))
+			return false;
+
+		playerState.turnFinalFacing = targetFacing;
+	} else {
+		playerState.turnFinalFacing = -1;
+	}
 
 	playerState.turnActive = true;
-	playerState.turnTargetFacing = targetFacing;
+	playerState.turnTargetFacing = nextFacing;
 	playerState.turnFirstFrame = range.firstFrame;
 	playerState.turnLastFrame = range.lastFrame;
 	playerState.turnEndFrame = range.playBackwards ? range.firstFrame : range.lastFrame;
 	playerState.turnPlayBackwards = range.playBackwards;
 	playerState.nextMovementTick = 0;
+
 	playerState.entity->setAnimationFrameRange(range.firstFrame, range.lastFrame, false);
 	playerState.entity->setPlayBackwards(range.playBackwards);
 	playerState.entity->setAnimationRate(kRoomPlayerWalkAnimationRate);
 	playerState.entity->setCurrentFrame(range.playBackwards ? range.lastFrame : range.firstFrame);
+
 	debugC(1, kDebugPlayer,
-		"Harvester: player turn animation from=%d to=%d frames=%d..%d backwards=%d rate=%d",
-		playerState.facing, targetFacing, range.firstFrame, range.lastFrame,
+		"Harvester: player turn animation from=%d to=%d final=%d frames=%d..%d backwards=%d rate=%d",
+		playerState.facing, nextFacing,
+		playerState.turnFinalFacing >= 0 ? playerState.turnFinalFacing : nextFacing,
+		range.firstFrame, range.lastFrame,
 		range.playBackwards, kRoomPlayerWalkAnimationRate);
+
 	return true;
 }
+
+
 
 bool Player::updateTurnAnimationState(RoomPlayerState &playerState) {
 	if (!playerState.turnActive || !playerState.entity)
 		return false;
+
 	if (playerState.entity->getCurrentFrame() != playerState.turnEndFrame)
 		return false;
+
+	const int finalFacing = playerState.turnFinalFacing;
 
 	playerState.turnActive = false;
 	playerState.facing = playerState.turnTargetFacing;
 	playerState.turnTargetFacing = -1;
+	playerState.turnFinalFacing = -1;
 	playerState.turnFirstFrame = -1;
 	playerState.turnLastFrame = -1;
 	playerState.turnEndFrame = -1;
 	playerState.turnPlayBackwards = false;
 	playerState.entity->setAnimationRate(0);
+
+	// Continue the about-turn if another 90-degree turn is pending.
+	if (finalFacing >= 0 && finalFacing != playerState.facing) {
+		playerState.turnFinalFacing = -1;
+
+		debugC(1, kDebugPlayer,
+			"Harvester: player about-turn intermediate facing=%d final=%d",
+			playerState.facing, finalFacing);
+
+		return startTurnAnimation(playerState, finalFacing);
+	}
+
+	playerState.turnFinalFacing = -1;
+
 	debugC(1, kDebugPlayer,
 		"Harvester: player turn complete facing=%d frame=%d",
 		playerState.facing, playerState.entity->getCurrentFrame());
+
 	return true;
 }
+
 
 bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
@@ -2135,6 +2192,7 @@ bool Player::startIdleAnimation(HarvesterEngine &engine, const RoomSetupState &s
 	playerState.hasMoveTarget = false;
 	playerState.turnActive = false;
 	playerState.turnTargetFacing = -1;
+	playerState.turnFinalFacing = -1;
 	playerState.entity->setVisible(false);
 	debugC(1, kDebugPlayer,
 		"Harvester: player idle animation start room='%s' facing=%d frames=%d..%d rate=%d trigger_tick=%u",
