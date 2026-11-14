@@ -595,9 +595,11 @@ static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
 	// the vertical walk states instead of remapping screen Y from depth.
 	
 	if (state.roomName == "MR_JOHNS" || state.roomName == "PCKIT" || state.roomName == "FIRENSIDE" || state.roomName == "MTPLNT" || state.roomName == "CHESSROOM" || state.roomName == "STORE_IN" || state.roomName == "POST" || state.roomName == "MORALITY2" || state.roomName == "FLESH" || state.roomName == "LUST") {
-		return kRoomPlayerVerticalScreenStep3;
+		//return kRoomPlayerVerticalScreenStep3;
+		return kRoomPlayerVerticalScreenStep;
 	} else if (state.roomName == "CHAP1" || state.roomName == "MORTHALL" || state.roomName == "PCHOUSE" || state.roomName == "ST_LIVRM" || state.roomName == "STHOUSE" || state.roomName == "CEM10" || state.roomName == "CEM" || state.roomName == "DNALFT" || state.roomName == "TV_OUT" || state.roomName == "THEATRE1" || state.roomName == "THEATRE2" || state.roomName == "LAUNDRY1" || state.roomName == "LAUNDRY2" || state.roomName == "PAIN") {
-		return kRoomPlayerVerticalScreenStep2;
+		//return kRoomPlayerVerticalScreenStep2;
+		return kRoomPlayerVerticalScreenStep;
 	} else {
 		return kRoomPlayerVerticalScreenStep;
 	}
