@@ -1619,6 +1619,25 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			if (playerState.entity && playerState.facing >= 0)
 				(void)Player::setIdleAnimation(playerState, playerState.facing);
 		};
+
+
+
+
+		auto stopPlayerRegionInteractionTwo = [&]() {
+			moveLeft = false;
+			moveRight = false;
+			moveUp = false;
+			moveDown = false;
+			pendingRegionName.clear();
+			playerState.hasMoveTarget = false;
+			playerState.turnActive = false;
+			playerState.turnTargetFacing = -1;
+		};
+
+
+
+
+
 		auto refreshCurrentScene = [&](bool preservePlayerPlacement) {
 			Common::Array<AudioCommand> entryAudioCommands = scene.state.audioCommands;
 			RoomSetupState refreshedState;
@@ -5260,7 +5279,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				playerState.hasMoveTarget || playerState.turnActive ||
 				playerState.attackActive || playerState.hitActive)) {
 			attackModifierHeld = false;
-			stopPlayerRegionInteraction();
+			stopPlayerRegionInteractionTwo();
 		}
 
 		// Native run_harvester_main_loop checks player/region overlap before
