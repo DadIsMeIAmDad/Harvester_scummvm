@@ -3831,22 +3831,17 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					
 					
 			bool attemptedMoveX = false;
-			bool attemptedMoveY = false;
+			bool attemptedMoveZ = false;
 
-			const int feetDelta = playerState.bottomY - monster.posY;
-			const int absFeetDelta = ABS(feetDelta);
+			if (absZDelta > kNativeMonsterPursuitZTolerance) {
+				attemptedMoveZ = true;
 
-			if (absFeetDelta > kNativeMonsterFeetAlignmentTolerance) {
-				attemptedMoveY = true;
+				monster.posZ = stepTowardsRoomCombatInt(
+					monster.posZ, playerTargetZ, depthStep);
 
-				// Move monster's feet anchor toward player's feet anchor.
-				monster.posY = stepTowardsRoomCombatInt(
-					monster.posY, playerState.bottomY, 1);
+				monster.posY = mapRoomDepthToScreenYForCombat(
+					scene.state, (float)monster.posZ, monster.posY);
 
-				// Keep Z synchronized with the monster's new screen depth.
-				monster.posZ = roundRoomCombatFloat(
-					mapRoomScreenYToDepthForCombat(
-						scene.state, monster.posY, (float)monster.posZ));
 			} else if (absLiveCenterDx > engageDistance) {
 			
 			
@@ -3887,11 +3882,11 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				continue;
 			}
 
-			if (attemptedMoveX || attemptedMoveY) {
+			if (attemptedMoveX || attemptedMoveZ) {
 				debugC(1, kDebugCombat,
 					"Harvester: combat monster chase stalled monster='%s' live_center_dx=%d z_delta=%.2f engage=%d waypoint_tol=%d pos=(%d,%d,z=%d) attempted_x=%d attempted_z=%d",
 					monster.monsterName.c_str(), liveCenterDx, (double)zDelta, engageDistance, liveWaypointTolerance,
-					monster.posX, monster.posY, monster.posZ, attemptedMoveX, attemptedMoveY);
+					monster.posX, monster.posY, monster.posZ, attemptedMoveX, attemptedMoveZ);
 			}
 
 			needsRedraw = setRoomMonsterAnimation(*entity, monster.facing, false) || needsRedraw;
