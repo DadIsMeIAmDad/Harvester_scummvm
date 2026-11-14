@@ -957,9 +957,9 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 					candidateCenterX, candidateBottomY, candidateZ);
 
 				// Ignore small overlaps caused by animated limbs.
-
-				if (candidateOverlap <= kMinPlayerBlockerOverlapPixelsNPC ||
-					(oldOverlap > kMinPlayerBlockerOverlapPixelsNPC && candidateOverlap < oldOverlap))
+				uint kMinPlayerBlockerOverlapPixelsMONSTER = 200;
+				if (candidateOverlap <= kMinPlayerBlockerOverlapPixelsMONSTER ||
+					(oldOverlap > kMinPlayerBlockerOverlapPixelsMONSTER && candidateOverlap < oldOverlap))
 					continue;
 
 				blocker = entity;
