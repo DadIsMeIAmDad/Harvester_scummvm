@@ -2010,19 +2010,24 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
 	const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
 	const float depthStep = computeRoomPlayerDepthStep(state);
-	
-	
-	int candidateCenterX = clampPlayerCenterXToNativeBounds(
-		playerState, playerState.centerX + horizontalInput * horizontalStep);
-	
-	
-	
-	
+
+	// Face the direction of the keyboard input, even if movement is blocked.
+	const int desiredFacing = resolveFacingFromMovementDelta(
+		horizontalInput * horizontalStep,
+		verticalInput * verticalStep);
+
+	if (desiredFacing != playerState.facing &&
+			startTurnAnimation(playerState, desiredFacing)) {
+		playerState.hasMoveTarget = false;
+		return true;
+	}
+
 	int candidateCenterX = clampPlayerCenterXToNativeBounds(
 		playerState, playerState.centerX + horizontalInput * horizontalStep);
 	int candidateBottomY = playerState.bottomY;
 	float candidateZ = playerState.z;
 	bool depthBoundaryReached = false;
+
 	if (verticalInput != 0) {
 		// update_actor_runtime_state (0x4d750) only emits the paired screen-Y and Z
 		// steps for state 0x04 while min_z < z and state 0x0b while z < max_z.
@@ -2030,19 +2035,23 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 		depthBoundaryReached = verticalInput < 0
 			? playerState.z >= (float)state.roomMaxZ
 			: playerState.z <= (float)state.roomMinZ;
+
 		if (!depthBoundaryReached) {
 			candidateBottomY = clampRoomMovementY(state,
 				playerState.bottomY + verticalInput * verticalStep);
 			candidateZ = clampRoomDepth(state, playerState.z - verticalInput * depthStep);
 		}
 	}
+
 	if (candidateCenterX == playerState.centerX &&
 			candidateBottomY == playerState.bottomY &&
 			fabsf(candidateZ - playerState.z) <= kRoomDepthCompareEpsilon) {
 		playerState.hasMoveTarget = false;
+
 		if (depthBoundaryReached) {
 			const bool stopped = setIdleAnimation(
 				playerState, playerState.facing >= 0 ? playerState.facing : 0);
+
 			if (stopped) {
 				debugC(3, kDebugPathfinding,
 					"Harvester: player keyboard depth boundary room='%s' input_y=%d pos=(%d,%d,z=%.2f) bounds=(%d,%d)",
@@ -2055,8 +2064,6 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 		return false;
 	}
 
-
-
 	if (!consumePlayerMovementTick(playerState))
 		return false;
 
@@ -2064,23 +2071,22 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	bool moved = tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 		playerState, candidateCenterX, candidateBottomY, candidateZ);
 
-
 	if (!moved) {
 		playerState.hasMoveTarget = false;
 		return setIdleAnimation(
 			playerState, playerState.facing >= 0 ? playerState.facing : 0);
 	}
 
-
-
 	const int actualFacing = resolveFacingFromRoomMovement(
 		previousCenterX, previousBottomY, playerState.centerX, playerState.bottomY);
 	(void)setPlayerWalkAnimation(playerState, actualFacing);
+
 	debugC(2, kDebugPlayer,
 		"Harvester: player keyboard move room='%s' input=(%d,%d) pos=(%d,%d,z=%.2f) facing=%d frame=%d moved=%d",
 		state.roomName.c_str(), horizontalInput, verticalInput,
 		playerState.centerX, playerState.bottomY, (double)playerState.z,
 		playerState.facing, playerState.entity->getCurrentFrame(), moved);
+
 	return true;
 }
 
