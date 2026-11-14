@@ -4170,6 +4170,15 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		return bestTarget;
 	};
 	auto queueRegionInteraction = [&](const RegionRecord &region) {
+	
+	
+	
+	    if (hasActiveMonsterInRoom()) {
+			pendingRegionName.clear();
+			return;
+		}
+	
+	
 		pendingRegionName = region.regionName;
 		if (!playerState.entity)
 			return;
