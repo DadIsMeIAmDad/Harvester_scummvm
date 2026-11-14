@@ -2010,6 +2010,14 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
 	const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
 	const float depthStep = computeRoomPlayerDepthStep(state);
+	
+	
+	int candidateCenterX = clampPlayerCenterXToNativeBounds(
+		playerState, playerState.centerX + horizontalInput * horizontalStep);
+	
+	
+	
+	
 	int candidateCenterX = clampPlayerCenterXToNativeBounds(
 		playerState, playerState.centerX + horizontalInput * horizontalStep);
 	int candidateBottomY = playerState.bottomY;
@@ -2047,10 +2055,7 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 		return false;
 	}
 
-	const int desiredFacing = resolveFacingFromRoomMovement(
-		playerState.centerX, playerState.bottomY, candidateCenterX, candidateBottomY);
-	if (desiredFacing != playerState.facing && startTurnAnimation(playerState, desiredFacing))
-		return true;
+
 
 	if (!consumePlayerMovementTick(playerState))
 		return false;
