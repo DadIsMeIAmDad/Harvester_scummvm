@@ -823,13 +823,6 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	const int oldBottomY = playerState.bottomY;
 	const float oldZ = playerState.z;
 
-	warning("MARK!! PLAYER LAST Z WAS %f", oldZ);
-
-	if (oldZ <=14) {
-		kMinPlayerBlockerOverlapPixels = 150;
-	}
-
-
 	bool wasOverlappingDeadMonster = false;
 
 	EntityManager *entityManager = engine.getRuntimeEntities();
@@ -926,9 +919,9 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 					candidateCenterX, candidateBottomY, candidateZ);
 
 				// Ignore small overlaps caused by animated limbs.
-
-				if (candidateOverlap <= kMinPlayerBlockerOverlapPixels ||
-					(oldOverlap > kMinPlayerBlockerOverlapPixels && candidateOverlap < oldOverlap))
+				uint kMinPlayerBlockerOverlapPixelsNPC = 200;
+				if (candidateOverlap <= kMinPlayerBlockerOverlapPixelsNPC ||
+					(oldOverlap > kMinPlayerBlockerOverlapPixelsNPC && candidateOverlap < oldOverlap))
 					continue;
 
 				blocker = entity;
@@ -965,8 +958,8 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 
 				// Ignore small overlaps caused by animated limbs.
 
-				if (candidateOverlap <= kMinPlayerBlockerOverlapPixels ||
-					(oldOverlap > kMinPlayerBlockerOverlapPixels && candidateOverlap < oldOverlap))
+				if (candidateOverlap <= kMinPlayerBlockerOverlapPixelsNPC ||
+					(oldOverlap > kMinPlayerBlockerOverlapPixelsNPC && candidateOverlap < oldOverlap))
 					continue;
 
 				blocker = entity;
