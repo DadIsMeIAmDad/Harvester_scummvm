@@ -585,8 +585,7 @@ static int computeRoomPlayerHorizontalStep(const RoomSetupState &state, float z)
 }
 
 static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
-	// =========================================================================> Depth Per Room Step
-	return 0.5f;
+	return state.roomZVelocityStep > 0.0f ? state.roomZVelocityStep : 1.0f;
 }
 
 static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
@@ -595,13 +594,11 @@ static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
 	// the vertical walk states instead of remapping screen Y from depth.
 	
 	if (state.roomName == "MR_JOHNS" || state.roomName == "PCKIT" || state.roomName == "FIRENSIDE" || state.roomName == "MTPLNT" || state.roomName == "CHESSROOM" || state.roomName == "STORE_IN" || state.roomName == "POST" || state.roomName == "MORALITY2" || state.roomName == "FLESH" || state.roomName == "LUST") {
-		//return kRoomPlayerVerticalScreenStep3;
-		return kRoomPlayerVerticalScreenStep;
+		return kRoomPlayerVerticalScreenStep3;
 	} else if (state.roomName == "CHAP1" || state.roomName == "MORTHALL" || state.roomName == "PCHOUSE" || state.roomName == "ST_LIVRM" || state.roomName == "STHOUSE" || state.roomName == "CEM10" || state.roomName == "CEM" || state.roomName == "DNALFT" || state.roomName == "TV_OUT" || state.roomName == "THEATRE1" || state.roomName == "THEATRE2" || state.roomName == "LAUNDRY1" || state.roomName == "LAUNDRY2" || state.roomName == "PAIN") {
-		//return kRoomPlayerVerticalScreenStep2;
-		return kRoomPlayerVerticalScreenStep;
+		return kRoomPlayerVerticalScreenStep2;
 	} else {
-		return kRoomPlayerVerticalScreenStep;
+		return kRoomPlayerVerticalScreenStep2;
 	}
 }
 
