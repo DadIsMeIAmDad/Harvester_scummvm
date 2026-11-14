@@ -585,7 +585,8 @@ static int computeRoomPlayerHorizontalStep(const RoomSetupState &state, float z)
 }
 
 static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
-	return state.roomZVelocityStep > 0.0f ? state.roomZVelocityStep : 1.0f;
+	// =========================================================================> Depth Per Room Step
+	return 0.5f;
 }
 
 static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
