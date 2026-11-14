@@ -799,7 +799,7 @@ static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerS
 
 
 // Minimum opaque pixel overlap required to block player movement.
-static const uint kMinPlayerBlockerOverlapPixels = 100;
+static const uint kMinPlayerBlockerOverlapPixels = 1000;
 
 
 static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupState &state,
