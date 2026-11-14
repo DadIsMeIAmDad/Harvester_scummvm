@@ -3891,7 +3891,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 				debugC(1, kDebugCombat,
 					"Harvester: combat monster chase stalled monster='%s' live_center_dx=%d z_delta=%.2f engage=%d waypoint_tol=%d pos=(%d,%d,z=%d) attempted_x=%d attempted_z=%d",
 					monster.monsterName.c_str(), liveCenterDx, (double)zDelta, engageDistance, liveWaypointTolerance,
-					monster.posX, monster.posY, monster.posZ, attemptedMoveX, attemptedMoveZ);
+					monster.posX, monster.posY, monster.posZ, attemptedMoveX, attemptedMoveY);
 			}
 
 			needsRedraw = setRoomMonsterAnimation(*entity, monster.facing, false) || needsRedraw;
