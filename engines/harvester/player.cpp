@@ -797,6 +797,11 @@ static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerS
 	}
 }
 
+
+// Minimum opaque pixel overlap required to block player movement.
+static const uint kMinPlayerBlockerOverlapPixels = 20;
+
+
 static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects, RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
 		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr, bool allowDeadMonsterOverlap = false) {
@@ -865,8 +870,10 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 		const uint oldOverlap =
 			playerState.entity->countOpaqueOverlapPixels(*blocker);
 
-		// Allow movement that reduces an existing overlap.
-		if (oldOverlap > 0 && candidateOverlap < oldOverlap)
+		// Ignore small overlaps caused by animated limbs.
+
+		if (candidateOverlap <= kMinPlayerBlockerOverlapPixels ||
+			(oldOverlap > kMinPlayerBlockerOverlapPixels && candidateOverlap < oldOverlap))
 			blocker = nullptr;
 
 		// Restore the candidate position for the remaining collision checks.
@@ -906,8 +913,10 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 				(void)applyRoomActorPlacement(state, *playerState.entity,
 					candidateCenterX, candidateBottomY, candidateZ);
 
-				// Allow movement that reduces an existing NPC overlap.
-				if (oldOverlap > 0 && candidateOverlap < oldOverlap)
+				// Ignore small overlaps caused by animated limbs.
+
+				if (candidateOverlap <= kMinPlayerBlockerOverlapPixels ||
+					(oldOverlap > kMinPlayerBlockerOverlapPixels && candidateOverlap < oldOverlap))
 					continue;
 
 				blocker = entity;
@@ -942,8 +951,10 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 				(void)applyRoomActorPlacement(state, *playerState.entity,
 					candidateCenterX, candidateBottomY, candidateZ);
 
-				// Allow escape if the player was already overlapping this monster.
-				if (oldOverlap > 0 && candidateOverlap < oldOverlap)
+				// Ignore small overlaps caused by animated limbs.
+
+				if (candidateOverlap <= kMinPlayerBlockerOverlapPixels ||
+					(oldOverlap > kMinPlayerBlockerOverlapPixels && candidateOverlap < oldOverlap))
 					continue;
 
 				blocker = entity;
