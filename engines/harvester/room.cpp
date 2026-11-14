@@ -665,6 +665,19 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			entityManager->pauseTimerCountdowns();
 		}
 
+
+
+		auto hasActiveMonsterInRoom = [&]() -> bool {
+			for (const MonsterRecord &monster : scene.state.roomMonsters) {
+				if (monster.active && monster.visible && monster.currentHitPoints > 0)
+					return true;
+			}
+			return false;
+		};
+
+
+
+
 		flow.resetCursorAnimationSequence();
 		flow.executeStartupAudioCommands(scene.state.audioCommands);
 		if (!scene.state.musicPath.empty())
@@ -1633,8 +1646,6 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			playerState.turnActive = false;
 			playerState.turnTargetFacing = -1;
 		};
-
-
 
 
 
@@ -4206,7 +4217,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 
 	auto runRegionInteraction = [&](const RegionRecord &region) -> Common::Error {
 		// Block region activation while an NPC death/monsterfy is underway.
-		if (npcDeathOrMonsterfyActive()) {
+		if (npcDeathOrMonsterfyActive() || hasActiveMonsterInRoom()) {
 			debugC(1, kDebugRoom,
 				"Harvester: blocked region activation during NPC death/monsterfy region='%s'",
 				region.regionName.c_str());
