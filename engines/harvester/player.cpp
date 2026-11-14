@@ -1965,11 +1965,15 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
-		const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
-		const float depthStep = computeRoomPlayerDepthStep(state);
-		candidateBottomY = clampRoomMovementY(state,
-			playerState.bottomY + depthDirection * verticalStep);
-		candidateZ = stepTowardsFloat(playerState.z, playerState.targetZ, depthStep);
+		const float depthStep = 1.0f;
+	
+		candidateZ = stepTowardsFloat(
+			playerState.z, playerState.targetZ, depthStep);
+	
+		candidateBottomY = clampRoomMovementY(
+			state,
+			mapRoomDepthToScreenYForCombat(
+				state, candidateZ, playerState.bottomY));
 	}
 
 
