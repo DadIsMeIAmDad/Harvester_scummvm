@@ -4258,7 +4258,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 	auto tryActivatePendingRegion = [&]() -> Common::Error {
 	
 	
-		if (hasActiveMonsterInRoom())
+		if (hasActiveMonsterInRoom() || playerState.turnActive)
 			return Common::kNoError;
 	
 	
@@ -4283,7 +4283,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 	};
 	auto tryActivatePassiveRegion = [&]() -> Common::Error {
 	
-		if (hasActiveMonsterInRoom())
+		if (hasActiveMonsterInRoom() || playerState.turnActive)
 			return Common::kNoError;
 	
 		if (!playerState.entity)
