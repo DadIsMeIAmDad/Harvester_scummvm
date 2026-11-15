@@ -36,7 +36,7 @@ namespace {
 static const char *const kPlayerActorResourcePath = "4:/GRAPHIC/MONSTERS/PC/PC0.zip";
 static const float kRoomPlayerHorizontalMoveBase = 8.0f;
 static const float kRoomPlayerHorizontalTargetSlackBase = 50.0f;
-static const float kRoomPlayerDepthTargetSlack = 8.0f;
+static const float kRoomPlayerDepthTargetSlack = 0.0f;
 static const int kRoomRegionTargetXBias = 10;
 static const float kRoomDepthCompareEpsilon = 0.01f;
 static const int kRoomPlayerWalkAnimationRate = 17;
