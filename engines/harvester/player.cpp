@@ -2099,9 +2099,17 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 		// update_actor_runtime_state (0x4d750) only emits the paired screen-Y and Z
 		// steps for state 0x04 while min_z < z and state 0x0b while z < max_z.
 		// At either depth limit it zeros both steps and returns to the facing idle state.
+		
+		
+		
 		depthBoundaryReached = verticalInput < 0
-			? playerState.z >= (float)state.roomMaxZ
-			: playerState.z <= (float)state.roomMinZ;
+			? (playerState.z >= (float)state.roomMaxZ ||
+			playerState.bottomY <= state.roomMaxZScreenY)
+			: (playerState.z <= (float)state.roomMinZ ||
+			playerState.bottomY >= state.roomMinZScreenY);
+
+
+
 
 		if (!depthBoundaryReached) {
 			candidateBottomY = clampRoomMovementY(state,
