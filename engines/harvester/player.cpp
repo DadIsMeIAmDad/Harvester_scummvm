@@ -1965,7 +1965,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
-		const int verticalStep = 2;
+		const int verticalStep = 3;
 		const float depthStep = computeRoomPlayerDepthStep(state);
 	
 		const int nextBottomY = clampRoomMovementY(
