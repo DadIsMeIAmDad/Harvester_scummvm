@@ -594,11 +594,11 @@ static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
 	// the vertical walk states instead of remapping screen Y from depth.
 	
 	if (state.roomName == "MR_JOHNS" || state.roomName == "PCKIT" || state.roomName == "FIRENSIDE" || state.roomName == "MTPLNT" || state.roomName == "CHESSROOM" || state.roomName == "STORE_IN" || state.roomName == "POST" || state.roomName == "MORALITY2" || state.roomName == "FLESH" || state.roomName == "LUST") {
-		return kRoomPlayerVerticalScreenStep;
+		return kRoomPlayerVerticalScreenStep2;
 	} else if (state.roomName == "CHAP1" || state.roomName == "MORTHALL" || state.roomName == "PCHOUSE" || state.roomName == "ST_LIVRM" || state.roomName == "STHOUSE" || state.roomName == "CEM10" || state.roomName == "CEM" || state.roomName == "DNALFT" || state.roomName == "TV_OUT" || state.roomName == "THEATRE1" || state.roomName == "THEATRE2" || state.roomName == "LAUNDRY1" || state.roomName == "LAUNDRY2" || state.roomName == "PAIN") {
-		return kRoomPlayerVerticalScreenStep;
+		return kRoomPlayerVerticalScreenStep2;
 	} else {
-		return kRoomPlayerVerticalScreenStep;
+		return kRoomPlayerVerticalScreenStep2;
 	}
 }
 
@@ -1965,15 +1965,21 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
-		const float depthStep = 1.0f;
+		const int verticalStep = 2;
+		const float depthStep = computeRoomPlayerDepthStep(state);
 	
+		const int nextBottomY = clampRoomMovementY(
+			state, playerState.bottomY + depthDirection * verticalStep);
+	
+		if (nextBottomY == playerState.bottomY) {
+			playerState.hasMoveTarget = false;
+			return setIdleAnimation(
+				playerState, playerState.facing >= 0 ? playerState.facing : 0);
+		}
+	
+		candidateBottomY = nextBottomY;
 		candidateZ = stepTowardsFloat(
 			playerState.z, playerState.targetZ, depthStep);
-	
-		candidateBottomY = clampRoomMovementY(
-			state,
-			mapRoomDepthToScreenYForCombat(
-				state, candidateZ, playerState.bottomY));
 	}
 
 
