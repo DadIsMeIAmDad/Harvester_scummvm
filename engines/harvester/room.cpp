@@ -3825,14 +3825,27 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			const int liveWaypointTolerance = roundRoomCombatFloat(
 				Player::computeDepthScale(scene.state,
 					MIN<float>(playerState.z, (float)monster.posZ)) * kNativeMonsterHorizontalWaypointTolerance);
+					
+					
+					
+					
+					
 			bool attemptedMoveX = false;
 			bool attemptedMoveZ = false;
+
 			if (absZDelta > kNativeMonsterPursuitZTolerance) {
 				attemptedMoveZ = true;
-				monster.posZ = stepTowardsRoomCombatInt(monster.posZ, playerTargetZ, depthStep);
-				monster.posZ = (int)clampRoomDepthForEvent(scene.state, (float)monster.posZ);
-				monster.posY = mapRoomDepthToScreenYForCombat(scene.state, (float)monster.posZ, monster.posY);
+
+				monster.posZ = stepTowardsRoomCombatInt(
+					monster.posZ, playerTargetZ, depthStep);
+
+				monster.posY = mapRoomDepthToScreenYForCombat(
+					scene.state, (float)monster.posZ, monster.posY);
+
 			} else if (absLiveCenterDx > engageDistance) {
+			
+			
+			
 				// Native class-6 pursuit stores a target frame-left X, not a center X.
 				const int desiredFrameLeftX = monsterCenterX < playerCenterX
 					? playerRect.right + engageDistance - monsterRect.width() / 2
@@ -3877,8 +3890,14 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			}
 
 			needsRedraw = setRoomMonsterAnimation(*entity, monster.facing, false) || needsRedraw;
+			
+			
 			const bool closeEnoughForAttack = isWithinNativeMonsterAttackEntryRange(
-				*entity, (float)monster.posZ, *playerState.entity, playerState.z, engageDistance);
+				*entity, monster.posY,
+				*playerState.entity, playerState.bottomY, engageDistance);
+				
+				
+				
 			// Native class-6 monsters store `now + random(99)` when they arm an attack, then
 			// apply the fixed 0x32-tick gate when deciding whether a later strike may start.
 			// A fresh zeroed spawn therefore attacks immediately once it reaches engage range.
@@ -4258,7 +4277,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 	auto tryActivatePendingRegion = [&]() -> Common::Error {
 	
 	
-		if (hasActiveMonsterInRoom())
+		if (hasActiveMonsterInRoom() || playerState.turnActive)
 			return Common::kNoError;
 	
 	
@@ -4283,7 +4302,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 	};
 	auto tryActivatePassiveRegion = [&]() -> Common::Error {
 	
-		if (hasActiveMonsterInRoom())
+		if (hasActiveMonsterInRoom() || playerState.turnActive)
 			return Common::kNoError;
 	
 		if (!playerState.entity)

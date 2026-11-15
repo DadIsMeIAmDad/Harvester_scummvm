@@ -77,6 +77,9 @@ struct RoomPlayerState {
 	Common::String rightwardBlockerHistory;
 	bool turnActive = false;
 	int turnTargetFacing = -1;
+	
+	int turnFinalFacing = -1;
+	
 	int turnFirstFrame = -1;
 	int turnLastFrame = -1;
 	int turnEndFrame = -1;
