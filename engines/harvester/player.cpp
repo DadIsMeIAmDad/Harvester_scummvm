@@ -498,7 +498,6 @@ static bool startResolvedAttackAnimation(RoomPlayerState &playerState,
 	playerState.hasMoveTarget = false;
 	playerState.turnActive = false;
 	playerState.turnTargetFacing = -1;
-	playerState.turnFinalFacing = -1;
 	playerState.turnFirstFrame = -1;
 	playerState.turnLastFrame = -1;
 	playerState.turnEndFrame = -1;
@@ -594,11 +593,11 @@ static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
 	// the vertical walk states instead of remapping screen Y from depth.
 	
 	if (state.roomName == "MR_JOHNS" || state.roomName == "PCKIT" || state.roomName == "FIRENSIDE" || state.roomName == "MTPLNT" || state.roomName == "CHESSROOM" || state.roomName == "STORE_IN" || state.roomName == "POST" || state.roomName == "MORALITY2" || state.roomName == "FLESH" || state.roomName == "LUST") {
-		return kRoomPlayerVerticalScreenStep2;
+		return kRoomPlayerVerticalScreenStep3;
 	} else if (state.roomName == "CHAP1" || state.roomName == "MORTHALL" || state.roomName == "PCHOUSE" || state.roomName == "ST_LIVRM" || state.roomName == "STHOUSE" || state.roomName == "CEM10" || state.roomName == "CEM" || state.roomName == "DNALFT" || state.roomName == "TV_OUT" || state.roomName == "THEATRE1" || state.roomName == "THEATRE2" || state.roomName == "LAUNDRY1" || state.roomName == "LAUNDRY2" || state.roomName == "PAIN") {
 		return kRoomPlayerVerticalScreenStep2;
 	} else {
-		return kRoomPlayerVerticalScreenStep2;
+		return kRoomPlayerVerticalScreenStep;
 	}
 }
 
@@ -798,12 +797,6 @@ static void reinsertPlayerSceneEntity(HarvesterEngine &engine, const RoomPlayerS
 	}
 }
 
-
-
-
-
-
-
 static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects, RoomPlayerState &playerState, int candidateCenterX, int candidateBottomY, float candidateZ,
 		const Common::String *ignoredBlockerName = nullptr, const Entity **blockerOut = nullptr, bool allowDeadMonsterOverlap = false) {
@@ -813,16 +806,12 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	if (blockerOut)
 		*blockerOut = nullptr;
 
-
-
-	// Minimum opaque pixel overlap required to block player movement. ------->  400 (too much)   -----> 100 was too Low  ---> 250 too much but close
-	uint kMinPlayerBlockerOverlapPixels = 400;
-
-
-
 	const int oldCenterX = playerState.centerX;
 	const int oldBottomY = playerState.bottomY;
 	const float oldZ = playerState.z;
+
+
+
 
 	bool wasOverlappingDeadMonster = false;
 
@@ -876,10 +865,8 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 		const uint oldOverlap =
 			playerState.entity->countOpaqueOverlapPixels(*blocker);
 
-		// Ignore small overlaps caused by animated limbs.
-
-		if (candidateOverlap <= kMinPlayerBlockerOverlapPixels ||
-			(oldOverlap > kMinPlayerBlockerOverlapPixels && candidateOverlap < oldOverlap))
+		// Allow movement that reduces an existing overlap.
+		if (oldOverlap > 0 && candidateOverlap < oldOverlap)
 			blocker = nullptr;
 
 		// Restore the candidate position for the remaining collision checks.
@@ -919,10 +906,8 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 				(void)applyRoomActorPlacement(state, *playerState.entity,
 					candidateCenterX, candidateBottomY, candidateZ);
 
-				// Ignore small overlaps caused by animated limbs.
-				uint kMinPlayerBlockerOverlapPixelsNPC = 200;
-				if (candidateOverlap <= kMinPlayerBlockerOverlapPixelsNPC ||
-					(oldOverlap > kMinPlayerBlockerOverlapPixelsNPC && candidateOverlap < oldOverlap))
+				// Allow movement that reduces an existing NPC overlap.
+				if (oldOverlap > 0 && candidateOverlap < oldOverlap)
 					continue;
 
 				blocker = entity;
@@ -957,10 +942,8 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 				(void)applyRoomActorPlacement(state, *playerState.entity,
 					candidateCenterX, candidateBottomY, candidateZ);
 
-				// Ignore small overlaps caused by animated limbs.
-				uint kMinPlayerBlockerOverlapPixelsMONSTER = 200;
-				if (candidateOverlap <= kMinPlayerBlockerOverlapPixelsMONSTER ||
-					(oldOverlap > kMinPlayerBlockerOverlapPixelsMONSTER && candidateOverlap < oldOverlap))
+				// Allow escape if the player was already overlapping this monster.
+				if (oldOverlap > 0 && candidateOverlap < oldOverlap)
 					continue;
 
 				blocker = entity;
@@ -1648,7 +1631,6 @@ bool Player::startHitAnimation(HarvesterEngine &engine, RoomPlayerState &playerS
 	playerState.hasMoveTarget = false;
 	playerState.turnActive = false;
 	playerState.turnTargetFacing = -1;
-	playerState.turnFinalFacing = -1;
 	playerState.turnFirstFrame = -1;
 	playerState.turnLastFrame = -1;
 	playerState.turnEndFrame = -1;
@@ -1733,7 +1715,6 @@ bool Player::startDeathAnimation(RoomPlayerState &playerState, int damageType, b
 	playerState.hasMoveTarget = false;
 	playerState.turnActive = false;
 	playerState.turnTargetFacing = -1;
-	playerState.turnFinalFacing = -1;
 	playerState.turnFirstFrame = -1;
 	playerState.turnLastFrame = -1;
 	playerState.turnEndFrame = -1;
@@ -1799,106 +1780,52 @@ bool Player::updateDeathAnimationState(RoomPlayerState &playerState) {
 	return true;
 }
 
-
 bool Player::startTurnAnimation(RoomPlayerState &playerState, int targetFacing) {
 	if (!playerState.entity || playerState.hitActive ||
 			playerState.facing < 0 || playerState.facing == targetFacing)
 		return false;
 
 	PlayerTurnAnimationRange range;
-	int nextFacing = targetFacing;
-
-	// Opposite directions require two 90-degree turns.
-	if (!resolvePlayerTurnAnimationRange(playerState.facing, targetFacing, range)) {
-		switch (playerState.facing) {
-		case 0: // Front -> Back: turn Right first.
-			nextFacing = 2;
-			break;
-		case 3: // Back -> Front: turn Left first.
-			nextFacing = 1;
-			break;
-		case 1: // Left -> Right: turn Back first.
-			nextFacing = 3;
-			break;
-		case 2: // Right -> Left: turn Front first.
-			nextFacing = 0;
-			break;
-		default:
-			return false;
-		}
-
-		if (!resolvePlayerTurnAnimationRange(playerState.facing, nextFacing, range))
-			return false;
-
-		playerState.turnFinalFacing = targetFacing;
-	} else {
-		playerState.turnFinalFacing = -1;
-	}
+	if (!resolvePlayerTurnAnimationRange(playerState.facing, targetFacing, range))
+		return false;
 
 	playerState.turnActive = true;
-	playerState.turnTargetFacing = nextFacing;
+	playerState.turnTargetFacing = targetFacing;
 	playerState.turnFirstFrame = range.firstFrame;
 	playerState.turnLastFrame = range.lastFrame;
 	playerState.turnEndFrame = range.playBackwards ? range.firstFrame : range.lastFrame;
 	playerState.turnPlayBackwards = range.playBackwards;
 	playerState.nextMovementTick = 0;
-
 	playerState.entity->setAnimationFrameRange(range.firstFrame, range.lastFrame, false);
 	playerState.entity->setPlayBackwards(range.playBackwards);
 	playerState.entity->setAnimationRate(kRoomPlayerWalkAnimationRate);
 	playerState.entity->setCurrentFrame(range.playBackwards ? range.lastFrame : range.firstFrame);
-
 	debugC(1, kDebugPlayer,
-		"Harvester: player turn animation from=%d to=%d final=%d frames=%d..%d backwards=%d rate=%d",
-		playerState.facing, nextFacing,
-		playerState.turnFinalFacing >= 0 ? playerState.turnFinalFacing : nextFacing,
-		range.firstFrame, range.lastFrame,
+		"Harvester: player turn animation from=%d to=%d frames=%d..%d backwards=%d rate=%d",
+		playerState.facing, targetFacing, range.firstFrame, range.lastFrame,
 		range.playBackwards, kRoomPlayerWalkAnimationRate);
-
 	return true;
 }
-
-
 
 bool Player::updateTurnAnimationState(RoomPlayerState &playerState) {
 	if (!playerState.turnActive || !playerState.entity)
 		return false;
-
 	if (playerState.entity->getCurrentFrame() != playerState.turnEndFrame)
 		return false;
-
-	const int finalFacing = playerState.turnFinalFacing;
 
 	playerState.turnActive = false;
 	playerState.facing = playerState.turnTargetFacing;
 	playerState.turnTargetFacing = -1;
-	playerState.turnFinalFacing = -1;
 	playerState.turnFirstFrame = -1;
 	playerState.turnLastFrame = -1;
 	playerState.turnEndFrame = -1;
 	playerState.turnPlayBackwards = false;
 	playerState.entity->setAnimationRate(0);
-
-	// Continue the about-turn if another 90-degree turn is pending.
-	if (finalFacing >= 0 && finalFacing != playerState.facing) {
-		playerState.turnFinalFacing = -1;
-
-		debugC(1, kDebugPlayer,
-			"Harvester: player about-turn intermediate facing=%d final=%d",
-			playerState.facing, finalFacing);
-
-		return startTurnAnimation(playerState, finalFacing);
-	}
-
-	playerState.turnFinalFacing = -1;
-
 	debugC(1, kDebugPlayer,
 		"Harvester: player turn complete facing=%d frame=%d",
 		playerState.facing, playerState.entity->getCurrentFrame());
-
 	return true;
 }
-
 
 bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state,
 		const Common::Array<ObjectRecord> &sceneObjects,
@@ -1965,21 +1892,11 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
-		const int verticalStep = 2;
+		const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
 		const float depthStep = computeRoomPlayerDepthStep(state);
-	
-		const int nextBottomY = clampRoomMovementY(
-			state, playerState.bottomY + depthDirection * verticalStep);
-	
-		if (nextBottomY == playerState.bottomY) {
-			playerState.hasMoveTarget = false;
-			return setIdleAnimation(
-				playerState, playerState.facing >= 0 ? playerState.facing : 0);
-		}
-	
-		candidateBottomY = nextBottomY;
-		candidateZ = stepTowardsFloat(
-			playerState.z, playerState.targetZ, depthStep);
+		candidateBottomY = clampRoomMovementY(state,
+			playerState.bottomY + depthDirection * verticalStep);
+		candidateZ = stepTowardsFloat(playerState.z, playerState.targetZ, depthStep);
 	}
 
 
@@ -2077,24 +1994,11 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
 	const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
 	const float depthStep = computeRoomPlayerDepthStep(state);
-
-	// Face the direction of the keyboard input, even if movement is blocked.
-	const int desiredFacing = resolveFacingFromMovementDelta(
-		horizontalInput * horizontalStep,
-		verticalInput * verticalStep);
-
-	if (desiredFacing != playerState.facing &&
-			startTurnAnimation(playerState, desiredFacing)) {
-		playerState.hasMoveTarget = false;
-		return true;
-	}
-
 	int candidateCenterX = clampPlayerCenterXToNativeBounds(
 		playerState, playerState.centerX + horizontalInput * horizontalStep);
 	int candidateBottomY = playerState.bottomY;
 	float candidateZ = playerState.z;
 	bool depthBoundaryReached = false;
-
 	if (verticalInput != 0) {
 		// update_actor_runtime_state (0x4d750) only emits the paired screen-Y and Z
 		// steps for state 0x04 while min_z < z and state 0x0b while z < max_z.
@@ -2102,23 +2006,19 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 		depthBoundaryReached = verticalInput < 0
 			? playerState.z >= (float)state.roomMaxZ
 			: playerState.z <= (float)state.roomMinZ;
-
 		if (!depthBoundaryReached) {
 			candidateBottomY = clampRoomMovementY(state,
 				playerState.bottomY + verticalInput * verticalStep);
 			candidateZ = clampRoomDepth(state, playerState.z - verticalInput * depthStep);
 		}
 	}
-
 	if (candidateCenterX == playerState.centerX &&
 			candidateBottomY == playerState.bottomY &&
 			fabsf(candidateZ - playerState.z) <= kRoomDepthCompareEpsilon) {
 		playerState.hasMoveTarget = false;
-
 		if (depthBoundaryReached) {
 			const bool stopped = setIdleAnimation(
 				playerState, playerState.facing >= 0 ? playerState.facing : 0);
-
 			if (stopped) {
 				debugC(3, kDebugPathfinding,
 					"Harvester: player keyboard depth boundary room='%s' input_y=%d pos=(%d,%d,z=%.2f) bounds=(%d,%d)",
@@ -2131,6 +2031,11 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 		return false;
 	}
 
+	const int desiredFacing = resolveFacingFromRoomMovement(
+		playerState.centerX, playerState.bottomY, candidateCenterX, candidateBottomY);
+	if (desiredFacing != playerState.facing && startTurnAnimation(playerState, desiredFacing))
+		return true;
+
 	if (!consumePlayerMovementTick(playerState))
 		return false;
 
@@ -2138,22 +2043,23 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	bool moved = tryApplyPlayerMovement(engine, state, sceneObjects, sceneAnimations,
 		playerState, candidateCenterX, candidateBottomY, candidateZ);
 
+
 	if (!moved) {
 		playerState.hasMoveTarget = false;
 		return setIdleAnimation(
 			playerState, playerState.facing >= 0 ? playerState.facing : 0);
 	}
 
+
+
 	const int actualFacing = resolveFacingFromRoomMovement(
 		previousCenterX, previousBottomY, playerState.centerX, playerState.bottomY);
 	(void)setPlayerWalkAnimation(playerState, actualFacing);
-
 	debugC(2, kDebugPlayer,
 		"Harvester: player keyboard move room='%s' input=(%d,%d) pos=(%d,%d,z=%.2f) facing=%d frame=%d moved=%d",
 		state.roomName.c_str(), horizontalInput, verticalInput,
 		playerState.centerX, playerState.bottomY, (double)playerState.z,
 		playerState.facing, playerState.entity->getCurrentFrame(), moved);
-
 	return true;
 }
 
@@ -2202,7 +2108,6 @@ bool Player::startIdleAnimation(HarvesterEngine &engine, const RoomSetupState &s
 	playerState.hasMoveTarget = false;
 	playerState.turnActive = false;
 	playerState.turnTargetFacing = -1;
-	playerState.turnFinalFacing = -1;
 	playerState.entity->setVisible(false);
 	debugC(1, kDebugPlayer,
 		"Harvester: player idle animation start room='%s' facing=%d frames=%d..%d rate=%d trigger_tick=%u",

@@ -39,7 +39,6 @@ const int kRoomNpcAmbientLastFrame = 0x3b;
 const int kDefaultMonsterAttackContactFrameOffset = 2;
 const int kMuckeyAttackContactFrameOffset = 7;
 const float kNativeMonsterPursuitZTolerance = 2.0f;
-const int kNativeMonsterFeetAlignmentTolerance = 2;
 const float kNativeMonsterHorizontalWaypointTolerance = 50.0f;
 const uint32 kNativeKeyboardAttackRepeatTicks = 25;
 const int kNativeAttackSideWindow = 30;
@@ -364,20 +363,17 @@ bool areCombatantsWithinRoomCombatReach(const RoomSetupState &state,
 	return computeRuntimeEntityHorizontalGap(attacker, target) <= MAX(MAX(0, engageDistance), nativeTolerance);
 }
 
-bool isWithinNativeMonsterAttackEntryRange(
-        const Entity &monster, int monsterFeetY,
-        const Entity &player, int playerFeetY, int engageDistance) {
-    if (ABS(monsterFeetY - playerFeetY) >
-            kNativeMonsterFeetAlignmentTolerance)
-        return false;
+bool isWithinNativeMonsterAttackEntryRange(const Entity &monster, float monsterZ,
+		const Entity &player, float playerZ, int engageDistance) {
+	const float zDelta = monsterZ >= playerZ ? monsterZ - playerZ : playerZ - monsterZ;
+	if (zDelta > kNativeMonsterPursuitZTolerance)
+		return false;
 
-    const Common::Rect monsterRect = monster.getScreenRect();
-    const Common::Rect playerRect = player.getScreenRect();
-
-    const int monsterCenterX = monsterRect.left + monsterRect.width() / 2;
-    const int playerCenterX = playerRect.left + playerRect.width() / 2;
-
-    return ABS(playerCenterX - monsterCenterX) <= MAX(0, engageDistance);
+	const Common::Rect monsterRect = monster.getScreenRect();
+	const Common::Rect playerRect = player.getScreenRect();
+	const int monsterCenterX = monsterRect.left + monsterRect.width() / 2;
+	const int playerCenterX = playerRect.left + playerRect.width() / 2;
+	return ABS(playerCenterX - monsterCenterX) <= MAX(0, engageDistance);
 }
 
 bool playRandomRoomAttackSound(HarvesterEngine &engine, const Common::String &sound1,
@@ -449,26 +445,6 @@ int mapRoomDepthToScreenYForCombat(const RoomSetupState &state, float z, int fal
 	return CLIP<int>(state.roomMaxZScreenY + roundRoomCombatFloat(offset),
 		state.roomMaxZScreenY, state.roomMinZScreenY);
 }
-
-
-float mapRoomScreenYToDepthForCombat(
-        const RoomSetupState &state, int screenY, float fallbackZ) {
-    if (state.roomMinZScreenY <= state.roomMaxZScreenY ||
-            state.roomMaxZ == state.roomMinZ)
-        return fallbackZ;
-
-    const int clampedY = CLIP<int>(
-        screenY, state.roomMaxZScreenY, state.roomMinZScreenY);
-
-    const float depthOffset =
-        (float)(clampedY - state.roomMaxZScreenY) *
-        (float)(state.roomMaxZ - state.roomMinZ) /
-        (float)(state.roomMinZScreenY - state.roomMaxZScreenY);
-
-    return clampRoomDepthForEvent(
-        state, (float)state.roomMaxZ - depthOffset);
-}
-
 
 int resolveMonsterAttackContactFrameOffset(const MonsterRecord &monster) {
 	return monster.monsterName.equalsIgnoreCase("MUCKEY")
