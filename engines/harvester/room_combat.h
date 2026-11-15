@@ -36,7 +36,6 @@ extern const uint32 kNativeMonsterAttackCooldownBaseTicks;
 extern const float kNativeNpcMonsterZExtent;
 extern const int kRoomNpcAmbientLastFrame;
 extern const float kNativeMonsterPursuitZTolerance;
-extern const int kNativeMonsterFeetAlignmentTolerance;
 extern const float kNativeMonsterHorizontalWaypointTolerance;
 extern const uint32 kNativeKeyboardAttackRepeatTicks;
 extern const int kNativeAttackSideWindow;
@@ -172,15 +171,8 @@ bool doRuntimeEntityDepthExtentsOverlap(const Entity &first, const Entity &secon
 bool areCombatantsWithinRoomCombatReach(const RoomSetupState &state,
 	const Entity &attacker, float attackerZ,
 	const Entity &target, float targetZ, int engageDistance);
-	
-	
-	
-bool isWithinNativeMonsterAttackEntryRange(
-    const Entity &monster, int monsterFeetY,
-    const Entity &player, int playerFeetY, int engageDistance);
-	
-	
-	
+bool isWithinNativeMonsterAttackEntryRange(const Entity &monster, float monsterZ,
+	const Entity &player, float playerZ, int engageDistance);
 bool playRandomRoomAttackSound(HarvesterEngine &engine, const Common::String &sound1,
 	const Common::String &sound2, const Common::String &sound3);
 bool resolveRoomMonsterHitAnimationRange(const Entity &entity,
@@ -188,10 +180,6 @@ bool resolveRoomMonsterHitAnimationRange(const Entity &entity,
 float clampRoomDepthForEvent(const RoomSetupState &state, float z);
 int roundRoomCombatFloat(float value);
 int mapRoomDepthToScreenYForCombat(const RoomSetupState &state, float z, int fallbackY);
-
-float mapRoomScreenYToDepthForCombat(
-    const RoomSetupState &state, int screenY, float fallbackZ);
-
 int resolveMonsterAttackContactFrameOffset(const MonsterRecord &monster);
 void clearRoomMonsterCombatState(RoomMonsterCombatState &combatState);
 void clearRoomNpcCombatState(RoomNpcCombatState &combatState);
