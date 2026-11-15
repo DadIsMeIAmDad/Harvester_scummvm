@@ -39,7 +39,7 @@ static const float kRoomPlayerHorizontalTargetSlackBase = 50.0f;
 static const float kRoomPlayerDepthTargetSlack = 0.0f;
 static const int kRoomRegionTargetXBias = 10;
 static const float kRoomDepthCompareEpsilon = 0.01f;
-static const int kRoomPlayerWalkAnimationRate = 13;
+static const int kRoomPlayerWalkAnimationRate = 17;
 static const int kRoomPlayerVerticalScreenStep = 1;
 static const int kRoomPlayerVerticalScreenStep2 = 2;
 static const int kRoomPlayerVerticalScreenStep3 = 3;
@@ -585,7 +585,7 @@ static int computeRoomPlayerHorizontalStep(const RoomSetupState &state, float z)
 }
 
 static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
-	return 3.0f;
+	return 1.5f;
 }
 
 static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
