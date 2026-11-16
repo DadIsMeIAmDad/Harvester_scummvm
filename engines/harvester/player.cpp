@@ -1951,6 +1951,31 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 		playerState.hasMoveTarget = false;
 		return setIdleAnimation(playerState, playerState.facing >= 0 ? playerState.facing : 0);
 	}
+	
+	
+
+
+	// Face the direction of the mouse movement target, even if the next
+	// movement step is blocked.
+	if (horizontalDirection != 0 || depthDirection != 0) {
+		const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
+		const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
+
+		const int desiredFacing = resolveFacingFromMovementDelta(
+			horizontalDirection * horizontalStep,
+			depthDirection * verticalStep);
+
+		if (desiredFacing != playerState.facing &&
+				startTurnAnimation(playerState, desiredFacing)) {
+			return true;
+		}
+	}
+
+
+
+	
+	
+	
 	if (!consumePlayerMovementTick(playerState))
 		return false;
 
