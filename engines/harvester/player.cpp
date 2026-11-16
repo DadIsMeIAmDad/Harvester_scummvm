@@ -537,10 +537,9 @@ static float mapRoomScreenYToDepth(const RoomSetupState &state, int screenY) {
 	if (screenY >= state.roomMinZScreenY)
 		return (float)state.roomMinZ;
 
-	return (float)state.roomMaxZ -
-		((float)(state.roomMaxZ - state.roomMinZ) *
-		(float)(screenY - state.roomMaxZScreenY)) /
-		(float)(state.roomMinZScreenY - state.roomMaxZScreenY);
+	return (float)(state.roomMaxZ - ((state.roomMaxZ - state.roomMinZ) *
+		(screenY - state.roomMaxZScreenY)) /
+		(state.roomMinZScreenY - state.roomMaxZScreenY));
 }
 
 static float clampRoomDepth(const RoomSetupState &state, float z) {
@@ -618,8 +617,8 @@ static int computePlayerFrameLeftX(const RoomPlayerState &playerState) {
 }
 
 static void resetPlayerMoveTargetProgress(RoomPlayerState &playerState) {
-	playerState.moveTargetXReached = false;
-	playerState.moveTargetZReached = false;
+    playerState.moveTargetXReached = false;
+    playerState.moveTargetYReached = false;
 }
 
 static int resolveMoveTargetHorizontalDirection(const RoomSetupState &state,
@@ -644,29 +643,30 @@ static int resolveMoveTargetHorizontalDirection(const RoomSetupState &state,
     return 0;
 }
 
-static int resolveMoveTargetDepthDirection(const RoomPlayerState &playerState) {
-	if (playerState.targetZ < playerState.z - kRoomPlayerDepthTargetSlack)
-		return 1;
-	if (playerState.z + kRoomPlayerDepthTargetSlack < playerState.targetZ)
-		return -1;
+static int resolveMoveTargetVerticalDirection(const RoomPlayerState &playerState) {
+    if (playerState.bottomY < playerState.targetBottomY)
+        return 1;
+    if (playerState.bottomY > playerState.targetBottomY)
+        return -1;
 
-	return 0;
+    return 0;
 }
 
 static bool hasPlayerReachedMoveTarget(const RoomPlayerState &playerState) {
-	return playerState.moveTargetXReached && playerState.moveTargetZReached;
+    return playerState.moveTargetXReached && playerState.moveTargetYReached;
 }
 
 static void updatePlayerMoveTargetProgress(const RoomSetupState &state,
-		RoomPlayerState &playerState) {
-	if (!playerState.moveTargetXReached &&
-			resolveMoveTargetHorizontalDirection(state, playerState) == 0) {
-		playerState.moveTargetXReached = true;
-	}
-	if (!playerState.moveTargetZReached &&
-			resolveMoveTargetDepthDirection(playerState) == 0) {
-		playerState.moveTargetZReached = true;
-	}
+        RoomPlayerState &playerState) {
+    if (!playerState.moveTargetXReached &&
+            resolveMoveTargetHorizontalDirection(state, playerState) == 0) {
+        playerState.moveTargetXReached = true;
+    }
+
+    if (!playerState.moveTargetYReached &&
+            resolveMoveTargetVerticalDirection(playerState) == 0) {
+        playerState.moveTargetYReached = true;
+    }
 }
 
 static int clampPlayerCenterXToNativeBounds(const RoomPlayerState &playerState, int centerX) {
@@ -1153,7 +1153,7 @@ static bool recordNativePrimaryWalkBlockerHistory(const RoomSetupState &state,
 		}
 
 		playerState.upwardBlockerHistory = blocker.getName();
-		playerState.moveTargetZReached = true;
+		playerState.moveTargetYReached = true;
 		logPlayerBlockerHistory(state, playerState, blocker, "upward");
 		return true;
 	}
@@ -1166,7 +1166,7 @@ static bool recordNativePrimaryWalkBlockerHistory(const RoomSetupState &state,
 		}
 
 		playerState.downwardBlockerHistory = blocker.getName();
-		playerState.moveTargetZReached = true;
+		playerState.moveTargetYReached = true;
 		logPlayerBlockerHistory(state, playerState, blocker, "downward");
 		return true;
 	}
@@ -1933,8 +1933,8 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 		}
 		horizontalDirection = 0;
 	}
-	int depthDirection = horizontalDirection == 0 && !playerState.moveTargetZReached
-		? resolveMoveTargetDepthDirection(playerState)
+	int depthDirection = horizontalDirection == 0 && !playerState.moveTargetYReached
+		? resolveMoveTargetVerticalDirection(playerState)
 		: 0;
 	if (depthDirection != 0 && isDepthDirectionBlockedByHistory(playerState, depthDirection)) {
 		if (engine.isPathfindingDebugEnabled()) {
@@ -1994,16 +1994,12 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 		const int verticalStep = 3;
 		const float depthStep = computeRoomPlayerDepthStep(state);
 	
-		const int nextBottomY = clampRoomMovementY(
-			state, playerState.bottomY + depthDirection * verticalStep);
+		const int remainingY = abs(playerState.targetBottomY - playerState.bottomY);
+		const int actualStep = MIN(verticalStep, remainingY);
 	
-		if (nextBottomY == playerState.bottomY) {
-			playerState.hasMoveTarget = false;
-			return setIdleAnimation(
-				playerState, playerState.facing >= 0 ? playerState.facing : 0);
-		}
+		candidateBottomY = playerState.bottomY + depthDirection * actualStep;
 	
-		candidateBottomY = nextBottomY;
+		// Z follows Y for depth and scaling, but does not determine arrival.
 		candidateZ = stepTowardsFloat(
 			playerState.z, playerState.targetZ, depthStep);
 	}
@@ -2018,7 +2014,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 			"Harvester: pathfinding step room='%s' current=(%d,%d,z=%.2f) target=(x=%d,y=%d,z=%.2f) progress=(x=%d,z=%d) direction=(x=%d,z=%d) candidate=(%d,%d,z=%.2f)",
 			state.roomName.c_str(), playerState.centerX, playerState.bottomY, (double)playerState.z,
 			playerState.targetX, playerState.targetBottomY, (double)playerState.targetZ,
-			playerState.moveTargetXReached, playerState.moveTargetZReached,
+			playerState.moveTargetXReached, playerState.moveTargetYReached,
 			horizontalDirection, depthDirection,
 			candidateCenterX, candidateBottomY, (double)candidateZ);
 	}
