@@ -66,7 +66,7 @@ struct RoomPlayerState {
 	int targetBottomY = 0;
 	float targetZ = 0.0f;
 	bool moveTargetXReached = false;
-	bool moveTargetZReached = false;
+	bool moveTargetYReached = false;
 	Common::String currentBlockerName;
 	// Native RenderEntityRuntime keeps these directional blocker-history
 	// pointers at +0x108c..+0x1098 and clears them when no current
