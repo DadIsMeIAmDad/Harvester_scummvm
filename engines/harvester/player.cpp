@@ -42,7 +42,7 @@ static const float kRoomDepthCompareEpsilon = 0.01f;
 static const int kRoomPlayerWalkAnimationRate = 17;
 static const int kRoomPlayerVerticalScreenStep = 1;
 static const int kRoomPlayerVerticalScreenStep2 = 2;
-static const int kRoomPlayerVerticalScreenStep3 = 3;
+static const int kRoomPlayerVerticalScreenStep3 = 1;
 static const int kRoomPlayerAttackAnimationRate = kRoomPlayerWalkAnimationRate;
 static const int kRoomPlayerHitAnimationRate = 4;
 // update_actor_runtime_state (0x4d750) seeds a zero-HP transition at 0x4e576
