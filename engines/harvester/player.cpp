@@ -537,9 +537,10 @@ static float mapRoomScreenYToDepth(const RoomSetupState &state, int screenY) {
 	if (screenY >= state.roomMinZScreenY)
 		return (float)state.roomMinZ;
 
-	return (float)(state.roomMaxZ - ((state.roomMaxZ - state.roomMinZ) *
-		(screenY - state.roomMaxZScreenY)) /
-		(state.roomMinZScreenY - state.roomMaxZScreenY));
+	return (float)state.roomMaxZ -
+		((float)(state.roomMaxZ - state.roomMinZ) *
+		(float)(screenY - state.roomMaxZScreenY)) /
+		(float)(state.roomMinZScreenY - state.roomMaxZScreenY);
 }
 
 static float clampRoomDepth(const RoomSetupState &state, float z) {
