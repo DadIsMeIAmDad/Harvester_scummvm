@@ -1992,16 +1992,15 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 	} else if (depthDirection != 0) {
 		const int verticalStep = 3;
-		const float depthStep = computeRoomPlayerDepthStep(state);
 	
 		const int remainingY = abs(playerState.targetBottomY - playerState.bottomY);
 		const int actualStep = MIN(verticalStep, remainingY);
 	
-		candidateBottomY = playerState.bottomY + depthDirection * actualStep;
+		candidateBottomY = clampRoomMovementY(
+			state, playerState.bottomY + depthDirection * actualStep);
 	
-		// Z follows Y for depth and scaling, but does not determine arrival.
-		candidateZ = stepTowardsFloat(
-			playerState.z, playerState.targetZ, depthStep);
+		// Calculate Z directly from screen Y.
+		candidateZ = mapRoomScreenYToDepth(state, candidateBottomY);
 	}
 
 
@@ -2098,7 +2097,7 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	const float previousZ = playerState.z;
 	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
 	const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
-	const float depthStep = computeRoomPlayerDepthStep(state);
+	
 
 	// Face the direction of the keyboard input, even if movement is blocked.
 	const int desiredFacing = resolveFacingFromMovementDelta(
@@ -2136,8 +2135,18 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 		if (!depthBoundaryReached) {
 			candidateBottomY = clampRoomMovementY(state,
 				playerState.bottomY + verticalInput * verticalStep);
-			candidateZ = clampRoomDepth(state, playerState.z - verticalInput * depthStep);
+
+			// Calculate Z directly from screen Y.
+			candidateZ = mapRoomScreenYToDepth(state, candidateBottomY);
 		}
+		
+		
+		
+		
+		
+		
+		
+		
 	}
 
 	if (candidateCenterX == playerState.centerX &&
