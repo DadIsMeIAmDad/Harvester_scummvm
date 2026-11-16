@@ -4192,9 +4192,20 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		if (playerOverlapsRegion)
 			return;
 
-		Player::setRegionMoveTarget(scene.state, playerState,
+
+
+
+		Player::setMoveTargetFromScreenPoint(
+			scene.state,
+			playerState,
 			Player::resolveRegionTargetX(scene.state, region, playerState),
-			Player::resolveRegionTargetZ(region));
+			_mousePos.y
+		);
+			
+			
+			
+			
+			
 		if (_engine.isPathfindingDebugEnabled()) {
 			debugC(1, kDebugPathfinding,
 				"Harvester: pathfinding region target room='%s' region='%s' target=(%d,%d,z=%.2f)",
