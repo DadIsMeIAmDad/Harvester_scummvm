@@ -588,7 +588,7 @@ static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
 	return 1.0f;
 }
 
-static int computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
+int Player::computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
 	// Native spawn_player_combat_avatar seeds player runtime +0x1140 with 1,
 	// and update_actor_runtime_state copies abs(+0x1140) into frame_y_step for
 	// the vertical walk states instead of remapping screen Y from depth.

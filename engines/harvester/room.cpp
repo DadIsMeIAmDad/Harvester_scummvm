@@ -3585,8 +3585,13 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 		const uint32 now = Player::getRuntimeClockTicks();
 		const uint32 moveInterval = MAX<uint32>(1, 100U / (uint32)kRoomMonsterAnimationRate);
 		const int horizontalStepBase = 8;
-		const int depthStep = MAX<int>(1, roundRoomCombatFloat(
-			scene.state.roomZVelocityStep > 0.0f ? scene.state.roomZVelocityStep : 1.0f));
+
+
+
+		const int verticalStep =
+			Player::computeRoomPlayerVerticalScreenStep(scene.state);
+
+
 		bool playerAlive = script.getPlayerCurrentHitPoints() > 0;
 
 		if (npcCombatStates.size() != scene.state.roomNpcs.size())
