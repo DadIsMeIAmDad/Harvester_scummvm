@@ -640,7 +640,7 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 		bottomPad = 12;
 	}
 	if (entity.getName().equalsIgnoreCase("JIMMY_M")) {
-		bottomPad = 25;
+		bottomPad = 28;
 	}
 	if (entity.getName().equalsIgnoreCase("LODGCHEF_M")) {
 		bottomPad = 8;
@@ -703,7 +703,7 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 		bottomPad = 35;
 	}
 	if (entity.getName().equalsIgnoreCase("MRJ_M")) {
-		bottomPad = 20;
+		bottomPad = 28;
 	}
 	if (entity.getName().equalsIgnoreCase("MOYNAHANM")) {
 		bottomPad = 28;
