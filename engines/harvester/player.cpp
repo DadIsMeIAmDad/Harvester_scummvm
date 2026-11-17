@@ -1996,6 +1996,25 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
+	
+	
+		// Stop vertical movement at the player's Z limits.
+		if (depthDirection < 0 &&
+				playerState.z >= (float)state.roomMaxZ) {
+			playerState.hasMoveTarget = false;
+			return setIdleAnimation(
+				playerState, playerState.facing >= 0 ? playerState.facing : 0);
+		}
+
+		if (depthDirection > 0 &&
+				playerState.z <= (float)state.roomMinZ) {
+			playerState.hasMoveTarget = false;
+			return setIdleAnimation(
+				playerState, playerState.facing >= 0 ? playerState.facing : 0);
+		}
+	
+	
+	
 		const int verticalStep =  computeRoomPlayerVerticalScreenStep(state);
 
 		const int remainingY = abs(playerState.targetBottomY - playerState.bottomY);
