@@ -1996,7 +1996,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
-		const int verticalStep = 1;
+		const int verticalStep =  computeRoomPlayerVerticalScreenStep(state);
 
 		const int remainingY = abs(playerState.targetBottomY - playerState.bottomY);
 		const int actualStep = MIN(verticalStep, remainingY);
