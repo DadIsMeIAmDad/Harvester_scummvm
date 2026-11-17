@@ -3834,7 +3834,7 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 			bool attemptedMoveZ = false;
 			if (absZDelta > kNativeMonsterPursuitZTolerance) {
 				attemptedMoveZ = true;
-				monster.posZ = stepTowardsRoomCombatInt(monster.posZ, playerTargetZ, depthStep);
+				monster.posZ = stepTowardsRoomCombatInt(monster.posZ, playerTargetZ, verticalStep);
 				monster.posZ = (int)clampRoomDepthForEvent(scene.state, (float)monster.posZ);
 				monster.posY = mapRoomDepthToScreenYForCombat(scene.state, (float)monster.posZ, monster.posY);
 			} else if (absLiveCenterDx > engageDistance) {

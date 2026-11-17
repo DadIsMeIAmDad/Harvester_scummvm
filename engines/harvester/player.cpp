@@ -41,8 +41,6 @@ static const int kRoomRegionTargetXBias = 10;
 static const float kRoomDepthCompareEpsilon = 0.01f;
 static const int kRoomPlayerWalkAnimationRate = 17;
 static const int kRoomPlayerVerticalScreenStep = 1;
-static const int kRoomPlayerVerticalScreenStep2 = 2;
-static const int kRoomPlayerVerticalScreenStep3 = 1;
 static const int kRoomPlayerAttackAnimationRate = kRoomPlayerWalkAnimationRate;
 static const int kRoomPlayerHitAnimationRate = 4;
 // update_actor_runtime_state (0x4d750) seeds a zero-HP transition at 0x4e576
@@ -588,19 +586,7 @@ static float computeRoomPlayerDepthStep(const RoomSetupState &state) {
 	return 1.0f;
 }
 
-int Player::computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
-	// Native spawn_player_combat_avatar seeds player runtime +0x1140 with 1,
-	// and update_actor_runtime_state copies abs(+0x1140) into frame_y_step for
-	// the vertical walk states instead of remapping screen Y from depth.
-	
-	if (state.roomName == "MR_JOHNS" || state.roomName == "PCKIT" || state.roomName == "FIRENSIDE" || state.roomName == "MTPLNT" || state.roomName == "CHESSROOM" || state.roomName == "STORE_IN" || state.roomName == "POST" || state.roomName == "MORALITY2" || state.roomName == "FLESH" || state.roomName == "LUST") {
-		return kRoomPlayerVerticalScreenStep3;
-	} else if (state.roomName == "CHAP1" || state.roomName == "MORTHALL" || state.roomName == "PCHOUSE" || state.roomName == "ST_LIVRM" || state.roomName == "STHOUSE" || state.roomName == "CEM10" || state.roomName == "CEM" || state.roomName == "DNALFT" || state.roomName == "TV_OUT" || state.roomName == "THEATRE1" || state.roomName == "THEATRE2" || state.roomName == "LAUNDRY1" || state.roomName == "LAUNDRY2" || state.roomName == "PAIN") {
-		return kRoomPlayerVerticalScreenStep3;
-	} else {
-		return kRoomPlayerVerticalScreenStep3;
-	}
-}
+
 
 static int computePlayerFrameLeftX(const RoomPlayerState &playerState) {
 	if (!playerState.entity)
@@ -1965,7 +1951,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 	// movement step is blocked.
 	if (horizontalDirection != 0 || depthDirection != 0) {
 		const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
-		const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
+		const int verticalStep = Player::computeRoomPlayerVerticalScreenStep(state);
 
 		const int desiredFacing = resolveFacingFromMovementDelta(
 			horizontalDirection * horizontalStep,
@@ -2015,7 +2001,7 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 	
 	
 	
-		const int verticalStep =  computeRoomPlayerVerticalScreenStep(state);
+		const int verticalStep =  Player::computeRoomPlayerVerticalScreenStep(state);
 
 		const int remainingY = abs(playerState.targetBottomY - playerState.bottomY);
 		const int actualStep = MIN(verticalStep, remainingY);
@@ -2126,7 +2112,7 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	const int previousBottomY = playerState.bottomY;
 	const float previousZ = playerState.z;
 	const int horizontalStep = computeRoomPlayerHorizontalStep(state, playerState.z);
-	const int verticalStep = computeRoomPlayerVerticalScreenStep(state);
+	const int verticalStep = Player::computeRoomPlayerVerticalScreenStep(state);
 	
 
 	// Face the direction of the keyboard input, even if movement is blocked.
@@ -2304,3 +2290,16 @@ bool Player::updateIdleAnimation(const RoomSetupState &state,
 }
 
 } // End of namespace Harvester
+
+
+int Player::computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
+	// Native spawn_player_combat_avatar seeds player runtime +0x1140 with 1,
+	// and update_actor_runtime_state copies abs(+0x1140) into frame_y_step for
+	// the vertical walk states instead of remapping screen Y from depth.
+	
+	if (state.roomName == "ABANDONED_FUCTION") {
+		return kRoomPlayerVerticalScreenStep;
+	else {
+		return kRoomPlayerVerticalScreenStep;
+	}
+}
