@@ -703,7 +703,7 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 		bottomPad = 35;
 	}
 	if (entity.getName().equalsIgnoreCase("MRJ_M")) {
-		bottomPad = 0;
+		bottomPad = 20;
 	}
 	if (entity.getName().equalsIgnoreCase("MOYNAHANM")) {
 		bottomPad = 28;
