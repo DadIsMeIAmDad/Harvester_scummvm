@@ -2708,8 +2708,8 @@ bool Script::buildRuntimeRoomState(const RoomRecord &room, const EntranceRecord 
 	state.discNumber = resources.getCurrentDisc();
 	state.roomMinZ = room.minZ;
 	state.roomMaxZ = room.maxZ;
-	state.roomMaxZScreenY = room.maxZScreenY;
-	state.roomMinZScreenY = room.minZScreenY;
+	state.roomMaxZScreenY = room.maxZScreenY + 10;
+	state.roomMinZScreenY = room.minZScreenY + 10;
 	state.roomFullScaleZ = room.fullScaleZ;
 	state.roomMaxZScalePercent = room.maxZScalePercent;
 	state.roomPerspectiveScale = room.perspectiveScale;
