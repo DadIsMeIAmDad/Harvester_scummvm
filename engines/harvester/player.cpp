@@ -1991,16 +1991,23 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 
 
 	} else if (depthDirection != 0) {
-		const int verticalStep = 3;
-	
+		const int verticalStep = 1;
+
 		const int remainingY = abs(playerState.targetBottomY - playerState.bottomY);
 		const int actualStep = MIN(verticalStep, remainingY);
-	
+
 		candidateBottomY = clampRoomMovementY(
 			state, playerState.bottomY + depthDirection * actualStep);
-	
-		// Calculate Z directly from screen Y.
+
+		// Z follows the clamped screen Y.
 		candidateZ = mapRoomScreenYToDepth(state, candidateBottomY);
+
+		// Stop if the room's min/max depth boundary has been reached.
+		if (candidateBottomY == playerState.bottomY) {
+			playerState.hasMoveTarget = false;
+			return setIdleAnimation(
+				playerState, playerState.facing >= 0 ? playerState.facing : 0);
+		}
 	}
 
 
@@ -2136,8 +2143,9 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 			candidateBottomY = clampRoomMovementY(state,
 				playerState.bottomY + verticalInput * verticalStep);
 
-			// Calculate Z directly from screen Y.
 			candidateZ = mapRoomScreenYToDepth(state, candidateBottomY);
+
+			depthBoundaryReached = candidateBottomY == playerState.bottomY;
 		}
 		
 		
