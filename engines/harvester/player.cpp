@@ -1999,10 +1999,12 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 		candidateBottomY = clampRoomMovementY(
 			state, playerState.bottomY + depthDirection * actualStep);
 
-		// Z follows the clamped screen Y.
-		candidateZ = mapRoomScreenYToDepth(state, candidateBottomY);
+		candidateZ = clampRoomDepth(
+			state, mapRoomScreenYToDepth(state, candidateBottomY));
 
-		// Stop if the room's min/max depth boundary has been reached.
+		// Keep screen Y synchronized with the clamped Z.
+		candidateBottomY = mapRoomDepthToScreenY(state, candidateZ);
+
 		if (candidateBottomY == playerState.bottomY) {
 			playerState.hasMoveTarget = false;
 			return setIdleAnimation(
@@ -2124,39 +2126,29 @@ bool Player::stepKeyboardMovement(HarvesterEngine &engine, const RoomSetupState 
 	bool depthBoundaryReached = false;
 
 	if (verticalInput != 0) {
-		// update_actor_runtime_state (0x4d750) only emits the paired screen-Y and Z
-		// steps for state 0x04 while min_z < z and state 0x0b while z < max_z.
-		// At either depth limit it zeros both steps and returns to the facing idle state.
-		
-		
-		
-		depthBoundaryReached = verticalInput < 0
-			? (playerState.z >= (float)state.roomMaxZ ||
-			playerState.bottomY <= state.roomMaxZScreenY)
-			: (playerState.z <= (float)state.roomMinZ ||
-			playerState.bottomY >= state.roomMinZScreenY);
+		candidateBottomY = clampRoomMovementY(
+			state, playerState.bottomY + verticalInput * verticalStep);
 
+		candidateZ = mapRoomScreenYToDepth(state, candidateBottomY);
 
-
-
-		if (!depthBoundaryReached) {
-			candidateBottomY = clampRoomMovementY(state,
-				playerState.bottomY + verticalInput * verticalStep);
-
-			candidateZ = mapRoomScreenYToDepth(state, candidateBottomY);
-
-			depthBoundaryReached = candidateBottomY == playerState.bottomY;
+		// Stop if the next step would exceed the player's Z limits.
+		if (verticalInput < 0) {
+			depthBoundaryReached =
+				candidateZ > (float)state.roomMaxZ;
+		} else {
+			depthBoundaryReached =
+				candidateZ < (float)state.roomMinZ;
 		}
-		
-		
-		
-		
-		
-		
-		
-		
+	
+		if (depthBoundaryReached) {
+			candidateBottomY = playerState.bottomY;
+			candidateZ = playerState.z;
+		}
+	
+		depthBoundaryReached = depthBoundaryReached ||
+			candidateBottomY == playerState.bottomY;
 	}
-
+	
 	if (candidateCenterX == playerState.centerX &&
 			candidateBottomY == playerState.bottomY &&
 			fabsf(candidateZ - playerState.z) <= kRoomDepthCompareEpsilon) {
