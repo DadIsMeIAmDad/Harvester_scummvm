@@ -2958,8 +2958,8 @@ bool Flow::populateRoomSceneEntities(RoomSetupState &state,
 	
 	
 	// Keep the startup Z consistent with the player's screen Y.
-	state.playerSpawnZ = roundToInt(
-		Player::resolveDepthFromScreenY(state, state.playerSpawnY));
+	state.playerSpawnZ = (int)
+		Player::resolveDepthFromScreenY(state, state.playerSpawnY);
 	
 	
 	
