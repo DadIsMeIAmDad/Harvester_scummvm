@@ -1289,6 +1289,11 @@ static bool finishPlayerIdleAnimation(const RoomSetupState &state, RoomPlayerSta
 
 } // End of anonymous namespace
 
+float Player::resolveDepthFromScreenY(const RoomSetupState &state, int screenY) {
+    return mapRoomScreenYToDepth(state, screenY);
+}
+
+
 float Player::computeDepthScale(const RoomSetupState &state, float z) {
 	float scale = 1.0f;
 	if (state.roomPerspectiveScale != 0.0f) {

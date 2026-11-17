@@ -28,6 +28,7 @@ namespace Harvester {
 
 class Player {
 public:
+	static float resolveDepthFromScreenY(const RoomSetupState &state, int screenY);
 	static float computeDepthScale(const RoomSetupState &state, float z);
 	static int resolveFacingFrame(int facing);
 	static const char *describeCombatLoadout(int loadout);

@@ -2955,6 +2955,14 @@ bool Flow::populateRoomSceneEntities(RoomSetupState &state,
 			monster.damageAmount, monster.engageDistance, Player::describeCombatDamageType(monster.damageType),
 			monster.modelPath.c_str(), monster.active, monster.visible);
 	}
+	
+	
+	// Keep the startup Z consistent with the player's screen Y.
+	state.playerSpawnZ = roundToInt(
+		Player::resolveDepthFromScreenY(state, state.playerSpawnY));
+	
+	
+	
 	if (state.hasEntrance) {
 		const int playerFrame = Player::resolveFacingFrame(state.playerFacing);
 		Script *script = _engine.getScript();
