@@ -1275,6 +1275,14 @@ static bool finishPlayerIdleAnimation(const RoomSetupState &state, RoomPlayerSta
 
 } // End of anonymous namespace
 
+
+
+int Player::computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
+    return kRoomPlayerVerticalScreenStep;
+}
+
+
+
 float Player::resolveDepthFromScreenY(const RoomSetupState &state, int screenY) {
     return mapRoomScreenYToDepth(state, screenY);
 }
@@ -2290,16 +2298,3 @@ bool Player::updateIdleAnimation(const RoomSetupState &state,
 }
 
 } // End of namespace Harvester
-
-
-int Player::computeRoomPlayerVerticalScreenStep(const RoomSetupState &state) {
-	// Native spawn_player_combat_avatar seeds player runtime +0x1140 with 1,
-	// and update_actor_runtime_state copies abs(+0x1140) into frame_y_step for
-	// the vertical walk states instead of remapping screen Y from depth.
-	
-	if (state.roomName == "ABANDONED_FUCTION") {
-		return kRoomPlayerVerticalScreenStep;
-	else {
-		return kRoomPlayerVerticalScreenStep;
-	}
-}
