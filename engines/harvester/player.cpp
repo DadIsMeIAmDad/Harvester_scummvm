@@ -2007,9 +2007,6 @@ bool Player::stepMoveTarget(HarvesterEngine &engine, const RoomSetupState &state
 		candidateZ = clampRoomDepth(
 			state, mapRoomScreenYToDepth(state, candidateBottomY));
 
-		// Keep screen Y synchronized with the clamped Z.
-		candidateBottomY = mapRoomDepthToScreenY(state, candidateZ);
-
 		if (candidateBottomY == playerState.bottomY) {
 			playerState.hasMoveTarget = false;
 			return setIdleAnimation(
