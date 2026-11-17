@@ -3832,11 +3832,23 @@ Common::Error RoomSystem::runRoomLoop(Flow &flow, const Common::String &targetNa
 					MIN<float>(playerState.z, (float)monster.posZ)) * kNativeMonsterHorizontalWaypointTolerance);
 			bool attemptedMoveX = false;
 			bool attemptedMoveZ = false;
-			if (absZDelta > kNativeMonsterPursuitZTolerance) {
+
+
+
+			const int yDelta = playerState.bottomY - monster.posY;
+
+			if (yDelta != 0) {
 				attemptedMoveZ = true;
-				monster.posZ = stepTowardsRoomCombatInt(monster.posZ, playerTargetZ, verticalStep);
-				monster.posZ = (int)clampRoomDepthForEvent(scene.state, (float)monster.posZ);
-				monster.posY = mapRoomDepthToScreenYForCombat(scene.state, (float)monster.posZ, monster.posY);
+
+				monster.posY = stepTowardsRoomCombatInt(
+					monster.posY, playerState.bottomY, verticalStep);
+
+				monster.posZ = roundRoomCombatFloat(
+					Player::resolveDepthFromScreenY(scene.state, monster.posY));
+				
+				
+				
+				
 			} else if (absLiveCenterDx > engageDistance) {
 				// Native class-6 pursuit stores a target frame-left X, not a center X.
 				const int desiredFrameLeftX = monsterCenterX < playerCenterX
