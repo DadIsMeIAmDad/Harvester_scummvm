@@ -631,7 +631,7 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 	int bottomPad = 0;
 
 	if (entity.getName().equalsIgnoreCase("PLAYER")) {
-		bottomPad = 28;
+		bottomPad = 18;
 	}
 	if (entity.getName().equalsIgnoreCase("EVILPC")) {
 		bottomPad = 0;
