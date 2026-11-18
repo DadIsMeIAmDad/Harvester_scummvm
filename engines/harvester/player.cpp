@@ -878,6 +878,12 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 	
 	if (!blocker && entityManager) {
 		for (const NpcRecord &npc : state.roomNpcs) {
+		
+		
+			if (npc.npcName.equalsIgnoreCase("BOYLE"))
+				continue;
+		
+		
 			const bool isCorpse = !npc.active &&
 				npc.runtimeSpawned &&
 				npc.deathDamageType != 0 &&
