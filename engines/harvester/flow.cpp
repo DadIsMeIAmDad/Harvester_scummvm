@@ -110,7 +110,7 @@ static const float kTownMapNightPaletteBrightness = 0.6f;
 // Native keeps WAIT_BM visible while room construction runs; fast local loads need a short floor.
 static const uint32 kTransitionWaitFrameMinMs = 120;
 static const int kRoomNpcAmbientLastFrame = 0x3b;
-static const float kNativeNpcMonsterZExtent = 5.0f;
+static const float kNativeNpcMonsterZExtent = 2.0f;
 static const int kTownMapEdgeThreshold = 9;
 static const int kTownMapCursorHitExtent = 5;
 
