@@ -886,6 +886,11 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 				continue;
 			if (npc.npcName.equalsIgnoreCase("KARIN"))
 				continue;
+			if (npc.npcName.equalsIgnoreCase("NUDE_MAN"))
+				continue;
+		
+		
+		
 		
 			const bool isCorpse = !npc.active &&
 				npc.runtimeSpawned &&
