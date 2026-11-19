@@ -373,9 +373,29 @@ Console::Console() : GUI::Debugger() {
 	registerCmd("DEBUG_COMMAND", WRAP_METHOD(Console, Cmd_debugCommand));
 	registerCmd("DEBUG_ROOM", WRAP_METHOD(Console, Cmd_debugRoom));
 	registerCmd("GOTO_ROOM", WRAP_METHOD(Console, Cmd_gotoRoom));
+	registerCmd("debug_playerZ", WRAP_METHOD(Console, Cmd_debugPlayerZ));
 }
 
 Console::~Console() {
+}
+
+
+bool Console::Cmd_debugPlayerZ(int argc, const char **argv) {
+    if (argc != 1) {
+        debugPrintf("Usage: debug_playerZ\n");
+        return true;
+    }
+
+    if (!g_engine || !g_engine->hasCurrentSaveRoomState()) {
+        debugPrintf("No active room/player state\n");
+        return true;
+    }
+
+    const SaveRoomState &state = g_engine->getCurrentSaveRoomState();
+
+    debugPrintf("Player Z: %d\n", state.playerZ);
+
+    return true;
 }
 
 bool Console::Cmd_about(int argc, const char **argv) {

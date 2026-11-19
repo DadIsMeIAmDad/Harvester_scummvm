@@ -29,6 +29,7 @@ namespace Harvester {
 
 class Console : public GUI::Debugger {
 private:
+	bool Cmd_debugPlayerZ(int argc, const char **argv);
 	bool Cmd_about(int argc, const char **argv);
 	bool Cmd_debugCombat(int argc, const char **argv);
 	bool Cmd_debugRoom(int argc, const char **argv);
