@@ -627,7 +627,7 @@ static const MapLocationRecord *findTownMapLocationAt(
 
 
 static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY, float z,
-		int width, int height, int xOffset, int yOffset) {
+        int width, int height, int xOffset, int yOffset, const Common::String &roomName) {
 	int bottomPad = 0;
 
 	if (entity.getName().equalsIgnoreCase("PLAYER")) {
@@ -707,11 +707,11 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 	}
 
 	if (entity.getName().equalsIgnoreCase("MOYNAHANM") &&
-		scene.state.roomName.equalsIgnoreCase("HTL-RT")) {
+		roomName.equalsIgnoreCase("HTL-RT")) {
 		bottomPad = 22;
 	}
 	if (entity.getName().equalsIgnoreCase("MOYNAHANM") &&
-		scene.state.roomName.equalsIgnoreCase("MBLM")) {
+		roomName.equalsIgnoreCase("MBLM")) {
 		bottomPad = 0;
 	}
 
