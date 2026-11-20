@@ -631,8 +631,7 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
     const auto name = entity.getName();
     int bottomPad = 0;
 
-    if (name.equalsIgnoreCase("PLAYER") ||
-        name.equalsIgnoreCase("POTTS_MONSTER")) {
+    if (name.equalsIgnoreCase("PLAYER"){
         bottomPad = 28;
     } else if (name.equalsIgnoreCase("PAT_M")) {
         bottomPad = 12;
@@ -655,7 +654,8 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
                name.equalsIgnoreCase("C_KID_2") ||
                name.equalsIgnoreCase("C_KID_3") ||
                name.equalsIgnoreCase("HOOKER_MONSTER") ||
-               name.equalsIgnoreCase("DARK_WOMAN_MONSTER")) {
+               name.equalsIgnoreCase("DARK_WOMAN_MONSTER"))  ||
+			   name.equalsIgnoreCase("POTTS_MONSTER")) {
         bottomPad = 25;
     } else if (name.equalsIgnoreCase("FOLOWER1_MON")) {
         bottomPad = 5;
