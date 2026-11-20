@@ -713,7 +713,7 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 	}
 	if (entity.getName().equalsIgnoreCase("MOYNAHANM") &&
 		roomName.equalsIgnoreCase("MBLM")) {
-		bottomPad = 44;
+		bottomPad = 64;
 	}
 
 
