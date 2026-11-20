@@ -705,12 +705,15 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
 	if (entity.getName().equalsIgnoreCase("MRJ_M")) {
 		bottomPad = 35;
 	}
-	if (entity.getName().equalsIgnoreCase("MOYNAHANM")) {
-		bottomPad = 25;
+
+	if (entity.getName().equalsIgnoreCase("MOYNAHANM") &&
+		scene.state.roomName.equalsIgnoreCase("HTL-RT")) {
+		bottomPad = 22;
 	}
-
-
-
+	if (entity.getName().equalsIgnoreCase("MOYNAHANM") &&
+		scene.state.roomName.equalsIgnoreCase("MBLM")) {
+		bottomPad = 0;
+	}
 
 
 	entity.setPosition(
