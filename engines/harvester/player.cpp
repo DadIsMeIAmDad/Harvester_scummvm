@@ -893,10 +893,16 @@ static bool isPlayerMovementBlocked(HarvesterEngine &engine, const RoomSetupStat
 			if (npc.npcName.equalsIgnoreCase("SWELL"))
 				continue;
 
-
-
-
-
+			if (npc.npcName.equalsIgnoreCase("PTA_MOM1"))
+				continue;
+			if (npc.npcName.equalsIgnoreCase("PTA_MOM2"))
+				continue;
+			if (npc.npcName.equalsIgnoreCase("PTA_MOM3"))
+				continue;
+			if (npc.npcName.equalsIgnoreCase("PTA_MOM4"))
+				continue;
+			if (npc.npcName.equalsIgnoreCase("PTA_MOM5"))
+				continue;
 
 		
 		
