@@ -627,100 +627,56 @@ static const MapLocationRecord *findTownMapLocationAt(
 
 
 static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY, float z,
-        int width, int height, int xOffset, int yOffset,
-        const Common::String &roomName) {
-	int bottomPad = 0;
+        int width, int height, int xOffset, int yOffset) {
+    const auto name = entity.getName();
+    int bottomPad = 0;
 
-	if (entity.getName().equalsIgnoreCase("PLAYER")) {
-		bottomPad = 28;
-	}
-	if (entity.getName().equalsIgnoreCase("EVILPC")) {
-		bottomPad = 0;
-	}
-	if (entity.getName().equalsIgnoreCase("PAT_M")) {
-		bottomPad = 12;
-	}
-	if (entity.getName().equalsIgnoreCase("JIMMY_M")) {
-		bottomPad = 32;
-	}
-	if (entity.getName().equalsIgnoreCase("LODGCHEF_M")) {
-		bottomPad = 8;
-	}
-	if (entity.getName().equalsIgnoreCase("BOSSMONSTER")) {
-		bottomPad = 18;
-	}
-	if (entity.getName().equalsIgnoreCase("STATUE3")) {
-		bottomPad = 18;
-	}
-	if (entity.getName().equalsIgnoreCase("ZOMBIE1")) {
-		bottomPad = 8;
-	}
-	if (entity.getName().equalsIgnoreCase("GENCOP")) {
-		bottomPad = 42;
-	}
-	if (entity.getName().equalsIgnoreCase("ELVIS_MON")) {
-		bottomPad = 10;
-	}
-	if (entity.getName().equalsIgnoreCase("AUTH_MON")) {
-		bottomPad = 20;
-	}
-	if (entity.getName().equalsIgnoreCase("C_KID_1")) {
-		bottomPad = 25;
-	}
-	if (entity.getName().equalsIgnoreCase("C_KID_2")) {
-		bottomPad = 25;
-	}
-	if (entity.getName().equalsIgnoreCase("C_KID_3")) {
-		bottomPad = 25;
-	}
-	if (entity.getName().equalsIgnoreCase("FOLOWER1_MON")) {
-		bottomPad = 5;
-	}
-	if (entity.getName().equalsIgnoreCase("FOLOWER2_MON")) {
-		bottomPad = 35;
-	}
-	if (entity.getName().equalsIgnoreCase("VET_MONSTER")) {
-		bottomPad = 15;
-	}
-	if (entity.getName().equalsIgnoreCase("POTTS_MONSTER")) {
-		bottomPad = 28;
-	}
-	if (entity.getName().equalsIgnoreCase("HOOKER_MONSTER")) {
-		bottomPad = 25;
-	}
-	if (entity.getName().equalsIgnoreCase("DARK_WOMAN_MONSTER")) {
-		bottomPad = 25;
-	}
-	if (entity.getName().equalsIgnoreCase("INQUIS_MONSTER")) {
-		bottomPad = 40;
-	}
-	if (entity.getName().equalsIgnoreCase("BEGGER_MONSTER")) {
-		bottomPad = 8;
-	}
-	if (entity.getName().equalsIgnoreCase("GLADIATOR_MONSTER")) {
-		bottomPad = 35;
-	}
-	if (entity.getName().equalsIgnoreCase("MUCKEY")) {
-		bottomPad = 35;
-	}
-	if (entity.getName().equalsIgnoreCase("MRJ_M")) {
-		bottomPad = 35;
-	}
+    if (name.equalsIgnoreCase("PLAYER") ||
+        name.equalsIgnoreCase("POTTS_MONSTER")) {
+        bottomPad = 28;
+    } else if (name.equalsIgnoreCase("PAT_M")) {
+        bottomPad = 12;
+    } else if (name.equalsIgnoreCase("JIMMY_M")) {
+        bottomPad = 32;
+    } else if (name.equalsIgnoreCase("LODGCHEF_M") ||
+               name.equalsIgnoreCase("ZOMBIE1") ||
+               name.equalsIgnoreCase("BEGGER_MONSTER")) {
+        bottomPad = 8;
+    } else if (name.equalsIgnoreCase("BOSSMONSTER") ||
+               name.equalsIgnoreCase("STATUE3")) {
+        bottomPad = 18;
+    } else if (name.equalsIgnoreCase("GENCOP")) {
+        bottomPad = 42;
+    } else if (name.equalsIgnoreCase("ELVIS_MON")) {
+        bottomPad = 10;
+    } else if (name.equalsIgnoreCase("AUTH_MON")) {
+        bottomPad = 20;
+    } else if (name.equalsIgnoreCase("C_KID_1") ||
+               name.equalsIgnoreCase("C_KID_2") ||
+               name.equalsIgnoreCase("C_KID_3") ||
+               name.equalsIgnoreCase("HOOKER_MONSTER") ||
+               name.equalsIgnoreCase("DARK_WOMAN_MONSTER")) {
+        bottomPad = 25;
+    } else if (name.equalsIgnoreCase("FOLOWER1_MON")) {
+        bottomPad = 5;
+    } else if (name.equalsIgnoreCase("FOLOWER2_MON") ||
+               name.equalsIgnoreCase("GLADIATOR_MONSTER") ||
+               name.equalsIgnoreCase("MUCKEY") ||
+               name.equalsIgnoreCase("MRJ_M")) {
+        bottomPad = 35;
+    } else if (name.equalsIgnoreCase("VET_MONSTER")) {
+        bottomPad = 15;
+    } else if (name.equalsIgnoreCase("INQUIS_MONSTER")) {
+        bottomPad = 40;
+    } else if (name.equalsIgnoreCase("MOYNAHANM") ||
+               name.equalsIgnoreCase("MOYNAHANM_MBLM")) {
+        bottomPad = 22;
+    }
 
-	if (entity.getName().equalsIgnoreCase("MOYNAHANM") &&
-		roomName.equalsIgnoreCase("HTL-RT")) {
-		bottomPad = 24;
-	}
-	if (entity.getName().equalsIgnoreCase("MOYNAHANM_MBLM") &&
-		roomName.equalsIgnoreCase("MBLM")) {
-		bottomPad = 44;
-	}
-
-
-	entity.setPosition(
-		centerX - xOffset - width / 2,
-		bottomY - height - yOffset + bottomPad,
-		z);
+    entity.setPosition(
+        centerX - xOffset - width / 2,
+        bottomY - height - yOffset + bottomPad,
+        z);
 }
 
 
@@ -743,7 +699,7 @@ static bool applyRoomActorPlacementInternal(const RoomSetupState &state, Entity 
 
 	const float renderZ = computeRoomActorRenderZ(z, entity);
 	entity.setAnchorMode(kRuntimeEntityAnchorTopLeft);
-	setRoomActorScreenPosition(entity, centerX, bottomY, renderZ, width, height, xOffset, yOffset, state.roomName);
+	setRoomActorScreenPosition(entity, centerX, bottomY, renderZ, width, height, xOffset, yOffset);
 
 	float depthScale = 1.0f;
 	if (applyDepthScale) {
@@ -752,7 +708,7 @@ static bool applyRoomActorPlacementInternal(const RoomSetupState &state, Entity 
 		if (!entity.getCurrentFrameMetrics(width, height, xOffset, yOffset)) {
 			return false;
 }
-		setRoomActorScreenPosition(entity, centerX, bottomY, renderZ, width, height, xOffset, yOffset, state.roomName);
+		setRoomActorScreenPosition(entity, centerX, bottomY, renderZ, width, height, xOffset, yOffset);
 	}
 
 	return true;
