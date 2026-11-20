@@ -654,8 +654,7 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
                name.equalsIgnoreCase("C_KID_2") ||
                name.equalsIgnoreCase("C_KID_3") ||
                name.equalsIgnoreCase("HOOKER_MONSTER") ||
-               name.equalsIgnoreCase("DARK_WOMAN_MONSTER")  ||
-			   name.equalsIgnoreCase("POTTS_MONSTER")) {
+               name.equalsIgnoreCase("DARK_WOMAN_MONSTER")) {
         bottomPad = 25;
     } else if (name.equalsIgnoreCase("FOLOWER1_MON")) {
         bottomPad = 5;
@@ -664,7 +663,8 @@ static void setRoomActorScreenPosition(Entity &entity, int centerX, int bottomY,
                name.equalsIgnoreCase("MUCKEY") ||
                name.equalsIgnoreCase("MRJ_M")) {
         bottomPad = 35;
-    } else if (name.equalsIgnoreCase("VET_MONSTER")) {
+    } else if (name.equalsIgnoreCase("VET_MONSTER")  ||
+			   name.equalsIgnoreCase("POTTS_MONSTER")) {
         bottomPad = 15;
     } else if (name.equalsIgnoreCase("INQUIS_MONSTER")) {
         bottomPad = 40;
